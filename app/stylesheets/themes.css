@@ -22,14 +22,16 @@
 
 /** Theme Modes */
 :root {
-  --theme_neutral: var(--color_white-2);
-  --theme_secondary: var(--color_gray-1);
-  --theme_highlight: var(--color_orange-1);
-  --theme_muted: var(--color_white-3);
-
   --theme_bg: var(--color_white-1);
-  --theme_text: var(--color_gray-5);
+  --theme_bg-strong: var(--color_white-2);
+  --theme_info-bg: var(--color_white-3);
+  --theme_upsell-bg: var(--color_orange-1);
+
+  --theme_text: var(--color_neutral-5);
   --theme_text-strong: var(--color_blue-1);
+  --theme_info-text: var(--color_neutral-1);
+  --theme_upsell-text: var(--color_orange-1);
+
   --theme_border: var(--color_white-4);
 
   /* Makes a nice transition effect on changing modes */
@@ -41,15 +43,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --theme_neutral: var(--color_gray-7);
-    --theme_primary: var(--color_blue-2);
-    --theme_secondary: var(--color_gray-2);
-    --theme_highlight: var(--color_orange-2);
-    --theme_muted: var(--color_gray-3);
+    --theme_bg: var(--color_neutral-6);
+    --theme_bg-strong: var(--color_neutral-7);
+    --theme_info-bg: var(--color_neutral-3);
+    --theme_upsell-bg: var(--color_orange-2);
 
-    --theme_bg: var(--color_gray-6);
     --theme_text: var(--color_white-5);
     --theme_text-strong: var(--color_blue-2);
-    --theme_border: var(--color_gray-4);
+    --theme_info-text: var(--color_neutral-2);
+    --theme_upsell-text: var(--color_orange-2);
+
+    --theme_border: var(--color_neutral-4);
   }
 }

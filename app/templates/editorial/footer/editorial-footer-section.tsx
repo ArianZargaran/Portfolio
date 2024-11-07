@@ -2,7 +2,7 @@ import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
 interface EditorialFooterSection
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  children: string;
+  children?: string;
 }
 
 export const EditorialFooterSection: React.FC<EditorialFooterSection> = ({

@@ -6,8 +6,8 @@ import editorialBlockSectionStyles from "./editorial-block-section.css";
 
 interface EditoriaBlockSectionProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  heading: string;
-  abstract: string;
+  heading?: string;
+  abstract?: string;
 }
 
 export const links: LinksFunction = () => [

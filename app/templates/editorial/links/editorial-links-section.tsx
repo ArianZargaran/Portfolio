@@ -2,8 +2,8 @@ import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
 interface EditorialLinksSectionProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  heading: string;
-  links: {
+  heading?: string;
+  links?: {
     href: string;
     copy: string;
   }[];

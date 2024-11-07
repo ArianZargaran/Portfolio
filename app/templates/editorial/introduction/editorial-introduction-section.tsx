@@ -7,7 +7,7 @@ import editorialIntroSectionStyles from "./editorial-intro-section.css";
 interface EditorialIntroductionSectionProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   heading?: string;
-  introduction: string;
+  introduction?: string;
   quote?: {
     copy: string;
     cite?: string;

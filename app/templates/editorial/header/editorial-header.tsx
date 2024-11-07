@@ -1,18 +1,18 @@
 import { LinksFunction } from "@remix-run/node";
 import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
-import editorialHeaderStyles from "./editorial-header-styles.css";
+import editorialHeaderStyles from "./editorial-header.css";
 
 interface EditorialHeaderProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  heading: string;
-  data: {
+  heading?: string;
+  data?: {
     highlighted: string;
     data: string | string[];
   }[];
-  authors: string[];
-  institution: string;
-  publicationDate: string;
+  authors?: string[];
+  institution?: string;
+  publicationDate?: string;
 }
 
 export const links: LinksFunction = () => [

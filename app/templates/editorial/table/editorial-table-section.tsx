@@ -2,9 +2,9 @@ import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
 interface EditorialTablePropsSection
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  headline: string;
-  intro: string;
-  table: {
+  headline?: string;
+  intro?: string;
+  table?: {
     caption: string;
     header: string[];
     rows: string[][];

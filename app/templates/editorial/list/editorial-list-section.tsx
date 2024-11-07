@@ -5,9 +5,9 @@ import editorialListSectionStyles from "./editorial-list-section.css";
 
 interface EditorialListSectionProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  heading: string;
-  variant: "ordered" | "unordered";
-  methods: {
+  heading?: string;
+  variant?: "ordered" | "unordered";
+  methods?: {
     title: string;
     data: string[];
   };
