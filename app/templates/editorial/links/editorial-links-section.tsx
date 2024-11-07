@@ -1,7 +1,7 @@
-import React from "react";
+import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
-interface EditorialLinksSectionProps {
-  id: string;
+interface EditorialLinksSectionProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   heading: string;
   links: {
     href: string;
@@ -22,9 +22,10 @@ export const EditorialLinksSection: React.FC<EditorialLinksSectionProps> = ({
       copy: "Author, B. (2024). Title of Article 2. Journal of Artificial Intelligence.",
     },
   ],
+  ...rest
 }) => {
   return (
-    <section id={id}>
+    <section id={id} {...rest}>
       <h2>{heading}</h2>
       <ul>
         {links.map((link) => (

@@ -1,0 +1,12 @@
+.editorialHeader {
+  background-color: var(--theme_neutral);
+  border: 1px solid var(--theme_border);
+}
+
+.editorialHeader_heading {
+  color: var(--theme_text-strong);
+}
+
+.editorialHeader_remembrance {
+  color: var(--theme_text-strong);
+}

@@ -11,10 +11,14 @@ import {
 
 import fontsStylesheet from "~/stylesheets/fonts.css";
 import resetStylesheet from "~/stylesheets/reset.css";
+import rootStylesheet from "~/stylesheets/root.css";
+import themesStylesheet from "~/stylesheets/themes.css";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: resetStylesheet },
   { rel: "stylesheet", href: fontsStylesheet },
+  { rel: "stylesheet", href: themesStylesheet },
+  { rel: "stylesheet", href: rootStylesheet },
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
@@ -27,7 +31,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="body">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

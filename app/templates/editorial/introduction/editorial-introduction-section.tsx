@@ -1,8 +1,11 @@
+import { LinksFunction } from "@remix-run/node";
 import parse from "html-react-parser";
-import React from "react";
+import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
-interface EditorialIntroductionSectionProps {
-  id: string;
+import editorialIntroSectionStyles from "./editorial-intro-section.css";
+
+interface EditorialIntroductionSectionProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   heading?: string;
   introduction: string;
   quote?: {
@@ -10,6 +13,10 @@ interface EditorialIntroductionSectionProps {
     cite?: string;
   };
 }
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: editorialIntroSectionStyles },
+];
 
 export const EditorialIntroductionSection: React.FC<
   EditorialIntroductionSectionProps
@@ -21,10 +28,11 @@ export const EditorialIntroductionSection: React.FC<
     copy: "Artificial intelligence has revolutionized multiple industries, changing the way we approach complex problems.",
     cite: "https://example.com",
   },
+  ...rest
 }) => {
   return (
-    <section id={id}>
-      <h2>{heading}</h2>
+    <section className="editorialIntroSection" id={id} {...rest}>
+      <h2 className="editorialIntroSection_heading">{heading}</h2>
       {parse(introduction)}
       <blockquote cite={quote.cite}>{quote.copy}</blockquote>
     </section>

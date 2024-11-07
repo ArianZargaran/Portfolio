@@ -1,23 +1,28 @@
+import { LinksFunction } from "@remix-run/node";
 import parse from "html-react-parser";
-import React from "react";
+import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
-interface EditorialAbstractSectionProps {
-  id: string;
+import editorialBlockSectionStyles from "./editorial-block-section.css";
+
+interface EditoriaBlockSectionProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   heading: string;
   abstract: string;
 }
 
-export const EditorialAbstractSection: React.FC<
-  EditorialAbstractSectionProps
-> = ({
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: editorialBlockSectionStyles },
+];
+
+export const EditorialBlockSection: React.FC<EditoriaBlockSectionProps> = ({
   id = "abstract",
   heading = "Abstract",
   abstract = "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. <em>Integer mollis orci eu dui volutpat</em>, at tempus libero fringilla. Nullam non sagittis odio. Fusce gravida, ex et elementum gravida, lectus nisl iaculis erat, sit amet fermentum quam lorem non magna. <strong>Morbi ut purus ex</strong>.</p>",
+  ...rest
 }) => {
   return (
-    <section id={id}>
+    <section id={id} {...rest}>
       <h2>{heading}</h2>
-      {/* <p>{abstract}</p> */}
       {parse(abstract)}
     </section>
   );

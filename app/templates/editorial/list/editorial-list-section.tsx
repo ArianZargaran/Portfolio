@@ -1,6 +1,10 @@
-import React from "react";
+import { LinksFunction } from "@remix-run/node";
+import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
-interface EditorialMethodologySectionProps {
+import editorialListSectionStyles from "./editorial-list-section.css";
+
+interface EditorialListSectionProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   heading: string;
   variant: "ordered" | "unordered";
   methods: {
@@ -13,9 +17,11 @@ interface EditorialMethodologySectionProps {
   };
 }
 
-export const EditorialMethodologySection: React.FC<
-  EditorialMethodologySectionProps
-> = ({
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: editorialListSectionStyles },
+];
+
+export const EditorialListSection: React.FC<EditorialListSectionProps> = ({
   heading = "Methodology",
   variant = "unordered",
   methods = {
@@ -30,12 +36,13 @@ export const EditorialMethodologySection: React.FC<
     figureId: "1",
     figCaption: "Figure 1. Efficiency comparison among models.",
   },
+  ...rest
 }) => {
   const Component = variant === "unordered" ? "ul" : "ol";
 
   return (
-    <section id="methodology">
-      <h2>{heading}</h2>
+    <section className="editorialListSection" {...rest} id="methodology">
+      <h2 className="editorialListSection_heading">{heading}</h2>
       <p>{methods.title}</p>
       <Component>
         {methods.data.map((method) => (
@@ -45,7 +52,6 @@ export const EditorialMethodologySection: React.FC<
       {figure ? (
         <figure>
           {figure.figureId}
-          {/* <img src="sample-graph.png" alt="Model Efficiency Graph" width="600"> */}
           {figure.figCaption ? (
             <figcaption>{figure.figCaption}</figcaption>
           ) : (

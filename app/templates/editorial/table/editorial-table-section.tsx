@@ -1,7 +1,7 @@
-import React from "react";
+import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
-interface EditorialTablePropsSection {
-  id: string;
+interface EditorialTablePropsSection
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   headline: string;
   intro: string;
   table: {
@@ -24,9 +24,10 @@ export const EditorialTableSection: React.FC<EditorialTablePropsSection> = ({
       ["Model C", "92%", "20ms"],
     ],
   },
+  ...rest
 }) => {
   return (
-    <section id={id}>
+    <section id={id} {...rest}>
       <h2>{headline}</h2>
       {intro}
       <table>
