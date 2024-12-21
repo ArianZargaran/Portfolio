@@ -40,6 +40,8 @@
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "express": "^4.21.0",
+    "framely": "../../framely-v0.0.1-40.tgz",
+    "framer-motion": "^6",
     "html-react-parser": "^5.1.18",
     "isbot": "^5.1.17",
     "morgan": "^1.10.0",

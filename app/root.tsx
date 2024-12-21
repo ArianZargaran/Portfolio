@@ -15,11 +15,11 @@ import rootStylesheet from "~/stylesheets/root.css";
 import themesStylesheet from "~/stylesheets/themes.css";
 
 export const links: LinksFunction = () => [
+  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: resetStylesheet },
   { rel: "stylesheet", href: fontsStylesheet },
   { rel: "stylesheet", href: themesStylesheet },
   { rel: "stylesheet", href: rootStylesheet },
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
 export default function App() {

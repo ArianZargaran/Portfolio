@@ -11,7 +11,7 @@ import { EditorialTableSection } from "./table/editorial-table-section";
 interface EditorialTemplateProps {
   entry: {
     sections: {
-      id?: string;
+      id: string;
       type:
         | "editorial-header"
         | "editorial-abstract-section"

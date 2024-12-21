@@ -6,18 +6,20 @@ export const meta: MetaFunction = () => [{ title: "Remix Notes" }];
 
 export default function Index() {
   return (
-    <EditorialTemplate
-      entry={{
-        sections: [
-          { type: "editorial-header" },
-          { type: "editorial-abstract-section" },
-          { type: "editorial-intro-section" },
-          { type: "editorial-list-section" },
-          { type: "editorial-links-section" },
-          { type: "editorial-footer-section" },
-          { type: "editorial-table-section" },
-        ],
-      }}
-    />
+    <>
+      <EditorialTemplate
+        entry={{
+          sections: [
+            { type: "editorial-header", id: "header" },
+            { type: "editorial-abstract-section", id: "abstract" },
+            { type: "editorial-intro-section", id: "intro" },
+            { type: "editorial-list-section", id: "list" },
+            { type: "editorial-links-section", id: "links" },
+            { type: "editorial-footer-section", id: "footer" },
+            { type: "editorial-table-section", id: "table" },
+          ],
+        }}
+      />
+    </>
   );
 }
