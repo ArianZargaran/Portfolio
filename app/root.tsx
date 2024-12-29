@@ -9,6 +9,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
+import colorsStylesheet from "~/stylesheets/colors.css";
 import fontsStylesheet from "~/stylesheets/fonts.css";
 import resetStylesheet from "~/stylesheets/reset.css";
 import rootStylesheet from "~/stylesheets/root.css";
@@ -18,6 +19,7 @@ export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: resetStylesheet },
   { rel: "stylesheet", href: fontsStylesheet },
+  { rel: "stylesheet", href: colorsStylesheet },
   { rel: "stylesheet", href: themesStylesheet },
   { rel: "stylesheet", href: rootStylesheet },
 ];
@@ -31,7 +33,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="body">
+      <body className="body pure">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

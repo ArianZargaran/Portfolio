@@ -1,6 +1,11 @@
 import cls from "classnames";
 import { motion } from "framer-motion";
-import React, { DetailedHTMLProps, HTMLAttributes, useMemo } from "react";
+import React, {
+  DetailedHTMLProps,
+  HTMLAttributes,
+  useEffect,
+  useState,
+} from "react";
 
 import styles from "./floating-particles-background.module.css";
 
@@ -27,7 +32,9 @@ type FloatingParticlesBackgroundProps = DetailedHTMLProps<
 const FloatingParticlesBackground: React.FC<
   FloatingParticlesBackgroundProps
 > = ({ className, count, speed = 2, particleClassName, ...rest }) => {
-  const particles: string[] = useMemo(() => {
+  const [particles, setParticles] = useState<string[]>([]);
+
+  useEffect(() => {
     const set = new Set<string>();
 
     while (set.size < count) {
@@ -35,7 +42,7 @@ const FloatingParticlesBackground: React.FC<
       !set.has(uuid) && set.add(window.crypto.randomUUID());
     }
 
-    return Array.from(set);
+    setParticles(Array.from(set));
   }, [count]);
 
   return (

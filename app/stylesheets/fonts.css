@@ -1,17 +1,18 @@
 /**
 * Font Families
 */
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 
 body {
-    font-family: 'Lora', 'Merriweather', 'Georgia', serif;
+  font-family: "Work Sans", serif;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 
-h1, h2, h3 {
-    font-family: 'Roboto', 'Open Sans', sans-serif;
+h1,
+h2,
+h3 {
+  font-family: "Work Sans", serif;
 }
 
 /**
@@ -19,16 +20,21 @@ h1, h2, h3 {
 */
 
 html {
-    font-size: 6.25%;
+  font-size: 6.25%;
 }
 
 body {
-    font-size: 16rem;
-    line-height: 1.6;
+  font-size: 16rem;
+  line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    line-height: 1.3;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.3;
 }
 
 /* 
@@ -37,65 +43,65 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Extra Small (0 - 575px) */
 @media (max-width: 575px) {
-    body {
-        font-size: 16rem;
-    }
-    h1 {
-        font-size: 24rem;
-    }
-    h2 {
-        font-size: 20rem;
-    }
+  body {
+    font-size: 16rem;
+  }
+  h1 {
+    font-size: 24rem;
+  }
+  h2 {
+    font-size: 20rem;
+  }
 }
 
 /* Small (576 - 767px) */
 @media (min-width: 576px) {
-    body {
-        font-size: 16rem;
-    }
-    h1 {
-        font-size: 28rem;
-    }
-    h2 {
-        font-size: 22rem;
-    }
+  body {
+    font-size: 16rem;
+  }
+  h1 {
+    font-size: 28rem;
+  }
+  h2 {
+    font-size: 22rem;
+  }
 }
 
 /* Medium (768 - 991px) */
 @media (min-width: 768px) {
-    body {
-        font-size: 18rem;
-    }
-    h1 {
-        font-size: 32rem;
-    }
-    h2 {
-        font-size: 26rem;
-    }
+  body {
+    font-size: 18rem;
+  }
+  h1 {
+    font-size: 32rem;
+  }
+  h2 {
+    font-size: 26rem;
+  }
 }
 
 /* Large (992 - 1199px) */
 @media (min-width: 992px) {
-    body {
-        font-size: 18rem;
-    }
-    h1 {
-        font-size: 36rem;
-    }
-    h2 {
-        font-size: 28rem;
-    }
+  body {
+    font-size: 18rem;
+  }
+  h1 {
+    font-size: 36rem;
+  }
+  h2 {
+    font-size: 28rem;
+  }
 }
 
 /* Extra Large (1200+px) */
 @media (min-width: 1200px) {
-    body {
-        font-size: 20rem;
-    }
-    h1 {
-        font-size: 40rem;
-    }
-    h2 {
-        font-size: 32rem;
-    }
+  body {
+    font-size: 20rem;
+  }
+  h1 {
+    font-size: 40rem;
+  }
+  h2 {
+    font-size: 32rem;
+  }
 }
