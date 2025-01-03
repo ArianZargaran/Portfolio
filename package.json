@@ -1,5 +1,5 @@
 {
-  "name": "blues-stack-template",
+  "name": "arian-portfolio",
   "private": true,
   "sideEffects": false,
   "scripts": {
@@ -38,13 +38,13 @@
     "@remix-run/express": "*",
     "@remix-run/node": "*",
     "@remix-run/react": "*",
+    "animatea": "../../animatea-v0.0.1.tgz",
     "chokidar": "^3.6.0",
     "classnames": "^2.5.1",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "express": "^4.21.0",
-    "framely": "../../framely-v0.0.1-40.tgz",
-    "framer-motion": "^11.15.0",
+    "framer-motion": "^6",
     "html-react-parser": "^5.1.18",
     "isbot": "^5.1.17",
     "morgan": "^1.10.0",

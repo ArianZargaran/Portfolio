@@ -1,0 +1,9 @@
+:root {
+  --z-index_2xs: 200;
+  --z-index_xs: 300;
+  --z-index_sm: 400;
+  --z-index_md: 500;
+  --z-index_lg: 600;
+  --z-index_xl: 700;
+  --z-index_2xl: 800;
+}

@@ -1,13 +1,8 @@
-import { json, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import React from "react";
 
 import FloatingParticlesBackground from "~/components/backgrounds/floating-particles-background";
-import indexStyleSheet from "~/stylesheets/index.css";
-
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: indexStyleSheet },
-];
 
 interface HelloProps {
   greetings?: string;
@@ -23,7 +18,7 @@ const Hello: React.FC<HelloProps> = ({ greetings = "Hello!" }) => {
 
   return (
     <div>
-      <h1 className="heading">{greetings}</h1>
+      <h1>{greetings}</h1>
       BOO
       <Link to="/foo" viewTransition style={{ viewTransitionName: "header" }}>
         {foo}
