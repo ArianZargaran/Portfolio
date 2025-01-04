@@ -1,7 +1,8 @@
+import { useLocation } from "@remix-run/react";
 import { HamburgerIcon as MainMenuToggle } from "animatea";
 import classnames from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useMediaQuery } from "~/hooks/useMediaQuery";
 
@@ -16,10 +17,32 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const isMediumBreakpoint = useMediaQuery("(max-width: 992px)");
 
+  const location = useLocation();
+  const data = location.state;
+
+  useEffect(() => {
+    if (data?.isMenuNavigation) {
+      setIsOpen(false);
+    }
+  }, [data]);
+
   return (
     <>
       <MainMenuToggle
-        className={styles["main-menu_toggle"]}
+        className={classnames(
+          {
+            // TODO: Update routes
+            pure: !isOpen && location.pathname === "/",
+            french: !isOpen && location.pathname === "/about-me",
+            royal: !isOpen && location.pathname === "/projects",
+            oxford: !isOpen && location.pathname === "/skills",
+            mirage: !isOpen && location.pathname === "/blog",
+            stratos:
+              (!isOpen && location.pathname === "/contact") ||
+              (!isMediumBreakpoint && isOpen),
+          },
+          styles[`main-menu_toggle`],
+        )}
         isOpen={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         transition={{ ease: "easeOut", duration: 0.2 }}
@@ -30,7 +53,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
         {isOpen ? (
           <motion.nav className={styles["main-menu_nav"]}>
             <ul className={styles["main-menu_ul"]}>
-              {options.map(({ id, option, caption, href }, idx) => (
+              {options.map(({ id, option, caption, href, theme }, idx) => (
                 <motion.li
                   initial={
                     isMediumBreakpoint
@@ -57,13 +80,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
                     delay: isMediumBreakpoint ? 0 : 0.2 * idx,
                   }}
                   style={{ "--options-length": options.length }}
-                  className={classnames(styles["main-menu_nav-item"], {
-                    french: idx === 0,
-                    oxford: idx === 1,
-                    mirage: idx === 2,
-                    stratos: idx === 3,
-                    royal: idx === 4,
-                  })}
+                  className={classnames(styles["main-menu_nav-item"], theme)}
                   key={id}
                 >
                   <MainMenuNavItem

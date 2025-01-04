@@ -7,7 +7,7 @@
   display: flex;
   min-width: 100vw;
   min-height: 100vh;
-  flex-direction: column;
+  flex-direction: column-reverse;
 }
 
 .main-menu_li {
@@ -39,6 +39,10 @@
   padding-right: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
   z-index: var(--z-index_2xl);
+}
+
+.main-menu_toggle line {
+  stroke: var(--theme_border);
 }
 
 .main-menu_toggle:hover {

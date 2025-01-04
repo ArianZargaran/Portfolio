@@ -8,8 +8,8 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: commonThemePage },
 ];
 
-const IndexPage = () => {
-  return <section className="page pure"></section>;
+const AboutMePage = () => {
+  return <section className="page french"></section>;
 };
 
-export default IndexPage;
+export default AboutMePage;

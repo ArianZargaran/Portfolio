@@ -41,11 +41,49 @@ export default function App() {
       <body className="body pure">
         <MainMenuNav
           options={[
-            { id: "ID", option: "Option", caption: "Caption", href: "/" },
-            { id: "ID", option: "Option", caption: "Caption", href: "/" },
-            { id: "ID", option: "Option", caption: "Caption", href: "/" },
-            { id: "ID", option: "Option", caption: "Caption", href: "/" },
-            { id: "ID", option: "Option", caption: "Caption", href: "/" },
+            {
+              // TODO: Update routes
+              id: "ID6",
+              option: "Contact",
+              caption: "Caption",
+              href: "/contact",
+              theme: "stratos",
+            },
+            {
+              id: "ID5",
+              option: "Blog",
+              caption: "Caption",
+              href: "/blog",
+              theme: "mirage",
+            },
+            {
+              id: "ID4",
+              option: "Skills",
+              caption: "Caption",
+              href: "/skills",
+              theme: "oxford",
+            },
+            {
+              id: "ID3",
+              option: "Projects",
+              caption: "Caption",
+              href: "/projects",
+              theme: "royal",
+            },
+            {
+              id: "ID2",
+              option: "About me",
+              caption: "Caption",
+              href: "/about-me",
+              theme: "french",
+            },
+            {
+              id: "ID1",
+              option: "Home",
+              caption: "Turning Interfaces into Experiences",
+              href: "/",
+              theme: "pure",
+            },
           ]}
         />
         <Outlet />
