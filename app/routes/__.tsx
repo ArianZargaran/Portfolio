@@ -13,13 +13,11 @@ export const loader = async (args: LoaderFunctionArgs) => {
   return json({ foo: "foo" });
 };
 
-const Hello: React.FC<HelloProps> = ({ greetings = "Hello!" }) => {
+const Hello: React.FC<HelloProps> = () => {
   const { foo } = useLoaderData<typeof loader>();
 
   return (
     <div>
-      <h1>{greetings}</h1>
-      BOO
       <Link to="/foo" viewTransition style={{ viewTransitionName: "header" }}>
         {foo}
       </Link>

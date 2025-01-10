@@ -1,7 +1,7 @@
+import { Link } from "@remix-run/react";
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React from "react";
 
-import { AnimatedLink } from "~/components/animated-link/animated-link";
 import { useMediaQuery } from "~/hooks/useMediaQuery";
 
 import styles from "./main-menu-nav-item.module.css";
@@ -12,25 +12,24 @@ export interface Option {
   caption: string;
   href: string;
   theme?: string;
+  isHovered?: boolean;
 }
 
 export const MainMenuNavItem: React.FC<Option> = ({
   option,
   caption,
   href,
+  isHovered,
 }) => {
-  const [isHovered, setIsHovered] = useState<boolean>(false);
   const isMediumBreakpoint = useMediaQuery("(max-width: 992px)");
 
   return (
-    <AnimatedLink
+    <Link
       to={href}
       state={{
         isMenuNavigation: true,
       }}
       className={styles["nav-item_wrapper"]}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
     >
       <h2 className={styles["nav-item_heading"]}>{option}</h2>
       <motion.hr
@@ -42,6 +41,6 @@ export const MainMenuNavItem: React.FC<Option> = ({
         }}
       />
       <h3 className={styles["nav-item_caption"]}>{caption}</h3>
-    </AnimatedLink>
+    </Link>
   );
 };

@@ -35,6 +35,16 @@ export default function App() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Arian Zargaran | Front-End Engineer</title>
+        <meta name="author" content="Arian Zargaran" />
+        <meta
+          name="description"
+          content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
+        />
+        <meta
+          name="keywords"
+          content="Front-End Developer, React, TypeScript, Framer Motion, Web Development Portfolio, UI/UX Design, Arian Zargaran"
+        />
         <Meta />
         <Links />
       </head>
@@ -42,45 +52,44 @@ export default function App() {
         <MainMenuNav
           options={[
             {
-              // TODO: Update routes
               id: "ID6",
               option: "Contact",
-              caption: "Caption",
+              caption: "Let's build something together!",
               href: "/contact",
               theme: "stratos",
             },
             {
               id: "ID5",
               option: "Blog",
-              caption: "Caption",
+              caption: "Insights, one line of code at a time.",
               href: "/blog",
               theme: "mirage",
             },
             {
               id: "ID4",
               option: "Skills",
-              caption: "Caption",
+              caption: "Tools and Tech to deliver excellence.",
               href: "/skills",
               theme: "oxford",
             },
             {
               id: "ID3",
               option: "Projects",
-              caption: "Caption",
+              caption: "Thoughts go LIVE: My code in action.",
               href: "/projects",
               theme: "royal",
             },
             {
               id: "ID2",
-              option: "About me",
-              caption: "Caption",
+              option: "About",
+              caption: "Passion, Experience, and Commitment.",
               href: "/about-me",
               theme: "french",
             },
             {
               id: "ID1",
               option: "Home",
-              caption: "Turning Interfaces into Experiences",
+              caption: "Turning Interfaces into Experiences.",
               href: "/",
               theme: "pure",
             },

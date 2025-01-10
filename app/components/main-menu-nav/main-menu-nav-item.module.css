@@ -4,6 +4,7 @@
   flex-direction: column;
   width: 100%;
   cursor: pointer;
+  overflow: hidden;
 }
 
 @media (min-width: 992px) {
@@ -11,6 +12,7 @@
     margin-top: calc(var(--spacing-2xl) + var(--spacing-sm));
     min-height: calc(100% - (var(--spacing-2xl) + var(--spacing-sm)));
     box-sizing: border-box;
+    margin-right: var(--spacing-xl);
   }
 }
 
@@ -27,4 +29,5 @@
 .nav-item_caption {
   margin-left: var(--spacing-xl);
   color: var(--theme_text);
+  font-style: italic;
 }

@@ -15,6 +15,9 @@ export interface MainMenuProps {
 
 const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [hoveredItemId, setHoveredItemId] = useState<string | undefined>(
+    undefined,
+  );
   const isMediumBreakpoint = useMediaQuery("(max-width: 992px)");
 
   const location = useLocation();
@@ -31,7 +34,6 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
       <MainMenuToggle
         className={classnames(
           {
-            // TODO: Update routes
             pure: !isOpen && location.pathname === "/",
             french: !isOpen && location.pathname === "/about-me",
             royal: !isOpen && location.pathname === "/projects",
@@ -55,9 +57,11 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
             <ul className={styles["main-menu_ul"]}>
               {options.map(({ id, option, caption, href, theme }, idx) => (
                 <motion.li
+                  onHoverStart={() => setHoveredItemId(id)}
+                  onHoverEnd={() => setHoveredItemId(undefined)}
                   initial={
                     isMediumBreakpoint
-                      ? { y: 0, x: idx % 2 === 0 ? "100%" : "-100%" }
+                      ? { y: 0, x: idx % 2 === 0 ? "100vh" : "-100vh" }
                       : {
                           y: "-100%",
                           x: 0,
@@ -67,7 +71,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
                   exit={
                     isMediumBreakpoint
                       ? {
-                          x: idx % 2 === 0 ? "-100%" : "100%",
+                          x: idx % 2 === 0 ? "-100vh" : "100vh",
                           y: 0,
                         }
                       : {
@@ -88,6 +92,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
                     option={option}
                     caption={caption}
                     href={href}
+                    isHovered={hoveredItemId === id}
                   />
                 </motion.li>
               ))}
