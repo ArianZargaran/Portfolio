@@ -7,7 +7,7 @@
   display: flex;
   min-width: 100vw;
   min-height: 100vh;
-  flex-direction: column-reverse;
+  flex-direction: column;
 }
 
 .main-menu_li {
@@ -22,7 +22,7 @@
 
 @media (min-width: 992px) {
   .main-menu_ul {
-    flex-direction: row-reverse;
+    flex-direction: row;
   }
 
   .main-menu_nav-item {
@@ -39,6 +39,7 @@
   padding-right: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
   z-index: var(--z-index_2xl);
+  background-color: var(--theme_bg);
 }
 
 .main-menu_toggle line {

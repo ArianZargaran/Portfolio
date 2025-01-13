@@ -29,6 +29,24 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
     }
   }, [data]);
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: -40 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        staggerChildren: 0.2, // Delay between child animations
+        duration: 0.4,
+        staggerDirection: isMediumBreakpoint ? 1 : -1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: -40 }, // Start state: hidden and slightly down
+    visible: { opacity: 1, y: 0 }, // End state: visible and in place
+  };
+
   return (
     <>
       <MainMenuToggle
@@ -46,44 +64,27 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
           styles[`main-menu_toggle`],
         )}
         isOpen={isOpen}
-        onClick={() => setIsOpen(!isOpen)}
-        transition={{ ease: "easeOut", duration: 0.2 }}
+        onClick={() => setIsOpen((prev) => !prev)}
+        transition={{ ease: "easeOut", duration: 0.3 }}
         height={32}
         width={32}
       />
       <AnimatePresence>
         {isOpen ? (
-          <motion.nav className={styles["main-menu_nav"]}>
+          <motion.nav
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={containerVariants}
+            className={styles["main-menu_nav"]}
+          >
             <ul className={styles["main-menu_ul"]}>
-              {options.map(({ id, option, caption, href, theme }, idx) => (
+              {options.map(({ id, option, caption, href, theme }) => (
                 <motion.li
                   onHoverStart={() => setHoveredItemId(id)}
                   onHoverEnd={() => setHoveredItemId(undefined)}
-                  initial={
-                    isMediumBreakpoint
-                      ? { y: 0, x: idx % 2 === 0 ? "100vh" : "-100vh" }
-                      : {
-                          y: "-100%",
-                          x: 0,
-                        }
-                  }
-                  animate={{ y: 0, x: 0 }}
-                  exit={
-                    isMediumBreakpoint
-                      ? {
-                          x: idx % 2 === 0 ? "-100vh" : "100vh",
-                          y: 0,
-                        }
-                      : {
-                          x: 0,
-                          y: "-100%",
-                        }
-                  }
-                  transition={{
-                    duration: 0.2,
-                    delay: isMediumBreakpoint ? 0 : 0.2 * idx,
-                  }}
                   style={{ "--options-length": options.length }}
+                  variants={itemVariants}
                   className={classnames(styles["main-menu_nav-item"], theme)}
                   key={id}
                 >

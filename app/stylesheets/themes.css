@@ -3,13 +3,13 @@
   --theme_bg: var(--color_pure-white);
   --theme_text: var(--color_mirage);
   --theme_border: var(--color_mirage);
+  --theme_upsell-text: var(--color_electric-lime);
 
   --theme_bg-strong: var(--color_french-gray);
   --theme_info-bg: var(--color_oxford-blue);
   --theme_upsell-bg: var(--color_stratos);
   --theme_text-strong: var(--color_bunting);
   --theme_text-info: var(--color_oxford-blue);
-  --theme_upsell-text: var(--color_electric-lime);
 }
 
 .oxford {

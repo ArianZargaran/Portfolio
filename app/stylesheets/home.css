@@ -3,4 +3,26 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.home-content_container {
+  position: absolute;
+  z-index: var(--z-index_sm);
+}
+
+.home-content_upsell {
+  color: var(--theme_upsell-text);
+}
+
+.home-cta-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.home-background {
+  position: absolute;
+  z-index: var(--z-index_xs);
 }

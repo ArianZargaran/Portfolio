@@ -10,6 +10,7 @@ import {
 } from "@remix-run/react";
 
 import MainMenuNav from "~/components/main-menu-nav/main-menu-nav";
+import borderStylesheet from "~/stylesheets/border.css";
 import colorsStylesheet from "~/stylesheets/colors.css";
 import elevationStylesheet from "~/stylesheets/elevation.css";
 import fontsStylesheet from "~/stylesheets/fonts.css";
@@ -27,6 +28,7 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: spacingStylesheet },
   { rel: "stylesheet", href: elevationStylesheet },
   { rel: "stylesheet", href: rootStylesheet },
+  { rel: "stylesheet", href: borderStylesheet },
 ];
 
 export default function App() {
@@ -52,32 +54,11 @@ export default function App() {
         <MainMenuNav
           options={[
             {
-              id: "ID6",
-              option: "Contact",
-              caption: "Let's build something together!",
-              href: "/contact",
-              theme: "stratos",
-            },
-            {
-              id: "ID5",
-              option: "Blog",
-              caption: "Insights, one line of code at a time.",
-              href: "/blog",
-              theme: "mirage",
-            },
-            {
-              id: "ID4",
-              option: "Skills",
-              caption: "Tools and Tech to deliver excellence.",
-              href: "/skills",
-              theme: "oxford",
-            },
-            {
-              id: "ID3",
-              option: "Projects",
-              caption: "Thoughts go LIVE: My code in action.",
-              href: "/projects",
-              theme: "royal",
+              id: "ID1",
+              option: "Home",
+              caption: "Turning Interfaces into Experiences.",
+              href: "/",
+              theme: "pure",
             },
             {
               id: "ID2",
@@ -87,11 +68,32 @@ export default function App() {
               theme: "french",
             },
             {
-              id: "ID1",
-              option: "Home",
-              caption: "Turning Interfaces into Experiences.",
-              href: "/",
-              theme: "pure",
+              id: "ID3",
+              option: "Projects",
+              caption: "Thoughts go LIVE: My code in action.",
+              href: "/projects",
+              theme: "royal",
+            },
+            {
+              id: "ID4",
+              option: "Skills",
+              caption: "Tools and Tech to deliver excellence.",
+              href: "/skills",
+              theme: "oxford",
+            },
+            {
+              id: "ID5",
+              option: "Blog",
+              caption: "Insights, one line of code at a time.",
+              href: "/blog",
+              theme: "mirage",
+            },
+            {
+              id: "ID6",
+              option: "Contact",
+              caption: "Let's build something together!",
+              href: "/contact",
+              theme: "stratos",
             },
           ]}
         />

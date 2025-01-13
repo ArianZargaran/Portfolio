@@ -1,0 +1,10 @@
+/* Border Radius */
+:root {
+  --border_radius-2xs: 4rem;
+  --border_radius-xs: 8rem;
+  --border_radius-sm: 16rem;
+  --border_radius-md: 24rem;
+  --border_radius-lg: 32rem;
+  --border_radius-xl: 48rem;
+  --border_radius-2xl: 64rem;
+}
