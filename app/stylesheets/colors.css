@@ -1,11 +1,18 @@
 /** Color Palette */
 :root {
-  --color_electric-lime: #ccff00;
-  --color_bunting: #0d1434;
-  --color_pure-white: #fff;
-  --color_royal-blue: #1d6feb;
-  --color_stratos: #000053;
+  --color_electric-lime-500: #ccff00;
+  --color_bunting-700: #0d1434;
+  --color_pure-white-00: #fff;
+  --color_royal-blue-400: #1d6feb;
+  --color_stratos-700: #000053;
   --color_mirage: #1b2530;
   --color_oxford-blue: #3b415a;
   --color_french-gray: #babcc8;
+}
+
+/* Color Ramps */
+/* Electric Lime */
+:root {
+  --color_electric-lime-500: #ccff00;
+  --color_electric-lime-600: #a3cc00;
 }

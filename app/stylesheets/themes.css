@@ -1,14 +1,14 @@
 /** Theme Modes */
 .pure {
-  --theme_bg: var(--color_pure-white);
+  --theme_bg: var(--color_pure-white-00);
   --theme_text: var(--color_mirage);
   --theme_border: var(--color_mirage);
-  --theme_upsell-text: var(--color_electric-lime);
+  --theme_upsell-text: var(--color_electric-lime-600);
 
   --theme_bg-strong: var(--color_french-gray);
   --theme_info-bg: var(--color_oxford-blue);
-  --theme_upsell-bg: var(--color_stratos);
-  --theme_text-strong: var(--color_bunting);
+  --theme_upsell-bg: var(--color_stratos-700);
+  --theme_text-strong: var(--color_bunting-700);
   --theme_text-info: var(--color_oxford-blue);
 }
 
@@ -26,7 +26,7 @@
 }
 
 .royal {
-  --theme_bg: var(--color_royal-blue);
+  --theme_bg: var(--color_royal-blue-400);
   --theme_text: var(--color_oxford-blue);
   --theme_border: var(--color_oxford-blue);
 
@@ -52,9 +52,9 @@
 }
 
 .stratos {
-  --theme_bg: var(--color_stratos);
-  --theme_text: var(--color_royal-blue);
-  --theme_border: var(--color_royal-blue);
+  --theme_bg: var(--color_stratos-700);
+  --theme_text: var(--color_royal-blue-400);
+  --theme_border: var(--color_royal-blue-400);
 
   --theme_bg-strong: var(--color_white-2);
   --theme_info-bg: var(--color_white-3);
@@ -78,7 +78,7 @@
 }
 
 .electric {
-  --theme_bg: var(--color_electric-lime);
+  --theme_bg: var(--color_electric-lime-500);
   --theme_text: var(--color_oxford-blue);
   --theme_border: var(--color_oxford-blue);
 
@@ -91,7 +91,7 @@
 }
 
 .bunting {
-  --theme_bg: var(--color_bunting);
+  --theme_bg: var(--color_bunting-700);
   --theme_text: var(--color_neutral-5);
   --theme_border: var(--color_neutral-5);
 

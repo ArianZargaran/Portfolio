@@ -30,21 +30,53 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   }, [data]);
 
   const containerVariants = {
-    hidden: { opacity: 0, y: -40 },
+    hidden: {
+      opacity: 0,
+      y: -100,
+      transition: {
+        type: "tween",
+        ease: "easeOut",
+        staggerChildren: 0.2,
+        duration: 0.4,
+        staggerDirection: 1,
+      },
+    },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        staggerChildren: 0.2, // Delay between child animations
+        type: "tween",
+        ease: "easeOut",
+        staggerChildren: 0.2,
         duration: 0.4,
-        staggerDirection: isMediumBreakpoint ? 1 : -1,
+        staggerDirection: -1,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: -40 }, // Start state: hidden and slightly down
-    visible: { opacity: 1, y: 0 }, // End state: visible and in place
+    hidden: {
+      opacity: 0,
+      y: -100,
+      transition: {
+        type: "tween",
+        ease: "easeOut",
+        staggerChildren: 0.2,
+        duration: 0.4,
+        staggerDirection: 1,
+      },
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "tween",
+        ease: "easeOut",
+        staggerChildren: 0.2,
+        duration: 0.4,
+        staggerDirection: -1,
+      },
+    },
   };
 
   return (
@@ -65,11 +97,10 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
         )}
         isOpen={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        transition={{ ease: "easeOut", duration: 0.3 }}
         height={32}
         width={32}
       />
-      <AnimatePresence>
+      <AnimatePresence mode="wait" initial={false}>
         {isOpen ? (
           <motion.nav
             initial="hidden"
