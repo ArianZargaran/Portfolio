@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { RefreshStoryWrapper } from "stories/utils/refresh-story-wrapper";
 
-import FloatingParticlesBackground from "./floating-particles-background";
+import FloatingParticlesBackground from "./deprecated/floating-particles-background";
 
 const meta = {
   title: "Molecules/Backgrounds/Floating Particles",

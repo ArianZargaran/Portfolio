@@ -2,7 +2,7 @@ import { json, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import React from "react";
 
-import FloatingParticlesBackground from "~/components/backgrounds/floating-particles-background";
+import FloatingParticlesBackground from "~/components/backgrounds/deprecated/floating-particles-background";
 
 interface HelloProps {
   greetings?: string;

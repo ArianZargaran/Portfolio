@@ -128,3 +128,8 @@ strong {
     font-size: 20rem;
   }
 }
+
+/* Font-Weight */
+:root {
+  --font-weight-bold: 700;
+}

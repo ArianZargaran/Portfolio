@@ -1,0 +1,36 @@
+.illustrations-track {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  gap: calc(var(--spacing-xl) + var(--spacing-2xl));
+  padding: 0 150rem;
+  width: 1350rem;
+  justify-content: space-around;
+}
+
+.illustration {
+  width: 100px;
+}
+
+@media (max-width: 992px) {
+  .illustration {
+    width: 150px;
+  }
+}
+
+@media (min-width: 992px) {
+  .illustration {
+    width: 200px;
+  }
+}
+
+/* Illustrations */
+.teenager {
+  padding: 40rem 0 75rem;
+}
+
+.child {
+  height: 450rem;
+}

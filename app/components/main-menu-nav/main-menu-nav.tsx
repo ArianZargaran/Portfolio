@@ -33,13 +33,6 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
     hidden: {
       opacity: 0,
       y: -100,
-      transition: {
-        type: "tween",
-        ease: "easeOut",
-        staggerChildren: 0.2,
-        duration: 0.4,
-        staggerDirection: 1,
-      },
     },
     visible: {
       opacity: 1,
@@ -58,13 +51,6 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
     hidden: {
       opacity: 0,
       y: -100,
-      transition: {
-        type: "tween",
-        ease: "easeOut",
-        staggerChildren: 0.2,
-        duration: 0.4,
-        staggerDirection: 1,
-      },
     },
     visible: {
       opacity: 1,
