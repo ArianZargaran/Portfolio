@@ -1,0 +1,35 @@
+:root {
+  --projects-header-height: 88rem;
+}
+
+.projects {
+  position: absolute;
+  inset: 0;
+}
+
+@media screen and (max-width: 600px) {
+  .projects {
+    overflow-y: hidden;
+  }
+}
+
+.projects-header {
+  background-color: var(--theme_upsell-bg);
+  width: 100%;
+  position: absolute;
+  height: var(--projects-header-height);
+  z-index: var(--z-index_2xs);
+}
+
+.projects-headline {
+  position: absolute;
+  left: var(--spacing-lg);
+  bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.projects-article {
+  position: absolute;
+  inset: 0;
+  top: calc(var(--spacing-3xl) + var(--spacing-sm));
+}

@@ -1,0 +1,8 @@
+.walmart-wrapper {
+  bottom: 0;
+  right: var(--gap);
+  width: calc(40% - (var(--gap) * 2));
+}
+
+.walmart {
+}

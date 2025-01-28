@@ -5,7 +5,7 @@ interface Dimensions {
   height: number;
 }
 
-export const useElementSize = <T extends HTMLElement | SVGSVGElement>() => {
+export const useElementSize = <T extends HTMLDivElement | SVGSVGElement>() => {
   const ref = useRef<T | null>(null);
   const [dimensions, setDimensions] = useState<Dimensions>({
     width: 0,

@@ -1,0 +1,8 @@
+.cabify-wrapper {
+  right: var(--gap);
+  top: calc(var(--newsela-height) + var(--gap));
+  width: 45%;
+}
+
+.cabify {
+}

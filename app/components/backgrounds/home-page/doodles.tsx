@@ -50,7 +50,7 @@ export const Doodles: React.FC<DoodlesProps> = (props) => {
           d="M11220 0H0v11220h11220V0"
           style={{
             display: "inline",
-            fill: "#fff",
+            fill: "transparent",
             fillOpacity: 1,
             fillRule: "nonzero",
             stroke: "none",

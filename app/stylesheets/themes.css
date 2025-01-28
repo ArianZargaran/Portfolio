@@ -29,13 +29,14 @@
   --theme_bg: var(--color_royal-blue-400);
   --theme_text: var(--color_oxford-blue);
   --theme_border: var(--color_oxford-blue);
+  --theme_upsell-bg: var(--color_pure-white-00);
+  --theme_bg-strong: var(--color_oxford-blue);
+  --theme_upsell-text: var(--color_pure-white-00);
+  --theme_upsell-border: var(--color_pure-white-00);
 
-  --theme_bg-strong: var(--color_white-2);
   --theme_info-bg: var(--color_white-3);
-  --theme_upsell-bg: var(--color_orange-1);
   --theme_text-strong: var(--color_blue-1);
   --theme_text-info: var(--color_neutral-1);
-  --theme_upsell-text: var(--color_orange-1);
 }
 
 .mirage {

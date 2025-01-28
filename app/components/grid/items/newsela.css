@@ -1,0 +1,8 @@
+.newsela-wrapper {
+  top: 0;
+  right: var(--gap);
+  width: 20%;
+}
+
+.newsela {
+}

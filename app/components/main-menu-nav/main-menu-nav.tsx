@@ -70,9 +70,11 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
       <MainMenuToggle
         className={classnames(
           {
-            pure: !isOpen && location.pathname === "/",
+            pure:
+              (!isOpen && location.pathname === "/") ||
+              (!isOpen && location.pathname === "/projects"),
             french: !isOpen && location.pathname === "/about-me",
-            royal: !isOpen && location.pathname === "/projects",
+            // royal: !isOpen && location.pathname === "/projects",
             oxford: !isOpen && location.pathname === "/skills",
             mirage: !isOpen && location.pathname === "/blog",
             stratos:

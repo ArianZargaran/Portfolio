@@ -1,0 +1,39 @@
+.airtable-wrapper {
+  left: calc(var(--animatea-width) + (var(--gap) * 2));
+  top: 0;
+  width: calc(68% - (var(--gap) * 2));
+}
+
+.airtable {
+  position: relative;
+  background-size: cover;
+  min-width: 100%;
+  min-height: 100%;
+  background-position: center;
+  display: flex;
+}
+
+.overlay {
+  display: flex;
+  background: var(--theme_upsell-bg);
+  width: fit-content;
+  flex-shrink: 1;
+  min-height: 100%;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.overlay-eyebrow {
+  margin-bottom: auto;
+  font-style: italic;
+}
+
+.overlay-title {
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  text-decoration: overline;
+  font-weight: var(--font-weight-bold);
+  border-bottom: 2rem solid var(--theme_border);
+  max-width: fit-content;
+}

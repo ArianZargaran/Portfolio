@@ -1,0 +1,8 @@
+.roll-wrapper {
+  top: calc(var(--animatea-height) + var(--gap));
+  left: var(--gap);
+  width: calc(35% - (var(--gap) * 2));
+}
+
+.roll {
+}

@@ -1,0 +1,6 @@
+.apple-wrapper {
+  width: calc(20% - (var(--gap) * 2));
+}
+
+.apple {
+}
