@@ -43,7 +43,7 @@
   border-top-left-radius: 1rem;
   padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md)
     var(--spacing-md);
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(18, 60, 105, 0.5);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
@@ -84,5 +84,5 @@
 .headline {
   margin-bottom: var(--spacing-sm);
   font-weight: var(--font-weight-bold);
-  color: var(--theme_upsell-text);
+  color: var(--theme_text-info);
 }

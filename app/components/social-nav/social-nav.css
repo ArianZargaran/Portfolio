@@ -1,0 +1,26 @@
+.social-nav {
+  position: fixed;
+  top: var(--spacing-xs);
+  left: var(--spacing-xs);
+  z-index: var(--z-index_lg);
+  margin-left: var(--spacing-sm);
+}
+
+.social-nav-list {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.social-nav-list-item {
+  display: inline-block;
+}
+
+.social-nav-link {
+  cursor: pointer;
+}
+
+.social-nav-logo {
+  padding: var(--spacing-md) var(--spacing-sm);
+}

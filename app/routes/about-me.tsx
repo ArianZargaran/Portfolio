@@ -17,12 +17,12 @@ export const links: LinksFunction = () => [
 const AboutMePage = () => {
   const { ref, dimensions } = useElementSize<HTMLDivElement>();
   return (
-    <section className="page french about">
+    <section className="page about about-page">
       <div ref={ref} className="media-container">
         <div className="illustration-window">
           <IllustrationsTrack />
         </div>
-        <h1 className="headline">About</h1>
+        <h1 className="headline">About me</h1>
       </div>
       <div
         className="timeline"

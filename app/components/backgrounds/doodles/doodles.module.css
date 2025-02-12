@@ -1,0 +1,6 @@
+.svg path {
+  fill: var(--theme_bg);
+  fill-opacity: 1;
+  fill-rule: nonzero;
+  stroke: none;
+}

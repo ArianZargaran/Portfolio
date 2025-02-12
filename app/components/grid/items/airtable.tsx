@@ -27,7 +27,7 @@ export const Airtable = React.forwardRef<HTMLDivElement, AirtableProps>(
         ref={ref}
       >
         <motion.div
-          className="overlay"
+          className="clear-overlay"
           variants={overlayVariants}
           transition={{
             duration: 0.2,
@@ -37,6 +37,7 @@ export const Airtable = React.forwardRef<HTMLDivElement, AirtableProps>(
           <h3 className="overlay-title">Foo</h3>
           <p>Foo kjalsdfea lskadjfae</p>
         </motion.div>
+        <motion.div className="dark-overlay" variants={filterVariants} />
       </motion.div>
     );
   },
@@ -50,4 +51,15 @@ const containerVariants = {
 const overlayVariants = {
   rest: { x: 0 },
   hover: { x: "-100%" },
+};
+
+const filterVariants = {
+  rest: {
+    backgroundImage: `linear-gradient(to bottom, rgba(18,42, 66, .85), rgba(18,42, 66, .85))`,
+    rest: { x: 0 },
+  },
+  hover: {
+    backgroundImage: `linear-gradient(to bottom, rgba(18,42, 66, 0), rgba(18,42, 66, 0))`,
+    hover: { x: "-100%" },
+  },
 };

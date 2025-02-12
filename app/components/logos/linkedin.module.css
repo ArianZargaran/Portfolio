@@ -1,0 +1,8 @@
+.svg path {
+  fill: var(--theme_upsell-border);
+  transition: fill 0.3s ease;
+}
+
+.svg:hover path {
+  fill: #007ebb;
+}

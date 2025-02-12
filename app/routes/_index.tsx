@@ -3,9 +3,12 @@ import { LinksFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { motion } from "framer-motion";
 
-import { Doodles } from "~/components/backgrounds/home-page/doodles";
+import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
+import { Doodles } from "~/components/backgrounds/doodles/doodles";
 import { Download } from "~/components/icons/download";
+import { Isotype } from "~/components/icons/isotype";
 import Button from "~/components/interactive-elements/button/button";
+import { SocialNav } from "~/components/social-nav/social-nav";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
 import homeStyles from "~/stylesheets/home.css";
 
@@ -17,15 +20,12 @@ export const links: LinksFunction = () => [
 
 const IndexPage = () => {
   return (
-    <section className="page pure home">
+    <section className="page home-page">
+      <BlurryBackground className="home-background" />
+      <Doodles className="home-background" />
+      <SocialNav className="home-social" />
       <div className="home-content_container">
-        <img
-          className="home-content_isotype"
-          src="/isotipo.svg"
-          alt="Arian Isotype"
-          height={72}
-          width={72}
-        />
+        <Isotype className="home-content_isotype" height={72} width={72} />
         <motion.h1
           className="home-content_headline"
           initial={{
@@ -75,7 +75,7 @@ const IndexPage = () => {
           }}
           className="home-cta-wrapper"
         >
-          <Link className="home-main-cta" to="/projects">
+          <Link to="/projects">
             <Button>My Projects</Button>
           </Link>
           <Link
@@ -89,7 +89,6 @@ const IndexPage = () => {
           </Link>
         </motion.div>
       </div>
-      <Doodles className="home-background" />
     </section>
   );
 };

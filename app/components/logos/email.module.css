@@ -1,0 +1,43 @@
+.svg path {
+  transition: fill 0.3s ease;
+}
+
+.svg path:first-child {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
+.svg:hover path:first-child {
+  fill: #4285f4;
+}
+
+.svg path:nth-child(2) {
+  fill: rgba(255, 255, 255, 0.6);
+}
+
+.svg:hover path:nth-child(2) {
+  fill: #34a853;
+}
+
+.svg path:nth-child(3) {
+  fill: rgba(255, 255, 255, 0.8);
+}
+
+.svg:hover path:nth-child(3) {
+  fill: #fbbc04;
+}
+
+.svg path:nth-child(4) {
+  fill: var(--theme_upsell-border);
+}
+
+.svg:hover path:nth-child(4) {
+  fill: #ea4335;
+}
+
+.svg path:nth-child(5) {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+.svg:hover path:nth-child(5) {
+  fill: #c5221f;
+}

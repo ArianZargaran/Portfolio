@@ -1,9 +1,10 @@
-.home {
+.home-page {
   display: flex;
+  position: absolute;
+  inset: 0;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  max-height: 100vh;
   overflow: hidden;
 }
 
@@ -24,11 +25,13 @@
 .home-content_headline {
   margin-bottom: var(--spacing-2xs);
   letter-spacing: -0.2px;
+  color: var(--theme_text);
 }
 
 .home-content_subheadline {
   margin-bottom: var(--spacing-md);
   letter-spacing: -0.3px;
+  color: var(--theme_text);
 }
 
 .home-content_upsell {

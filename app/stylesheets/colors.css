@@ -1,18 +1,55 @@
-/** Color Palette */
+/* Color Ramps */
+/* Anti Flash White */
 :root {
-  --color_electric-lime-500: #ccff00;
-  --color_bunting-700: #0d1434;
-  --color_pure-white-00: #fcfcfc;
-  --color_royal-blue-400: #1d6feb;
-  --color_stratos-700: #000053;
-  --color_mirage: #1b2530;
-  --color_oxford-blue: #3b415a;
-  --color_french-gray: #babcc8;
+  --color_anti-flash-100: #fff;
+  --color_anti-flash-200: #edf2f4; /**/
+  --color_anti-flash-300: #81a4b1;
+  --color_anti-flash-400: #557c8b;
+  --color_anti-flash-500: #3e5b65;
+  --color_anti-flash-600: #27393f;
+  --color_anti-flash-700: #101719;
 }
 
-/* Color Ramps */
-/* Electric Lime */
+/* Gray Blue Leaf */
 :root {
-  --color_electric-lime-500: #ccff00;
-  --color_electric-lime-600: #a3cc00;
+  --color_grey-blue-leaf-100: #e7eaef;
+  --color_grey-blue-leaf-200: #c2cad6;
+  --color_grey-blue-leaf-300: #91a0b6;
+  --color_grey-blue-leaf-400: #6c819d;
+  --color_grey-blue-leaf-500: #4f5f76; /**/
+  --color_grey-blue-leaf-600: #29313d;
+  --color_grey-blue-leaf-700: #101418;
+}
+
+/* Purple Shadow */
+:root {
+  --color_purple-shadow-100: #dceaf9;
+  --color_purple-shadow-200: #cbe0f6;
+  --color_purple-shadow-300: #96c0ed;
+  --color_purple-shadow-400: #62a1e4;
+  --color_purple-shadow-500: rgb(35, 120, 209);
+  --color_purple-shadow-600: rgb(18, 60, 105);
+  --color_purple-shadow-700: #091f36; /**/
+}
+
+/* Redline */
+:root {
+  --color_redline-200: #f5e1e1;
+  --color_redline-300: #e5b3b5;
+  --color_redline-400: #d58588;
+  --color_redline-500: #c6585b;
+  --color_redline-600: rgb(158, 54, 58); /**/
+  --color_redline-700: #7a2a2c;
+  --color_redline-800: #3d1516;
+}
+
+/* Blue Popsicle */
+:root {
+  --color_blue-popscle-200: #edf2fc;
+  --color_blue-popscle-300: #a7bdf1;
+  --color_blue-popscle-400: #7296e9;
+  --color_blue-popscle-500: #3d6ee1;
+  --color_blue-popscle-600: #1c48b0;
+  --color_blue-popscle-700: #0f2862;
+  --color_blue-popscle-800: #1f2544; /**/
 }

@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: row;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
   white-space: nowrap;
   gap: calc(var(--spacing-xl) + var(--spacing-2xl));

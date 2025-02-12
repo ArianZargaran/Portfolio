@@ -39,11 +39,11 @@
   padding-right: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
   z-index: var(--z-index_2xl);
-  background-color: var(--theme_bg);
+  background-color: transparent;
 }
 
 .main-menu_toggle line {
-  stroke: var(--theme_border);
+  stroke: var(--theme_upsell-border);
 }
 
 .main-menu_toggle:hover {

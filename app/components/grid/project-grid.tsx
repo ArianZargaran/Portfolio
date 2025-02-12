@@ -50,16 +50,16 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = ({
     useElementSize<HTMLDivElement>();
   const { dimensions: newselaDimensions, ref: newselaRef } =
     useElementSize<HTMLDivElement>();
-  const { dimensions: walmartDimensions, ref: walmartRef } =
-    useElementSize<HTMLDivElement>();
-  const { dimensions: appleDimensions, ref: appleRef } =
-    useElementSize<HTMLDivElement>();
+  // const { dimensions: walmartDimensions, ref: walmartRef } =
+  //   useElementSize<HTMLDivElement>();
+  // const { dimensions: appleDimensions, ref: appleRef } =
+  //   useElementSize<HTMLDivElement>();
   const { dimensions: rollDimensions, ref: rollRef } =
     useElementSize<HTMLDivElement>();
-  const { dimensions: repleatDimensions, ref: repleatRef } =
-    useElementSize<HTMLDivElement>();
-  const { dimensions: cabifyDimensions, ref: cabifyRef } =
-    useElementSize<HTMLDivElement>();
+  // const { dimensions: repleatDimensions, ref: repleatRef } =
+  //   useElementSize<HTMLDivElement>();
+  // const { dimensions: cabifyDimensions, ref: cabifyRef } =
+  //   useElementSize<HTMLDivElement>();
 
   const DATA: {
     id: Projects;
@@ -80,7 +80,12 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = ({
     },
     {
       id: "apple",
-      component: <Apple ref={appleRef} className="block" />,
+      component: (
+        <Apple
+          // ref={appleRef}
+          className="block"
+        />
+      ),
       motion: {
         animate: {
           top: airtableDimensions.height + GAP,
@@ -95,15 +100,30 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = ({
     },
     {
       id: "walmart",
-      component: <Walmart ref={walmartRef} className="block" />,
+      component: (
+        <Walmart
+          // ref={walmartRef}
+          className="block"
+        />
+      ),
     },
     {
       id: "repleat",
-      component: <Repleat ref={repleatRef} className="block" />,
+      component: (
+        <Repleat
+          // ref={repleatRef}
+          className="block"
+        />
+      ),
     },
     {
       id: "cabify",
-      component: <Cabify ref={cabifyRef} className="block" />,
+      component: (
+        <Cabify
+          // ref={cabifyRef}
+          className="block"
+        />
+      ),
     },
   ];
 
@@ -120,20 +140,20 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = ({
       style={{
         ["--animatea-height"]: `${animateaDimensions.height}px`,
         ["--animatea-width"]: `${animateaDimensions.width}px`,
-        ["--airtable-height"]: `${airtableDimensions.height}px`,
-        ["--airtable-width"]: `${airtableDimensions.width}px`,
+        // ["--airtable-height"]: `${airtableDimensions.height}px`,
+        // ["--airtable-width"]: `${airtableDimensions.width}px`,
         ["--newsela-height"]: `${newselaDimensions.height}px`,
-        ["--newsela-width"]: `${newselaDimensions.width}px`,
-        ["--walmart-height"]: `${walmartDimensions.height}px`,
-        ["--walmart-width"]: `${walmartDimensions.width}px`,
-        ["--apple-height"]: `${appleDimensions.height}px`,
-        ["--apple-width"]: `${appleDimensions.width}px`,
-        ["--roll-height"]: `${rollDimensions.height}px`,
-        ["--roll-width"]: `${rollDimensions.width}px`,
-        ["--repleat-height"]: `${repleatDimensions.height}px`,
-        ["--repleat-width"]: `${repleatDimensions.width}px`,
-        ["--cabify-height"]: `${cabifyDimensions.height}px`,
-        ["--cabify-width"]: `${cabifyDimensions.width}px`,
+        // ["--newsela-width"]: `${newselaDimensions.width}px`,
+        // ["--walmart-height"]: `${walmartDimensions.height}px`,
+        // ["--walmart-width"]: `${walmartDimensions.width}px`,
+        // ["--apple-height"]: `${appleDimensions.height}px`,
+        // ["--apple-width"]: `${appleDimensions.width}px`,
+        // ["--roll-height"]: `${rollDimensions.height}px`,
+        // ["--roll-width"]: `${rollDimensions.width}px`,
+        // ["--repleat-height"]: `${repleatDimensions.height}px`,
+        // ["--repleat-width"]: `${repleatDimensions.width}px`,
+        // ["--cabify-height"]: `${cabifyDimensions.height}px`,
+        // ["--cabify-width"]: `${cabifyDimensions.width}px`,
         ["--gap"]: `${GAP}px`,
       }}
       className="grid"

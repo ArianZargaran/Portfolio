@@ -40,7 +40,11 @@ export const IllustrationsTrack: React.FC = () => {
   }, [scrollValue]);
 
   return (
-    <motion.div ref={ref} className={style["illustrations-track"]}>
+    <motion.div
+      style={{ marginTop: -30 }}
+      ref={ref}
+      className={style["illustrations-track"]}
+    >
       <ChildIllustration
         style={{ opacity: childOpacity as unknown as number }}
         className={classNames(style["illustration"], style["child"])}
@@ -51,11 +55,17 @@ export const IllustrationsTrack: React.FC = () => {
         height={350}
       />
       <CoupleIllustration
-        style={{ opacity: coupleOpacity as unknown as number }}
+        style={{
+          opacity: coupleOpacity as unknown as number,
+          transform: "scale(1.15) translate(0, -15px)",
+        }}
         className={classNames(style["illustration"], style["couple"])}
       />
       <PilotIllustration
-        style={{ opacity: pilotOpacity as unknown as number }}
+        style={{
+          opacity: pilotOpacity as unknown as number,
+          transform: "scale(1.2)",
+        }}
         className={classNames(style["illustration"], style["pilot"])}
       />
     </motion.div>

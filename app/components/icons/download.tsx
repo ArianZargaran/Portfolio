@@ -1,11 +1,6 @@
-import React, { SVGProps } from "react";
+import React from "react";
 
-type IconProps = {
-  height?: SVGSize;
-  width?: SVGSize;
-} & SVGProps<SVGSVGElement>;
-
-export type SVGSize = 16 | 24 | 32 | 48 | 64;
+import { IconProps } from ".";
 
 export const Download: React.FC<IconProps> = ({ height, width, ...rest }) => (
   <svg width={width} height={height} viewBox={"0 0 24 24"} {...rest}>

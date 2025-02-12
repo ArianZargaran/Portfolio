@@ -18,13 +18,13 @@ export const TimelineEvent: React.FC<TimelineEventProps> = ({
 }) => {
   return (
     <div className={classNames(styles["timeline-event"], styles[orientation])}>
-      <p className={styles["date"]}>{date}</p>
-      <div className={styles["line"]}>
-        <div className={styles["bullet"]} />
+      <p className={styles.date}>{date}</p>
+      <div className={styles.line}>
+        <div className={styles.bullet} />
       </div>
-      <div className={styles["box"]}>
-        <div className={styles["content"]}>
-          <h3 className={styles["headline"]}>{headline}</h3>
+      <div className={styles.box}>
+        <div className={styles.content}>
+          <h3 className={styles.headline}>{headline}</h3>
           <p>{description}</p>
         </div>
       </div>

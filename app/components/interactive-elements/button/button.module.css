@@ -1,5 +1,5 @@
 .button {
-  border-radius: 4rem;
+  border-radius: var(--border_radius-xs);
   padding: var(--spacing-2xs) calc(var(--spacing-sm) - var(--spacing-2xs));
   display: block;
   position: relative;
@@ -7,7 +7,8 @@
 
 /* Variant: Primary */
 .primary {
-  color: var(--color_pure-white-00);
+  color: var(--theme_text);
+  border: 1px solid var(--theme_border-info);
   background: radial-gradient(
       circle at 50% 0%,
       rgba(250, 250, 250, 0.05) 0%,
@@ -19,30 +20,30 @@
 .primary.radial-gradient {
   mask-image: linear-gradient(
     -75deg,
-    var(--color_mirage) calc(var(--x) + 20%),
+    var(--theme_upsell-bg) calc(var(--x) + 20%),
     transparent calc(var(--x) + 30%),
-    var(--color_mirage) calc(var(--x) + 100%)
+    var(--theme_upsell-bg) calc(var(--x) + 100%)
   );
   -webkit-mask-image: linear-gradient(
     -75deg,
-    var(--color_mirage) calc(var(--x) + 20%),
+    var(--theme_upsell-bg) calc(var(--x) + 20%),
     transparent calc(var(--x) + 30%),
-    var(--color_mirage) calc(var(--x) + 100%)
+    var(--theme_upsell-bg) calc(var(--x) + 100%)
   );
 }
 
 .primary.linear-mask {
   mask-image: linear-gradient(
     -75deg,
-    var(--color_mirage) calc(var(--x) + 28%),
+    var(--theme_upsell-bg) calc(var(--x) + 28%),
     transparent calc(var(--x) + 30%),
-    var(--color_mirage) calc(var(--x) + 35%)
+    var(--theme_upsell-bg) calc(var(--x) + 35%)
   );
   -webkit-mask-image: linear-gradient(
     -75deg,
-    var(--color_mirage) calc(var(--x) + 28%),
+    var(--theme_upsell-bg) calc(var(--x) + 28%),
     transparent calc(var(--x) + 30%),
-    var(--color_mirage) calc(var(--x) + 35%)
+    var(--theme_upsell-bg) calc(var(--x) + 35%)
   );
 }
 
@@ -59,36 +60,34 @@
     rgba(var(--overlay-color), 0.1) calc(var(--x) + 30%)
   );
   mask:
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700))
-      content-box,
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700));
+    linear-gradient(var(--theme_border), var(--theme_border)) content-box,
+    linear-gradient(var(--theme_border), var(--theme_border));
   -webkit-mask:
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700))
-      content-box,
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700));
+    linear-gradient(var(--theme_border), var(--theme_border)) content-box,
+    linear-gradient(var(--theme_border), var(--theme_border));
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 }
 
 /* Variant: Secondary */
 .secondary {
-  background-color: var(--color_pure-white-00);
-  border: 1px solid var(--color_bunting-700);
-  color: var(--color_bunting-700);
+  background-color: var(--theme_bg-strong);
+  border: 1px solid var(--theme_border);
+  color: var(--theme_border);
 }
 
 .secondary.radial-gradient {
   mask-image: linear-gradient(
     -75deg,
-    var(--color_pure-white-00) calc(var(--x) + 20%),
+    var(--theme_bg-strong) calc(var(--x) + 20%),
     transparent calc(var(--x) + 30%),
-    var(--color_pure-white-00) calc(var(--x) + 100%)
+    var(--theme_bg-strong) calc(var(--x) + 100%)
   );
   -webkit-mask-image: linear-gradient(
     -75deg,
-    var(--color_pure-white-00) calc(var(--x) + 20%),
+    var(--theme_bg-strong) calc(var(--x) + 20%),
     transparent calc(var(--x) + 30%),
-    var(--color_pure-white-00) calc(var(--x) + 100%)
+    var(--theme_bg-strong) calc(var(--x) + 100%)
   );
 }
 
@@ -120,13 +119,11 @@
     rgba(var(--overlay-color), 0.1) calc(var(--x) + 30%)
   );
   mask:
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700))
-      content-box,
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700));
+    linear-gradient(var(--theme_border), var(--theme_border)) content-box,
+    linear-gradient(var(--theme_border), var(--theme_border));
   -webkit-mask:
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700))
-      content-box,
-    linear-gradient(var(--color_bunting-700), var(--color_bunting-700));
+    linear-gradient(var(--theme_border), var(--theme_border)) content-box,
+    linear-gradient(var(--theme_border), var(--theme_border));
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 }

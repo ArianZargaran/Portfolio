@@ -124,7 +124,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="body pure">
+      <body className="body home">
         <MainMenuNav
           options={[
             {
@@ -139,7 +139,7 @@ export default function App() {
               option: "About",
               caption: "Passion, Experience, and Commitment.",
               href: "/about-me",
-              theme: "french",
+              theme: "about",
             },
             {
               id: "ID3",
