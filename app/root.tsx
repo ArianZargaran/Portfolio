@@ -132,7 +132,7 @@ export default function App() {
               option: "Home",
               caption: "Turning Interfaces into Experiences.",
               href: "/",
-              theme: "pure",
+              theme: "home",
             },
             {
               id: "ID2",
@@ -146,28 +146,28 @@ export default function App() {
               option: "Projects",
               caption: "Thoughts go LIVE: My code in action.",
               href: "/projects",
-              theme: "royal",
+              theme: "projects",
             },
             {
               id: "ID4",
               option: "Skills",
               caption: "Tools and Tech to deliver excellence.",
               href: "/skills",
-              theme: "oxford",
+              theme: "skills",
             },
             {
               id: "ID5",
               option: "Blog",
               caption: "Insights, one line of code at a time.",
               href: "/blog",
-              theme: "mirage",
+              theme: "blog",
             },
             {
               id: "ID6",
               option: "Contact",
               caption: "Let's build something together!",
               href: "/contact",
-              theme: "stratos",
+              theme: "contact",
             },
           ]}
         />

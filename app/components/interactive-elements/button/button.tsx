@@ -16,11 +16,17 @@ const cx = classNames.bind(styles);
 const Button: React.FC<ButtonProps> = ({
   children,
   variant = "primary",
+  className,
   ...rest
 }) => {
   return (
     <motion.button
-      className={cx(styles.button, styles[variant], styles["radial-gradient"])}
+      className={cx(
+        styles.button,
+        styles[variant],
+        styles["radial-gradient"],
+        className,
+      )}
       {...rest}
       initial={{
         "--x": "100%",

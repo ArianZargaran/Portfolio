@@ -1,185 +1,146 @@
 import classNames from "classnames";
-import { motion, MotionProps } from "framer-motion";
-import React, { useCallback, useState } from "react";
+import { motion } from "framer-motion";
+import React, { useState } from "react";
 
-import { useElementSize } from "~/hooks/useElementSize";
+import { useMediaQuery } from "~/hooks/useMediaQuery";
 
-import { Airtable } from "./items/airtable";
-import { Animatea } from "./items/animatea";
-import { Apple } from "./items/apple";
-import { Cabify } from "./items/cabify";
-import { Newsela } from "./items/newsela";
-import { Repleat } from "./items/repleat";
-import { Roll } from "./items/roll";
-import { Walmart } from "./items/walmart";
-
-import "./project-grid.css";
-
-export const hoverConfig = {
-  initial: { scale: 1 },
-  whileHover: { scale: 1.05 },
-  transition: { duration: 0.4 },
-};
-
-const GAP = 24;
+import styles from "./project-grid.module.css";
+import { ProjectsModal } from "./projects-modal";
 
 export type Projects =
-  | "animatea"
-  | "airtable"
-  | "newsela"
-  | "apple"
-  | "roll"
-  | "walmart"
-  | "cabify"
-  | "repleat";
+  | "ANIMATEA"
+  | "AIRTABLE"
+  | "NEWSELA"
+  | "APPLE"
+  | "INITIATIVE ROLL"
+  | "WALMART"
+  | "CABIFY"
+  | "REPLEAT";
 
 interface ProjectGridProps {
   className?: string;
-  onClick?: (project?: Projects) => void;
-  preselected?: Projects;
 }
 
-export const ProjectsGrid: React.FC<ProjectGridProps> = ({
-  onClick = () => undefined,
-  preselected,
-}) => {
-  const [selected, setSelected] = useState(preselected);
-  const { dimensions: animateaDimensions, ref: animateaRef } =
-    useElementSize<HTMLDivElement>();
-  const { dimensions: airtableDimensions, ref: airtableRef } =
-    useElementSize<HTMLDivElement>();
-  const { dimensions: newselaDimensions, ref: newselaRef } =
-    useElementSize<HTMLDivElement>();
-  // const { dimensions: walmartDimensions, ref: walmartRef } =
-  //   useElementSize<HTMLDivElement>();
-  // const { dimensions: appleDimensions, ref: appleRef } =
-  //   useElementSize<HTMLDivElement>();
-  const { dimensions: rollDimensions, ref: rollRef } =
-    useElementSize<HTMLDivElement>();
-  // const { dimensions: repleatDimensions, ref: repleatRef } =
-  //   useElementSize<HTMLDivElement>();
-  // const { dimensions: cabifyDimensions, ref: cabifyRef } =
-  //   useElementSize<HTMLDivElement>();
+interface Data {
+  img: string;
+  alt: string;
+  eyebrow: Projects;
+  h2: string;
+}
 
-  const DATA: {
-    id: Projects;
-    component: React.ReactNode;
-    motion?: MotionProps;
-  }[] = [
-    {
-      id: "animatea",
-      component: <Animatea ref={animateaRef} className="block" />,
-    },
-    {
-      id: "airtable",
-      component: <Airtable ref={airtableRef} />,
-    },
-    {
-      id: "newsela",
-      component: <Newsela ref={newselaRef} className="block" />,
-    },
-    {
-      id: "apple",
-      component: (
-        <Apple
-          // ref={appleRef}
-          className="block"
-        />
-      ),
-      motion: {
-        animate: {
-          top: airtableDimensions.height + GAP,
-          left: rollDimensions.width + GAP * 2,
-          opacity: 1,
-        },
-      },
-    },
-    {
-      id: "roll",
-      component: <Roll ref={rollRef} className="block" />,
-    },
-    {
-      id: "walmart",
-      component: (
-        <Walmart
-          // ref={walmartRef}
-          className="block"
-        />
-      ),
-    },
-    {
-      id: "repleat",
-      component: (
-        <Repleat
-          // ref={repleatRef}
-          className="block"
-        />
-      ),
-    },
-    {
-      id: "cabify",
-      component: (
-        <Cabify
-          // ref={cabifyRef}
-          className="block"
-        />
-      ),
-    },
-  ];
+const FIRST_ROW: Data[] = [
+  {
+    img: "/airtable.webp",
+    alt: "",
+    eyebrow: "AIRTABLE",
+    h2: "This is a title",
+  },
+  {
+    img: "/cabify.webp",
+    alt: "",
+    eyebrow: "CABIFY",
+    h2: "This is a title",
+  },
+];
 
-  const handleClick = useCallback(
-    (selectedId: Projects) => {
-      onClick(selectedId);
-      setSelected(selectedId);
-    },
-    [onClick],
-  );
+const SECOND_ROW: Data[] = [
+  {
+    img: "/animatea.webp",
+    alt: "",
+    eyebrow: "ANIMATEA",
+    h2: "This is a title",
+  },
+
+  {
+    img: "/apple.webp",
+    alt: "",
+    eyebrow: "APPLE",
+    h2: "This is a title",
+  },
+
+  {
+    img: "/roll.webp",
+    alt: "",
+    eyebrow: "INITIATIVE ROLL",
+    h2: "This is a title",
+  },
+];
+
+const THIRD_ROW: Data[] = [
+  {
+    img: "/repleat.webp",
+    alt: "",
+    eyebrow: "REPLEAT",
+    h2: "This is a title",
+  },
+  {
+    img: "/walmart.webp",
+    alt: "",
+    eyebrow: "WALMART",
+    h2: "This is a title",
+  },
+];
+
+const DATA: Data[][] = [FIRST_ROW, SECOND_ROW, THIRD_ROW];
+
+export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
+  const [isHovered, setIsHovered] = useState<number[] | null>(null);
+  const isMediumBreakpoint = useMediaQuery("(max-width: 800px)");
+  const [selectedProject, setSelectedProject] = useState<Projects | null>(null);
+
+  const handleModalClose = () => {
+    setSelectedProject(null);
+  };
 
   return (
-    <motion.ul
-      style={{
-        ["--animatea-height"]: `${animateaDimensions.height}px`,
-        ["--animatea-width"]: `${animateaDimensions.width}px`,
-        // ["--airtable-height"]: `${airtableDimensions.height}px`,
-        // ["--airtable-width"]: `${airtableDimensions.width}px`,
-        ["--newsela-height"]: `${newselaDimensions.height}px`,
-        // ["--newsela-width"]: `${newselaDimensions.width}px`,
-        // ["--walmart-height"]: `${walmartDimensions.height}px`,
-        // ["--walmart-width"]: `${walmartDimensions.width}px`,
-        // ["--apple-height"]: `${appleDimensions.height}px`,
-        // ["--apple-width"]: `${appleDimensions.width}px`,
-        // ["--roll-height"]: `${rollDimensions.height}px`,
-        // ["--roll-width"]: `${rollDimensions.width}px`,
-        // ["--repleat-height"]: `${repleatDimensions.height}px`,
-        // ["--repleat-width"]: `${repleatDimensions.width}px`,
-        // ["--cabify-height"]: `${cabifyDimensions.height}px`,
-        // ["--cabify-width"]: `${cabifyDimensions.width}px`,
-        ["--gap"]: `${GAP}px`,
-      }}
-      className="grid"
-    >
-      {DATA.map(({ id, component, motion: elMotion }) => (
-        <motion.li
-          key={id}
-          onClick={() => handleClick(id)}
-          className={classNames(
-            "grid-item",
-            `${id}-wrapper`,
-            `selected-${selected}`,
-          )}
-          layout
-          initial={{
-            opacity: 0,
-          }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-          animate={{
-            opacity: 1,
-          }}
-          {...elMotion}
-        >
-          {component}
-        </motion.li>
-      ))}
-    </motion.ul>
+    <div className={styles["grid"]}>
+      <ProjectsModal
+        selectedProject={selectedProject ?? undefined}
+        onClose={handleModalClose}
+      />
+
+      {DATA.map((ROW, id) => {
+        return (
+          <ul
+            key={id}
+            className={classNames(styles["row"], styles[`row-${id}`])}
+          >
+            {ROW.map(({ img, eyebrow, h2, alt }, idx) => (
+              <motion.li
+                whileHover={{
+                  scale: 1.03,
+                }}
+                onHoverStart={() => setIsHovered([id, idx])}
+                onHoverEnd={() => setIsHovered(null)}
+                onClick={() => setSelectedProject(eyebrow)}
+                key={idx}
+                className={styles["tile"]}
+              >
+                <div className={styles["tile-img-wrapper"]}>
+                  <motion.img
+                    animate={{
+                      filter:
+                        (isHovered &&
+                          isHovered[0] === id &&
+                          isHovered[1] === idx) ||
+                        isMediumBreakpoint
+                          ? "grayscale(0)"
+                          : "grayscale(1)",
+                    }}
+                    src={img}
+                    className={styles["tile-img"]}
+                    alt={alt}
+                  />
+                </div>
+                <div className={styles["tile-content"]}>
+                  <p className={styles["tile-content-eyebrow"]}>{eyebrow}</p>
+                  <h2 className={styles["tile-content-headline"]}>{h2}</h2>
+                </div>
+              </motion.li>
+            ))}
+          </ul>
+        );
+      })}
+    </div>
   );
 };

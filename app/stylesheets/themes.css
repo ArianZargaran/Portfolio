@@ -26,19 +26,19 @@
   --theme_text-strong: var(--color_purple-shadow-600);
 }
 
-.oxford {
-  --theme_bg: var(--color_oxford-blue);
-  --theme_text: var(--color_french-gray);
-  --theme_border: var(--color_french-gray);
-  --theme_bg-strong: var(--color_white-2);
-  --theme_info-bg: var(--color_white-3);
-  --theme_upsell-bg: var(--color_orange-1);
-  --theme_text-strong: var(--color_blue-1);
-  --theme_text-info: var(--color_neutral-1);
-  --theme_upsell-text: var(--color_orange-1);
+.projects {
+  --theme_bg: var(--color_grey-blue-leaf-700);
+  --theme_text: var(--color_grey-blue-leaf-100);
+  --theme_border: var(--color_grey-blue-leaf-600);
+  --theme_bg-strong: var(--color_grey-blue-leaf-500);
+  --theme_info-bg: var(--color_grey-blue-leaf-600);
+  --theme_upsell-bg: var(--color_grey-blue-leaf-600);
+  --theme_text-strong: var(--color_grey-blue-leaf-100);
+  --theme_text-info: var(--color_grey-blue-leaf-500);
+  --theme_upsell-text: var(--color_grey-blue-leaf-200);
 }
 
-.royal {
+.skills {
   --theme_bg: var(--color_royal-blue-400);
   --theme_text: var(--color_oxford-blue);
   --theme_border: var(--color_oxford-blue);
@@ -51,7 +51,7 @@
   --theme_text-info: var(--color_neutral-1);
 }
 
-.mirage {
+.blog {
   --theme_bg: var(--color_mirage);
   --theme_text: var(--color_french-gray);
   --theme_border: var(--color_french-gray);
@@ -63,34 +63,10 @@
   --theme_upsell-text: var(--color_orange-1);
 }
 
-.stratos {
-  --theme_bg: var(--color_stratos-700);
-  --theme_text: var(--color_royal-blue-400);
-  --theme_border: var(--color_royal-blue-400);
-  --theme_bg-strong: var(--color_white-2);
-  --theme_info-bg: var(--color_white-3);
-  --theme_upsell-bg: var(--color_orange-1);
-  --theme_text-strong: var(--color_blue-1);
-  --theme_text-info: var(--color_neutral-1);
-  --theme_upsell-text: var(--color_orange-1);
-}
-
-.electric {
-  --theme_bg: var(--color_electric-lime-500);
-  --theme_text: var(--color_oxford-blue);
-  --theme_border: var(--color_oxford-blue);
-  --theme_bg-strong: var(--color_white-2);
-  --theme_info-bg: var(--color_white-3);
-  --theme_upsell-bg: var(--color_orange-1);
-  --theme_text-strong: var(--color_blue-1);
-  --theme_text-info: var(--color_neutral-1);
-  --theme_upsell-text: var(--color_orange-1);
-}
-
-.bunting {
-  --theme_bg: var(--color_bunting-700);
-  --theme_text: var(--color_neutral-5);
-  --theme_border: var(--color_neutral-5);
+.contact {
+  --theme_bg: var(--color_mirage);
+  --theme_text: var(--color_french-gray);
+  --theme_border: var(--color_french-gray);
   --theme_bg-strong: var(--color_white-2);
   --theme_info-bg: var(--color_white-3);
   --theme_upsell-bg: var(--color_orange-1);

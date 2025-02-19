@@ -25,8 +25,7 @@
   padding-bottom: var(--spacing-lg);
 }
 
-.media-container::after {
-  content: " ";
+.media-container-background {
   position: absolute;
   inset: 0;
   bottom: 20rem;
@@ -41,6 +40,19 @@
   background-size:
     100% 100%,
     var(--spacing-md) var(--spacing-md);
+}
+
+.media-container-link {
+  position: absolute;
+  z-index: var(--z-index_2xs);
+  top: var(--spacing-sm);
+  left: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  text-decoration: none;
+}
+
+.media-container-heading {
+  height: var(--projects-header-height);
 }
 
 .illustration-window {

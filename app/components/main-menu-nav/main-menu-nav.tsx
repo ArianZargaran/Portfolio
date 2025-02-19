@@ -4,7 +4,7 @@ import classnames from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 
-import { useMediaQuery } from "~/hooks/useMediaQuery";
+// import { useMediaQuery } from "~/hooks/useMediaQuery";
 
 import { MainMenuNavItem, Option } from "./main-menu-nav-item";
 import styles from "./main-menu-nav.module.css";
@@ -18,7 +18,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   const [hoveredItemId, setHoveredItemId] = useState<string | undefined>(
     undefined,
   );
-  const isMediumBreakpoint = useMediaQuery("(max-width: 992px)");
+  // const isMediumBreakpoint = useMediaQuery("(max-width: 992px)");
 
   const location = useLocation();
   const data = location.state;
@@ -70,15 +70,14 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
       <MainMenuToggle
         className={classnames(
           {
-            index:
-              (!isOpen && location.pathname === "/") ||
-              (!isOpen && location.pathname === "/projects"),
+            index: !isOpen && location.pathname === "/",
             about: !isOpen && location.pathname === "/about-me",
-            oxford: !isOpen && location.pathname === "/skills",
-            mirage: !isOpen && location.pathname === "/blog",
-            stratos:
-              (!isOpen && location.pathname === "/contact") ||
-              (!isMediumBreakpoint && isOpen),
+            projects: !isOpen && location.pathname === "/projects",
+            // skills: !isOpen && location.pathname === "/skills",
+            // blog: !isOpen && location.pathname === "/blog",
+            // contact:
+            //   (!isOpen && location.pathname === "/contact") ||
+            //   (!isMediumBreakpoint && isOpen),
           },
           styles[`main-menu_toggle`],
         )}

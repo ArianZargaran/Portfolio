@@ -4,6 +4,7 @@ type MediaQuery =
   | "(max-width: 575px)"
   | "(max-width: 576px)"
   | "(max-width: 768px)"
+  | "(max-width: 800px)"
   | "(max-width: 992px)"
   | "(max-width: 1200px)";
 

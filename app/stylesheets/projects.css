@@ -2,34 +2,35 @@
   --projects-header-height: 88rem;
 }
 
-.projects {
+.projects-page {
   position: absolute;
   inset: 0;
-}
-
-@media screen and (max-width: 600px) {
-  .projects {
-    overflow-y: hidden;
-  }
+  background-color: var(--theme_bg);
 }
 
 .projects-header {
-  background-color: var(--theme_upsell-bg);
+  background-color: var(--theme_bg);
   width: 100%;
   position: absolute;
   height: var(--projects-header-height);
   z-index: var(--z-index_2xs);
-}
-
-.projects-headline {
-  position: absolute;
-  left: var(--spacing-lg);
-  bottom: var(--spacing-sm);
-  font-weight: var(--font-weight-bold);
+  border-bottom: 1px solid var(--theme_border);
 }
 
 .projects-article {
   position: absolute;
   inset: 0;
   top: calc(var(--spacing-3xl) + var(--spacing-sm));
+  overflow-y: auto;
+}
+
+.projects-header-heading {
+  color: var(--theme-text);
+  gap: var(--spacing-xs);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: absolute;
+  left: var(--spacing-lg);
+  bottom: var(--spacing-sm);
 }

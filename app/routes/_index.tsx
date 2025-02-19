@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
 import { Doodles } from "~/components/backgrounds/doodles/doodles";
 import { Download } from "~/components/icons/download";
-import { Isotype } from "~/components/icons/isotype";
+import { Isotype } from "~/components/icons/isotype/isotype";
 import Button from "~/components/interactive-elements/button/button";
 import { SocialNav } from "~/components/social-nav/social-nav";
 import commonThemePage from "~/stylesheets/common-page-themes.css";

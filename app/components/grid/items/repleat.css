@@ -1,8 +1,0 @@
-.repleat-wrapper {
-  bottom: 0;
-  left: var(--gap);
-  width: calc(60% - var(--gap));
-}
-
-.repleat {
-}

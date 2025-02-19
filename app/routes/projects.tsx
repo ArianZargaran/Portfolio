@@ -1,8 +1,9 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
 import { LinksFunction } from "@remix-run/node";
-import { useState } from "react";
+import { Link } from "@remix-run/react";
 
-import { Projects, ProjectsGrid } from "~/components/grid/project-grid";
+import { ProjectsGrid } from "~/components/grid/project-grid";
+import { Isotype } from "~/components/icons/isotype/isotype";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
 import projects from "~/stylesheets/projects.css";
 
@@ -13,18 +14,16 @@ export const links: LinksFunction = () => [
 ];
 
 const ProjectsPage = () => {
-  const [selectedProject, setSelectedProject] = useState<Projects>();
-
   return (
-    <section className="page royal projects">
+    <section className="page projects projects-page">
       <header className="projects-header">
-        <h1 className="projects-headline">Projects</h1>
+        <Link className="projects-header-heading" to="/">
+          <Isotype width={50} height="auto" />
+          <h1>Projects</h1>
+        </Link>
       </header>
       <article className="projects-article">
-        <ProjectsGrid
-          preselected={selectedProject}
-          onClick={() => setSelectedProject(selectedProject)}
-        />
+        <ProjectsGrid />
       </article>
     </section>
   );
