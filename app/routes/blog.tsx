@@ -9,7 +9,7 @@ export const links: LinksFunction = () => [
 ];
 
 const BlogPage = () => {
-  return <section className="page mirage"></section>;
+  return <section className="page blog"></section>;
 };
 
 export default BlogPage;

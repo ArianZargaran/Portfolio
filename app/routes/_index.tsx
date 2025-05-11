@@ -1,7 +1,7 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
 import { LinksFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
 import { Doodles } from "~/components/backgrounds/doodles/doodles";
@@ -89,6 +89,22 @@ const IndexPage = () => {
           </Link>
         </motion.div>
       </div>
+      <motion.p
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 8,
+          zIndex: 1000,
+          fontStyle: "oblique",
+          color: "var(--theme_text-info)",
+        }}
+        initial={{
+          opacity: 0,
+        }}
+        animate={{ opacity: 1 }}
+      >
+        * Authors: 1.85% AI; 98.15% Ari
+      </motion.p>
     </section>
   );
 };

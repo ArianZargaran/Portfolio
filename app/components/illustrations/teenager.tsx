@@ -1,4 +1,4 @@
-import { motion, MotionProps } from "framer-motion";
+import { motion, MotionProps } from "motion/react";
 import { forwardRef, SVGProps } from "react";
 
 type SVGPMotionedProps = SVGProps<SVGSVGElement> & MotionProps;

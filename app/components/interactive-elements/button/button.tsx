@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { motion, MotionProps } from "framer-motion";
+import { motion, MotionProps } from "motion/react";
 import React, { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
 
 import styles from "./button.module.css";

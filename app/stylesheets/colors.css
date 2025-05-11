@@ -1,5 +1,16 @@
 /* Color Ramps */
-/* Anti Flash White */
+/* Blue Popsicle - HOME */
+:root {
+  --color_blue-popscle-200: #edf2fc;
+  --color_blue-popscle-300: #a7bdf1;
+  --color_blue-popscle-400: #7296e9;
+  --color_blue-popscle-500: #3d6ee1;
+  --color_blue-popscle-600: #1c48b0;
+  --color_blue-popscle-700: #0f2862;
+  --color_blue-popscle-800: #1f2544; /**/
+}
+
+/* Anti Flash White - SKILLS */
 :root {
   --color_anti-flash-100: #fff;
   --color_anti-flash-200: #edf2f4; /**/
@@ -10,7 +21,7 @@
   --color_anti-flash-700: #101719;
 }
 
-/* Gray Blue Leaf */
+/* Gray Blue Leaf - PROJECTS */
 :root {
   --color_grey-blue-leaf-100: #e7eaef;
   --color_grey-blue-leaf-200: #c2cad6;
@@ -21,7 +32,7 @@
   --color_grey-blue-leaf-700: #101418;
 }
 
-/* Purple Shadow */
+/* Purple Shadow - ABOUT */
 :root {
   --color_purple-shadow-100: #dceaf9;
   --color_purple-shadow-200: #cbe0f6;
@@ -32,24 +43,23 @@
   --color_purple-shadow-700: #091f36; /**/
 }
 
-/* Redline */
+/* Redline - CONTACT */
 :root {
   --color_redline-200: #f5e1e1;
   --color_redline-300: #e5b3b5;
   --color_redline-400: #d58588;
   --color_redline-500: #c6585b;
-  --color_redline-600: rgb(158, 54, 58); /**/
+  --color_redline-600: #9e363a; /**/
   --color_redline-700: #7a2a2c;
   --color_redline-800: #3d1516;
 }
 
-/* Blue Popsicle */
 :root {
-  --color_blue-popscle-200: #edf2fc;
-  --color_blue-popscle-300: #a7bdf1;
-  --color_blue-popscle-400: #7296e9;
-  --color_blue-popscle-500: #3d6ee1;
-  --color_blue-popscle-600: #1c48b0;
-  --color_blue-popscle-700: #0f2862;
-  --color_blue-popscle-800: #1f2544; /**/
+  --color_pink-200: #f7dee6;
+  --color_pink-300: #ebadc1;
+  --color_pink-400: #e38ca8;
+  --color_pink-500: #d65780;
+  --color_pink-600: #c5305f;
+  --color_pink-700: #83203f;
+  --color_pink-800: #421020;
 }

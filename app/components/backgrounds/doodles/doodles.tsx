@@ -1,4 +1,4 @@
-import { motion, MotionProps } from "framer-motion";
+import { motion, MotionProps } from "motion/react";
 import React, { useRef } from "react";
 
 import styles from "./doodles.module.css";

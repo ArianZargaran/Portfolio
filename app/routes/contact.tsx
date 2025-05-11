@@ -1,7 +1,6 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
 import { LinksFunction } from "@remix-run/node";
 
-import { Background } from "~/components/backgrounds/contact";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
 
 export const links: LinksFunction = () => [
@@ -10,11 +9,7 @@ export const links: LinksFunction = () => [
 ];
 
 const ContactPage = () => {
-  return (
-    <section className="page stratos">
-      <Background />
-    </section>
-  );
+  return <section className="page contact"></section>;
 };
 
 export default ContactPage;

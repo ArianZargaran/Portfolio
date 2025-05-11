@@ -1,27 +1,33 @@
 :root {
   --projects-header-height: 88rem;
+  --gap: var(--spacing-md);
+  --projects-article-height: calc(
+    100vh - var(--projects-header-height) - (var(--gap) * 2)
+  );
 }
 
 .projects-page {
-  position: absolute;
-  inset: 0;
-  background-color: var(--theme_bg);
+  position: static;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .projects-header {
-  background-color: var(--theme_bg);
-  width: 100%;
-  position: absolute;
   height: var(--projects-header-height);
-  z-index: var(--z-index_2xs);
   border-bottom: 1px solid var(--theme_border);
 }
 
 .projects-article {
-  position: absolute;
-  inset: 0;
-  top: calc(var(--spacing-3xl) + var(--spacing-sm));
-  overflow-y: auto;
+  overflow-y: hidden;
+  flex: 1;
+  width: 100%;
+  max-width: 1024px;
+  min-height: calc(var(--projects-article-height));
+  margin: 0 auto;
+  position: relative;
+  padding-bottom: var(--gap);
+  padding-top: var(--gap);
 }
 
 .projects-header-heading {
@@ -31,6 +37,6 @@
   flex-direction: row;
   align-items: center;
   position: absolute;
-  left: var(--spacing-lg);
-  bottom: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  margin-left: var(--spacing-lg);
 }

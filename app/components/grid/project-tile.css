@@ -1,70 +1,26 @@
-.grid {
-  --gap: var(--spacing-md);
-
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-  max-width: 1024px;
-  gap: var(--spacing-md);
-  padding: var(--spacing-sm);
-  background: var(--theme_bg);
-  overflow: hidden;
-}
-
-.row {
-  display: flex;
-  gap: var(--spacing-md);
-}
-
-.row-0 .tile-img,
-.row-2 .tile-img {
-  aspect-ratio: 23 / 9;
-}
-
-.row-1 .tile-img {
-  aspect-ratio: 6 / 2;
-}
-
-@media screen and (max-width: 800px) {
-  .grid {
-    display: flex;
-    overflow: visible;
-    min-height: min-content;
-    flex-direction: column;
-  }
-
-  .row {
-    display: flex;
-    flex-direction: column;
-    flex: auto;
-  }
-}
-
-/* TILE */
 .tile {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
   background-color: var(--border_bg);
   border: 1px solid var(--theme_upsell-bg);
   overflow: hidden;
   cursor: pointer;
   border-radius: var(--border_radius-sm);
+  position: relative;
 }
 
 .tile-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 0px -30px;
+  filter: grayscale(1);
 }
 
 .tile-content {
   width: 100%;
   background-color: var(--theme_upsell-bg);
   padding: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2xs);
+  position: absolute;
+  bottom: 0;
 }
 
 .tile-content-eyebrow {
