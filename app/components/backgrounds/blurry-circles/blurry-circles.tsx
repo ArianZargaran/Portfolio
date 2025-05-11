@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import "./blurry-circles.css";
@@ -30,7 +30,6 @@ export const BlurryBackground = ({ className }: { className?: string }) => {
           }}
           transition={{
             opacity: {
-              delay: 1,
               duration: 6,
               ease: "easeInOut",
             },

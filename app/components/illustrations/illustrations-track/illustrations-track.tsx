@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef } from "react";
 
 import { ChildIllustration } from "~/components/illustrations/child";

@@ -1,0 +1,39 @@
+.grid {
+  --gap: var(--spacing-md);
+
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1024px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  position: absolute;
+  inset: 0;
+}
+
+.row {
+  height: calc((var(--projects-article-height) + var(--gap)) / 3);
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.row:nth-child(2) {
+  height: calc(
+    (var(--projects-article-height) - (var(--gap) * 6) - var(--spacing-md)) / 3
+  );
+}
+
+@media screen and (max-width: 800px) {
+  .grid {
+    display: flex;
+    overflow: visible;
+    min-height: min-content;
+    flex-direction: column;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+  }
+}

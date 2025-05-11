@@ -18,7 +18,7 @@ const ProjectsPage = () => {
     <section className="page projects projects-page">
       <header className="projects-header">
         <Link className="projects-header-heading" to="/">
-          <Isotype width={50} height="auto" />
+          <Isotype width={48} height="auto" />
           <h1>Projects</h1>
         </Link>
       </header>

@@ -1,12 +1,10 @@
-import styles from "./isotype.module.css";
+import type { IconProps } from "../index";
 
-import { IconProps } from ".";
+import styles from "./isotype.module.css";
 
 export const Isotype: React.FC<IconProps> = (props) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      xmlSpace="preserve"
       width={615.972}
       height={636.295}
       style={{

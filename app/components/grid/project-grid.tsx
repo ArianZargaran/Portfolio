@@ -1,13 +1,13 @@
 import classNames from "classnames";
-import { motion } from "framer-motion";
 import React, { useState } from "react";
 
 import { useMediaQuery } from "~/hooks/useMediaQuery";
 
-import styles from "./project-grid.module.css";
+import "./project-grid.css";
+import { ProjectTile } from "./project-tile";
 import { ProjectsModal } from "./projects-modal";
 
-export type Projects =
+export type Project =
   | "ANIMATEA"
   | "AIRTABLE"
   | "NEWSELA"
@@ -24,7 +24,7 @@ interface ProjectGridProps {
 interface Data {
   img: string;
   alt: string;
-  eyebrow: Projects;
+  eyebrow: Project;
   h2: string;
 }
 
@@ -86,14 +86,14 @@ const DATA: Data[][] = [FIRST_ROW, SECOND_ROW, THIRD_ROW];
 export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
   const [isHovered, setIsHovered] = useState<number[] | null>(null);
   const isMediumBreakpoint = useMediaQuery("(max-width: 800px)");
-  const [selectedProject, setSelectedProject] = useState<Projects | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const handleModalClose = () => {
     setSelectedProject(null);
   };
 
   return (
-    <div className={styles["grid"]}>
+    <div className="grid">
       <ProjectsModal
         selectedProject={selectedProject ?? undefined}
         onClose={handleModalClose}
@@ -101,42 +101,22 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
 
       {DATA.map((ROW, id) => {
         return (
-          <ul
-            key={id}
-            className={classNames(styles["row"], styles[`row-${id}`])}
-          >
+          <ul key={id} className={classNames("row", `row-${id}`)}>
             {ROW.map(({ img, eyebrow, h2, alt }, idx) => (
-              <motion.li
-                whileHover={{
-                  scale: 1.03,
-                }}
+              <ProjectTile
+                key={eyebrow}
+                img={img}
+                eyebrow={eyebrow}
+                h2={h2}
+                alt={alt}
                 onHoverStart={() => setIsHovered([id, idx])}
                 onHoverEnd={() => setIsHovered(null)}
                 onClick={() => setSelectedProject(eyebrow)}
-                key={idx}
-                className={styles["tile"]}
-              >
-                <div className={styles["tile-img-wrapper"]}>
-                  <motion.img
-                    animate={{
-                      filter:
-                        (isHovered &&
-                          isHovered[0] === id &&
-                          isHovered[1] === idx) ||
-                        isMediumBreakpoint
-                          ? "grayscale(0)"
-                          : "grayscale(1)",
-                    }}
-                    src={img}
-                    className={styles["tile-img"]}
-                    alt={alt}
-                  />
-                </div>
-                <div className={styles["tile-content"]}>
-                  <p className={styles["tile-content-eyebrow"]}>{eyebrow}</p>
-                  <h2 className={styles["tile-content-headline"]}>{h2}</h2>
-                </div>
-              </motion.li>
+                isHovered={
+                  (isHovered && isHovered[0] === id && isHovered[1] === idx) ||
+                  isMediumBreakpoint
+                }
+              />
             ))}
           </ul>
         );
