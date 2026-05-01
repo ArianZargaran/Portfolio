@@ -6,14 +6,13 @@
     "build": "npm-run-all --sequential build:*",
     "build:remix": "remix build",
     "build:server": "esbuild --platform=node --format=cjs ./server.ts --outdir=build --bundle --external:fsevents",
+    "predev": "rm -rf build public/build",
     "dev": "npm-run-all --parallel dev:*",
     "dev:server": "cross-env NODE_ENV=development npm run build:server -- --watch",
     "dev:remix": "remix dev --manual -c \"node --require ./mocks --watch-path ./build/server.js --watch ./build/server.js\"",
-    "docker": "docker compose up -d",
     "format": "prettier --write .",
     "format:repo": "npm run format && npm run lint -- --fix",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
-    "setup": "prisma generate && prisma migrate deploy && prisma db seed",
     "start": "cross-env NODE_ENV=production node ./build/server.js",
     "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require dotenv/config ./build/server.js",
     "test": "vitest",
@@ -28,17 +27,15 @@
   "eslintIgnore": [
     "/node_modules",
     "/build",
-    "/public/build",
-    "/postgres-data"
+    "/public/build"
   ],
   "dependencies": {
     "@isaacs/express-prometheus-middleware": "^1.2.1",
-    "@prisma/client": "^5.20.0",
-    "@remix-run/css-bundle": "*",
-    "@remix-run/express": "*",
-    "@remix-run/node": "*",
-    "@remix-run/react": "*",
-    "animatea": "../../animatea-v0.0.1.tgz",
+    "@remix-run/css-bundle": "^2.17.4",
+    "@remix-run/express": "^2.17.4",
+    "@remix-run/node": "^2.17.4",
+    "@remix-run/react": "^2.17.4",
+    "animatea": "^0.0.1",
     "chokidar": "^3.6.0",
     "classnames": "^2.5.1",
     "compression": "^1.7.4",
@@ -57,7 +54,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^3.2.3",
     "@faker-js/faker": "^9.0.3",
-    "@remix-run/dev": "*",
+    "@remix-run/dev": "^2.17.4",
     "@storybook/addon-essentials": "^8.4.7",
     "@storybook/addon-interactions": "^8.4.7",
     "@storybook/addon-onboarding": "^8.4.7",
@@ -103,10 +100,8 @@
     "npm-run-all2": "^6.2.3",
     "postcss": "^8.4.47",
     "prettier": "3.3.3",
-    "prisma": "^5.20.0",
     "start-server-and-test": "^2.0.8",
     "storybook": "^8.4.7",
-    "tsx": "^4.19.1",
     "typescript": "^5.6.2",
     "vite": "^5.4.8",
     "vite-tsconfig-paths": "^4.3.2",
@@ -114,8 +109,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }
