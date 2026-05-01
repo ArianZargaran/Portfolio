@@ -11,45 +11,40 @@ export interface UseModalAttrs {
   appendedCta?: React.ReactNode;
 }
 
-const useModal = ({
-  onClose = () => undefined,
-  onOpen = () => undefined,
+const Modal: React.FC<PropsWithChildren<UseModalAttrs>> = ({
+  onClose,
+  onOpen,
   isOpen,
   appendedCta,
-}: UseModalAttrs) => {
+  children,
+}) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (isOpen && dialogRef.current) {
-      dialogRef.current.showModal();
-      onOpen();
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen && !dialog.open) {
+      dialog.showModal();
+      onOpen?.();
+    } else if (!isOpen && dialog.open) {
+      dialog.close();
     }
+  }, [isOpen, onOpen]);
 
-    if (!isOpen && dialogRef.current) {
-      dialogRef.current.close();
-      onClose();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onOpen]);
-
-  const Modal: React.FC<PropsWithChildren> = ({ children }) => {
-    return (
-      <dialog ref={dialogRef} onClose={onClose}>
-        {children}
-        <div className="modal-ctas">
-          <Button
-            className="close-button"
-            onClick={() => dialogRef.current?.close()}
-          >
-            Close
-          </Button>
-          {appendedCta}
-        </div>
-      </dialog>
-    );
-  };
-
-  return Modal;
+  return (
+    <dialog ref={dialogRef} onClose={onClose}>
+      {children}
+      <div className="modal-ctas">
+        <Button
+          className="close-button"
+          onClick={() => dialogRef.current?.close()}
+        >
+          Close
+        </Button>
+        {appendedCta}
+      </div>
+    </dialog>
+  );
 };
 
-export default useModal;
+export default Modal;

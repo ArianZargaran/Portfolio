@@ -2,16 +2,16 @@ import React, { lazy, LazyExoticComponent, Suspense } from "react";
 
 import { UseModalAttrs } from "~/hooks/useModal";
 
-import { Projects } from "../project-grid";
+import { Project } from "../project-grid";
 
 interface ProjectsModalProps {
-  selectedProject?: Projects;
+  selectedProject?: Project;
   onClose?: () => void;
   isOpen?: boolean;
 }
 
 const modalContentComponents: Record<
-  Projects,
+  Project,
   LazyExoticComponent<React.FC<UseModalAttrs>>
 > = {
   AIRTABLE: lazy(() => import("./airtable")),

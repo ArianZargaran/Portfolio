@@ -37,7 +37,7 @@ export const MainMenuNavItem: React.FC<Option> = ({
         animate={{
           x: isHovered || isMediumBreakpoint ? "-24rem" : "-120%",
           opacity: isHovered || isMediumBreakpoint ? 1 : 0,
-          transition: { type: "linear", duration: 0.2 },
+          transition: { ease: "linear", duration: 0.2 },
         }}
       />
       <h3 className={styles["nav-item_caption"]}>{caption}</h3>

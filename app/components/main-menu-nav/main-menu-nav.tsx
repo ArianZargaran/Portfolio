@@ -1,7 +1,7 @@
 import { useLocation } from "@remix-run/react";
 import { HamburgerIcon as MainMenuToggle } from "animatea";
 import classnames from "classnames";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, Variants } from "motion/react";
 import React, { useEffect, useState } from "react";
 
 import { useMediaQuery } from "~/hooks/useMediaQuery";
@@ -29,7 +29,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
     }
   }, [data]);
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: {
       opacity: 0,
       y: -100,
@@ -47,7 +47,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: {
       opacity: 0,
       y: -100,
@@ -83,8 +83,8 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
         )}
         isOpen={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        height={32}
-        width={32}
+        height={48}
+        width={48}
       />
       <AnimatePresence mode="wait" initial={false}>
         {isOpen ? (

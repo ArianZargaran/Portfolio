@@ -24,7 +24,7 @@ const AboutMePage = () => {
       <div ref={ref} className="media-container">
         <Link className="media-container-link" to="/">
           <h1 className="media-container-heading">
-            <Isotype width={50} height="auto" />
+            <Isotype width={48} height="auto" />
           </h1>
         </Link>
         <motion.span

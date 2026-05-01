@@ -1,16 +1,9 @@
 import React from "react";
 
-import useModal, { UseModalAttrs } from "~/hooks/useModal";
+import Modal, { UseModalAttrs } from "~/hooks/useModal";
 
-const RollModal: React.FC<UseModalAttrs> = ({
-  onClose = () => undefined,
-  onOpen = () => undefined,
-  isOpen = false,
-  appendedCta = null,
-}) => {
-  const Modal = useModal({ onClose, appendedCta, isOpen, onOpen });
-
-  return <Modal>Roll</Modal>;
-};
+const RollModal: React.FC<UseModalAttrs> = (props) => (
+  <Modal {...props}>Roll</Modal>
+);
 
 export default RollModal;
