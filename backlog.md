@@ -37,8 +37,11 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Decide: keep or drop Prisma + Postgres** _(dropped)_
   Removed: `prisma/`, `app/db.server.ts`, `app/session.server.ts` (unused), `docker-compose.yml`, `postgres-data/`, `@prisma/client` + `prisma` + `tsx` deps, the `setup`/`docker` npm scripts, and the `prisma` config block. `app/routes/healthcheck.tsx` rewritten as a no-DB self-ping. The Fly multi-region replay block (`server.ts:62-83`) and `fly.toml`'s `release_command = "npx prisma migrate deploy"` are also gone, and the `Dockerfile` no longer installs openssl or runs `prisma generate`. All 7 routes return HTTP 200 on `npm start`.
 
-- [ ] **Rename Fly app and trim remaining unused infra**
-  `fly.toml:1` still names the app `"blues-stack-template"`. Prometheus middleware on port 8081 (`server.ts`, `prom-client` + `@isaacs/express-prometheus-middleware` deps) still exposes ops surface for no benefit on a portfolio. Multi-region replay logic ✅ already removed.
+- [x] **Remove Fly / Fly.io infrastructure** _(deploying to Vercel)_
+  Deleted: `fly.toml`, `Dockerfile`, `.dockerignore`, `.github/workflows/deploy.yml`, `remix.init/` (Blues Stack template scaffold). Scrubbed: `x-fly-region` header in `server.ts`, fly.io comment in `healthcheck.tsx`, all Fly references in `README.md` (Deployment + Multi-region sections gone). Prometheus middleware (`prom-client` + `@isaacs/express-prometheus-middleware`) still in `server.ts` — separate cleanup item.
+
+- [ ] **Drop Prometheus middleware**
+  `server.ts` mounts `@isaacs/express-prometheus-middleware` and exposes `/metrics` on port 3010 (8081 in prod). Useless on Vercel serverless and ops surface for no benefit on a portfolio. Remove the middleware, the `prom-client` + `@isaacs/express-prometheus-middleware` deps, and the metricsApp listener.
 
 - [ ] **Add accessible alt text on all project tiles**
   `app/components/grid/project-grid.tsx:31-82` — every `Data.alt = ""`. Images carry information; populate alt or set `aria-hidden` for decorative.
