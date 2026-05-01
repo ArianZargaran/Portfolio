@@ -81,6 +81,7 @@ const IndexPage = () => {
           <Link
             to="/arian-zargaran-resume.pdf"
             target="_blank"
+            rel="noopener noreferrer"
             download="/arian-zargaran-resume.pdf"
           >
             <Button variant="secondary">

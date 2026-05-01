@@ -16,16 +16,16 @@ import elevationStylesheet from "~/stylesheets/elevation.css";
 import fontsStylesheet from "~/stylesheets/fonts.css";
 import resetStylesheet from "~/stylesheets/reset.css";
 import rootStylesheet from "~/stylesheets/root.css";
-import themesStylesheet from "~/stylesheets/spacing.css";
-import spacingStylesheet from "~/stylesheets/themes.css";
+import spacingStylesheet from "~/stylesheets/spacing.css";
+import themesStylesheet from "~/stylesheets/themes.css";
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: resetStylesheet },
   { rel: "stylesheet", href: fontsStylesheet },
   { rel: "stylesheet", href: colorsStylesheet },
-  { rel: "stylesheet", href: themesStylesheet },
   { rel: "stylesheet", href: spacingStylesheet },
+  { rel: "stylesheet", href: themesStylesheet },
   { rel: "stylesheet", href: elevationStylesheet },
   { rel: "stylesheet", href: rootStylesheet },
   { rel: "stylesheet", href: borderStylesheet },
@@ -47,6 +47,20 @@ export default function App() {
           name="keywords"
           content="Front-End Developer, React, TypeScript, Framer Motion, Web Development Portfolio, UI/UX Design, Arian Zargaran"
         />
+        <meta property="og:title" content="Arian Zargaran | Front-End Engineer" />
+        <meta
+          property="og:description"
+          content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="/apple-icon-180x180.png" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Arian Zargaran | Front-End Engineer" />
+        <meta
+          name="twitter:description"
+          content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
+        />
+        <meta name="twitter:image" content="/apple-icon-180x180.png" />
         <link
           rel="apple-touch-icon"
           sizes="57x57"
@@ -154,20 +168,6 @@ export default function App() {
               caption: "Tools and Tech to deliver excellence.",
               href: "/skills",
               theme: "skills",
-            },
-            {
-              id: "ID5",
-              option: "Blog",
-              caption: "Insights, one line of code at a time.",
-              href: "/blog",
-              theme: "blog",
-            },
-            {
-              id: "ID6",
-              option: "Contact",
-              caption: "Let's build something together!",
-              href: "/contact",
-              theme: "contact",
             },
           ]}
         />
