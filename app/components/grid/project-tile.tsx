@@ -27,31 +27,37 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
   alt,
 }) => (
   <motion.li
-    whileHover={{
-      scale: 1.03,
-    }}
     onHoverStart={onHoverStart}
     onHoverEnd={onHoverEnd}
-    onClick={onClick}
     className="tile"
   >
-    <div className="tile-img-wrapper">
-      <motion.img
-        animate={{
-          filter: isHovered ? "grayscale(0)" : "grayscale(1)",
-        }}
-        transition={{
-          duration: 0.3,
-          ease: "easeInOut",
-        }}
-        src={img}
-        className="tile-img"
-        alt={alt}
-      />
-    </div>
-    <div className="tile-content">
-      <p className="tile-content-eyebrow">{eyebrow}</p>
-      <h2 className="tile-content-headline">{h2}</h2>
-    </div>
+    <motion.button
+      type="button"
+      onClick={onClick}
+      className="tile-button"
+      aria-label={`Open ${eyebrow} project details`}
+      whileHover={{
+        scale: 1.03,
+      }}
+    >
+      <div className="tile-img-wrapper">
+        <motion.img
+          animate={{
+            filter: isHovered ? "grayscale(0)" : "grayscale(1)",
+          }}
+          transition={{
+            duration: 0.3,
+            ease: "easeInOut",
+          }}
+          src={img}
+          className="tile-img"
+          alt={alt}
+        />
+      </div>
+      <div className="tile-content">
+        <p className="tile-content-eyebrow">{eyebrow}</p>
+        <h2 className="tile-content-headline">{h2}</h2>
+      </div>
+    </motion.button>
   </motion.li>
 );

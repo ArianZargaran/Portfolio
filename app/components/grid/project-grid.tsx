@@ -31,13 +31,13 @@ interface Data {
 const FIRST_ROW: Data[] = [
   {
     img: "/airtable.webp",
-    alt: "",
+    alt: "Airtable project preview",
     eyebrow: "AIRTABLE",
     h2: "This is a title",
   },
   {
     img: "/cabify.webp",
-    alt: "",
+    alt: "Cabify project preview",
     eyebrow: "CABIFY",
     h2: "This is a title",
   },
@@ -46,21 +46,21 @@ const FIRST_ROW: Data[] = [
 const SECOND_ROW: Data[] = [
   {
     img: "/animatea.webp",
-    alt: "",
+    alt: "Animatea project preview",
     eyebrow: "ANIMATEA",
     h2: "This is a title",
   },
 
   {
     img: "/apple.webp",
-    alt: "",
+    alt: "Apple project preview",
     eyebrow: "APPLE",
     h2: "This is a title",
   },
 
   {
     img: "/roll.webp",
-    alt: "",
+    alt: "Initiative Roll project preview",
     eyebrow: "INITIATIVE ROLL",
     h2: "This is a title",
   },
@@ -69,13 +69,13 @@ const SECOND_ROW: Data[] = [
 const THIRD_ROW: Data[] = [
   {
     img: "/repleat.webp",
-    alt: "",
+    alt: "Repleat project preview",
     eyebrow: "REPLEAT",
     h2: "This is a title",
   },
   {
     img: "/walmart.webp",
-    alt: "",
+    alt: "Walmart project preview",
     eyebrow: "WALMART",
     h2: "This is a title",
   },
