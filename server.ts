@@ -2,13 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
 
-import prom from "@isaacs/express-prometheus-middleware";
 import { createRequestHandler } from "@remix-run/express";
 import type { ServerBuild } from "@remix-run/node";
 import { broadcastDevReady, installGlobals } from "@remix-run/node";
 import compression from "compression";
 import type { RequestHandler } from "express";
 import express from "express";
+import helmet from "helmet";
 import morgan from "morgan";
 import sourceMapSupport from "source-map-support";
 
@@ -30,19 +30,14 @@ async function run() {
         });
 
   const app = express();
-  const metricsApp = express();
+
   app.use(
-    prom({
-      metricsPath: "/metrics",
-      collectDefaultMetrics: true,
-      metricsApp,
+    helmet({
+      contentSecurityPolicy: false, // TODO: enable once tested with motion/react
     }),
   );
 
   app.use((req, res, next) => {
-    // helpful headers:
-    res.set("Strict-Transport-Security", `max-age=${60 * 60 * 24 * 365 * 100}`);
-
     // /clean-urls/ -> /clean-urls
     if (req.path.endsWith("/") && req.path.length > 1) {
       const query = req.url.slice(req.path.length);
@@ -79,12 +74,6 @@ async function run() {
     if (process.env.NODE_ENV === "development") {
       broadcastDevReady(initialBuild);
     }
-  });
-
-  const metricsPort = process.env.METRICS_PORT || 3010;
-
-  metricsApp.listen(metricsPort, () => {
-    console.log(`✅ metrics ready: http://localhost:${metricsPort}/metrics`);
   });
 
   async function reimportServer(): Promise<ServerBuild> {

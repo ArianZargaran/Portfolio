@@ -40,14 +40,14 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Remove Fly / Fly.io infrastructure** _(deploying to Vercel)_
   Deleted: `fly.toml`, `Dockerfile`, `.dockerignore`, `.github/workflows/deploy.yml`, `remix.init/` (Blues Stack template scaffold). Scrubbed: `x-fly-region` header in `server.ts`, fly.io comment in `healthcheck.tsx`, all Fly references in `README.md` (Deployment + Multi-region sections gone). Prometheus middleware (`prom-client` + `@isaacs/express-prometheus-middleware`) still in `server.ts` — separate cleanup item.
 
-- [ ] **Drop Prometheus middleware**
-  `server.ts` mounts `@isaacs/express-prometheus-middleware` and exposes `/metrics` on port 3010 (8081 in prod). Useless on Vercel serverless and ops surface for no benefit on a portfolio. Remove the middleware, the `prom-client` + `@isaacs/express-prometheus-middleware` deps, and the metricsApp listener.
+- [x] **Drop Prometheus middleware**
+  `server.ts` no longer mounts `@isaacs/express-prometheus-middleware`; deps removed (`prom-client`, `@isaacs/express-prometheus-middleware`); the metricsApp listener is gone. Build is now ~100KB smaller; `/metrics` no longer reachable.
 
-- [ ] **Add accessible alt text on all project tiles**
-  `app/components/grid/project-grid.tsx:31-82` — every `Data.alt = ""`. Images carry information; populate alt or set `aria-hidden` for decorative.
+- [x] **Add accessible alt text on all project tiles**
+  All 7 project entries in `app/components/grid/project-grid.tsx` now have descriptive alt text (e.g. `"Airtable project preview"`).
 
-- [ ] **Make project tiles keyboard-accessible**
-  `app/components/grid/project-tile.tsx:29` — `<motion.li onClick>` has no `role="button"`, no `tabIndex`, no `onKeyDown`. Modals can only be opened by mouse.
+- [x] **Make project tiles keyboard-accessible**
+  `ProjectTile` now wraps its clickable surface in a real `<motion.button type="button" aria-label="Open <PROJECT> project details">`. Hover state still on `motion.li`; CSS reset on `.tile-button` strips default button styling. Modals open via Tab + Enter/Space.
 
 ---
 
@@ -74,8 +74,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [ ] **Update README for the portfolio**
   Currently still the Remix Blues Stack template. Document the portfolio purpose and fresh-clone setup. _(Note: the env-var and local-tarball items in this task are now obsolete — DB/session env vars no longer exist after the Prisma drop, and animatea is on npm.)_
 
-- [ ] **Add security headers via `helmet`**
-  `server.ts:46` only sets HSTS. Add `Content-Security-Policy`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`.
+- [x] **Add security headers via `helmet`**
+  `server.ts` now mounts `helmet({ contentSecurityPolicy: false })`. Headers set: HSTS (1y, includeSubDomains), X-Frame-Options SAMEORIGIN, X-Content-Type-Options nosniff, Referrer-Policy no-referrer, Cross-Origin-Opener/Resource-Policy same-origin, Origin-Agent-Cluster, X-DNS-Prefetch-Control off, X-Download-Options noopen, X-Permitted-Cross-Domain-Policies none, X-XSS-Protection 0. CSP intentionally skipped pending a tested config that doesn't break motion/react.
 
 - [x] **Add Open Graph / Twitter meta tags**
   `app/root.tsx:50-63` — `og:title`, `og:description`, `og:type`, `og:image`, `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` added. Reuses the existing description content; image points at `/apple-icon-180x180.png` (consider a dedicated 1200×630 OG image later).
