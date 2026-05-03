@@ -5,24 +5,22 @@ interface Dimensions {
   height: number;
 }
 
+const getHtmlDimensions = (element: HTMLElement): Dimensions => ({
+  width: element.clientWidth,
+  height: element.clientHeight,
+});
+
+const getSvgDimensions = (element: SVGSVGElement): Dimensions => {
+  const box = element.getBBox();
+  return { width: box.width, height: box.height };
+};
+
 export const useElementSize = <T extends HTMLDivElement | SVGSVGElement>() => {
   const ref = useRef<T | null>(null);
   const [dimensions, setDimensions] = useState<Dimensions>({
     width: 0,
     height: 0,
   });
-
-  // Function to handle HTML element dimensions
-  const getHtmlDimensions = (element: HTMLElement): Dimensions => ({
-    width: element.clientWidth,
-    height: element.clientHeight,
-  });
-
-  // Function to handle SVG element dimensions
-  const getSvgDimensions = (element: SVGSVGElement): Dimensions => {
-    const box = element.getBBox(); // Returns the bounding box of the SVG element
-    return { width: box.width, height: box.height };
-  };
 
   useEffect(() => {
     const element = ref.current;
@@ -36,11 +34,8 @@ export const useElementSize = <T extends HTMLDivElement | SVGSVGElement>() => {
       }
     };
 
-    // Observe size changes
-    const observer = new ResizeObserver(() => updateSize());
+    const observer = new ResizeObserver(updateSize);
     observer.observe(element);
-
-    // Initial size
     updateSize();
 
     return () => {

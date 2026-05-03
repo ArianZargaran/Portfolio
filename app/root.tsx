@@ -10,6 +10,7 @@ import {
 } from "@remix-run/react";
 
 import MainMenuNav from "~/components/main-menu-nav/main-menu-nav";
+import { MAIN_MENU_OPTIONS } from "~/constants/main-menu-options";
 import borderStylesheet from "~/stylesheets/border.css";
 import colorsStylesheet from "~/stylesheets/colors.css";
 import elevationStylesheet from "~/stylesheets/elevation.css";
@@ -139,38 +140,7 @@ export default function App() {
         <Links />
       </head>
       <body className="body home">
-        <MainMenuNav
-          options={[
-            {
-              id: "ID1",
-              option: "Home",
-              caption: "Turning Interfaces into Experiences.",
-              href: "/",
-              theme: "home",
-            },
-            {
-              id: "ID2",
-              option: "About",
-              caption: "Passion, Experience, and Commitment.",
-              href: "/about-me",
-              theme: "about",
-            },
-            {
-              id: "ID3",
-              option: "Projects",
-              caption: "Thoughts go LIVE: My code in action.",
-              href: "/projects",
-              theme: "projects",
-            },
-            {
-              id: "ID4",
-              option: "Skills",
-              caption: "Tools and Tech to deliver excellence.",
-              href: "/skills",
-              theme: "skills",
-            },
-          ]}
-        />
+        <MainMenuNav options={MAIN_MENU_OPTIONS} />
         <Outlet />
         <ScrollRestoration />
         <Scripts />

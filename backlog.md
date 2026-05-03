@@ -87,20 +87,20 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 
 ## P3 — Low / Nits (polish, dead code, hygiene)
 
-- [ ] **Extract main menu options to a constants module**
-  `app/root.tsx:128-172` — hardcoded inline. Move so it's reusable for tests/sitemap/SEO.
+- [x] **Extract main menu options to a constants module**
+  Moved to `app/constants/main-menu-options.ts` as `MAIN_MENU_OPTIONS: Option[]`. `root.tsx` now imports the constant and just renders `<MainMenuNav options={MAIN_MENU_OPTIONS} />`. The Option type is reused from `main-menu-nav-item`.
 
-- [ ] **Move `getHtmlDimensions` / `getSvgDimensions` outside `useElementSize`**
-  `app/hooks/useElementSize.ts:16-25` recreates them per render.
+- [x] **Move `getHtmlDimensions` / `getSvgDimensions` outside `useElementSize`**
+  Hoisted to module scope in `app/hooks/useElementSize.ts` so they aren't recreated per render. The hook body is shorter and the dependencies are visible from one read.
 
-- [ ] **Wire up or delete `ModalProvider`**
-  `app/providers/modal.tsx` is unused — never rendered in `root.tsx`.
+- [x] **Wire up or delete `ModalProvider`** _(deleted)_
+  `app/providers/modal.tsx` was dead code — never rendered, no consumers, hardcoded to a `"Airtable"` literal that no longer reflected the project model. Removed; the empty `app/providers/` directory is gone too. The active modal mechanism is `app/hooks/useModal.tsx`.
 
-- [ ] **Trim Remix template comments**
-  `app/entry.server.tsx`, `app/entry.client.tsx`, `app/singleton.server.ts` retain "By default, Remix will…" boilerplate.
+- [x] **Trim Remix template comments**
+  Removed the "By default, Remix will…" boilerplate from `app/entry.client.tsx` and `app/entry.server.tsx`. `app/singleton.server.ts` keeps its borrowed-from credit since that's an attribution, not a Remix template comment.
 
-- [ ] **Verify barrel `app/components/icons/index.tsx` is used**
-  Drop if stale.
+- [x] **Verify barrel `app/components/icons/index.tsx` is used** _(used)_
+  6 imports of `IconProps` (5 from `app/components/logos/*` and 1 from `social-nav.tsx`). Barrel stays.
 
 - [ ] **Replace `"No msg"` commit message**
   Latest commit `0599813` — git history is part of the portfolio.
