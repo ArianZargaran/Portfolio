@@ -105,8 +105,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [ ] **Replace `"No msg"` commit message**
   Latest commit `0599813` — git history is part of the portfolio.
 
-- [ ] **Drop Storybook if unused**
-  `~10` Storybook deps installed; `stories/` looks like template starter content.
+- [x] **Drop Storybook if unused** _(removed)_
+  `stories/` was just the template starter (Button/Header/Page demos). Nothing in `app/`, `test/`, or `cypress/` imported from `stories/` or any `@storybook/*` package. Removed: `.storybook/`, `stories/`, the `storybook` and `build-storybook` npm scripts, all 9 Storybook devDeps (`@chromatic-com/storybook`, `@storybook/addon-essentials/interactions/onboarding`, `@storybook/blocks/react/react-vite/test`, `eslint-plugin-storybook`, `storybook`), and `plugin:storybook/recommended` from the eslint base config. Lockfile regenerated.
 
 - [x] **Remove dead `format-repo.yml` workflow**
   `.github/workflows/format-repo.yml` was gated to `if: github.repository == 'remix-run/blues-stack'`, so it never ran in this fork — pure dead config. Deleted. CI now consists of `lint-repo.yml` only (plus `dependabot.yml`).
