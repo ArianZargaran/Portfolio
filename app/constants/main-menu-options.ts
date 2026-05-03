@@ -29,4 +29,11 @@ export const MAIN_MENU_OPTIONS: Option[] = [
     href: "/skills",
     theme: "skills",
   },
+  {
+    id: "ID5",
+    option: "Contact",
+    caption: "Let's build something together.",
+    href: "/contact",
+    theme: "contact",
+  },
 ];
