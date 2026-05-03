@@ -68,8 +68,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Resolve placeholder routes `/blog` and `/contact`** _(hidden from menu)_
   Removed `Blog` and `Contact` entries from `MainMenuNav` options in `app/root.tsx`. Routes still resolve at direct URLs (return 200) for when content lands; nav now shows only Home, About, Projects, Skills.
 
-- [ ] **Type CSS-var and motion-value styles properly**
-  `app/routes/about-me.tsx:53` (`"--illustration-height"`) needs `as React.CSSProperties`. `app/components/illustrations/illustrations-track/illustrations-track.tsx:49,53,59,66` uses `as unknown as number` casts on `MotionValue` — pass motion values directly via `motion.*`.
+- [x] **Type CSS-var and motion-value styles properly**
+  `app/routes/about-me.tsx` now imports `CSSProperties` (type-only) and casts the inline `--illustration-height` style to it. The four illustration prop aliases (`child`, `teenager`, `couple`, `pilot`) widened to `Omit<SVGProps<SVGSVGElement>, "style"> & MotionProps`, so `MotionStyle` wins the intersection and `MotionValue<number>` is accepted on `style.opacity`. All four `as unknown as number` casts in `illustrations-track.tsx` are gone — motion values now flow through `style={{ opacity: childOpacity }}` directly.
 
 - [ ] **Update README for the portfolio**
   Currently still the Remix Blues Stack template. Document the portfolio purpose and fresh-clone setup. _(Note: the env-var and local-tarball items in this task are now obsolete — DB/session env vars no longer exist after the Prisma drop, and animatea is on npm.)_

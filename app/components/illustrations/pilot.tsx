@@ -1,7 +1,7 @@
 import { MotionProps, motion } from "motion/react";
 import { forwardRef, SVGProps } from "react";
 
-type SVGPMotionedProps = SVGProps<SVGSVGElement> & MotionProps;
+type SVGPMotionedProps = Omit<SVGProps<SVGSVGElement>, "style"> & MotionProps;
 
 export const PilotIllustration = forwardRef<SVGSVGElement, SVGPMotionedProps>(
   function Illustration({ height, width, ...rest }, ref) {

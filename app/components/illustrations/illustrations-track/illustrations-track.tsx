@@ -46,24 +46,24 @@ export const IllustrationsTrack: React.FC = () => {
       className={style["illustrations-track"]}
     >
       <ChildIllustration
-        style={{ opacity: childOpacity as unknown as number }}
+        style={{ opacity: childOpacity }}
         className={classNames(style["illustration"], style["child"])}
       />
       <TeenagerIllustration
-        style={{ opacity: teenOpacity as unknown as number }}
+        style={{ opacity: teenOpacity }}
         className={classNames(style["illustration"], style["teenager"])}
         height={350}
       />
       <CoupleIllustration
         style={{
-          opacity: coupleOpacity as unknown as number,
+          opacity: coupleOpacity,
           transform: "scale(1.15) translate(0, -15px)",
         }}
         className={classNames(style["illustration"], style["couple"])}
       />
       <PilotIllustration
         style={{
-          opacity: pilotOpacity as unknown as number,
+          opacity: pilotOpacity,
           transform: "scale(1.2)",
         }}
         className={classNames(style["illustration"], style["pilot"])}

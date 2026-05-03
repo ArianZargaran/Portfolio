@@ -1,7 +1,7 @@
 import { motion, MotionProps } from "motion/react";
 import { forwardRef, SVGProps } from "react";
 
-type SVGPMotionedProps = SVGProps<SVGSVGElement> & MotionProps;
+type SVGPMotionedProps = Omit<SVGProps<SVGSVGElement>, "style"> & MotionProps;
 
 export const TeenagerIllustration = forwardRef<
   SVGSVGElement,

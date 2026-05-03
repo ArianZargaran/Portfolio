@@ -2,6 +2,7 @@ import { cssBundleHref } from "@remix-run/css-bundle";
 import { LinksFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { motion } from "motion/react";
+import type { CSSProperties } from "react";
 
 import { Isotype } from "~/components/icons/isotype/isotype";
 import { IllustrationsTrack } from "~/components/illustrations/illustrations-track/illustrations-track";
@@ -49,9 +50,11 @@ const AboutMePage = () => {
       </div>
       <div
         className="timeline"
-        style={{
-          "--illustration-height": `${dimensions.height}rem`,
-        }}
+        style={
+          {
+            "--illustration-height": `${dimensions.height}rem`,
+          } as CSSProperties
+        }
       >
         {data.map(({ headline, date, description }, idx) => {
           return (
