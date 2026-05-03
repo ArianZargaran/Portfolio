@@ -107,3 +107,6 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 
 - [ ] **Drop Storybook if unused**
   `~10` Storybook deps installed; `stories/` looks like template starter content.
+
+- [x] **Remove dead `format-repo.yml` workflow**
+  `.github/workflows/format-repo.yml` was gated to `if: github.repository == 'remix-run/blues-stack'`, so it never ran in this fork — pure dead config. Deleted. CI now consists of `lint-repo.yml` only (plus `dependabot.yml`).
