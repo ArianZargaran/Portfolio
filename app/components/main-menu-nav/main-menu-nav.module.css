@@ -49,3 +49,20 @@
 .main-menu_toggle:hover {
   cursor: pointer;
 }
+
+/* On mobile, the menu overlay covers the page entirely; the toggle should not
+   pick up the contact theme even when isOpen applies the global .contact class.
+   Two-class selector outranks the single .contact class so the resets win. */
+@media (max-width: 992px) {
+  .main-menu_toggle.mobile-open-reset {
+    --theme_bg: unset;
+    --theme_text: unset;
+    --theme_border: unset;
+    --theme_bg-strong: unset;
+    --theme_info-bg: unset;
+    --theme_upsell-bg: unset;
+    --theme_text-strong: unset;
+    --theme_text-info: unset;
+    --theme_upsell-text: unset;
+  }
+}

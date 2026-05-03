@@ -4,8 +4,6 @@ import classnames from "classnames";
 import { AnimatePresence, motion, Variants } from "motion/react";
 import React, { useEffect, useState } from "react";
 
-import { useMediaQuery } from "~/hooks/useMediaQuery";
-
 import { MainMenuNavItem, Option } from "./main-menu-nav-item";
 import styles from "./main-menu-nav.module.css";
 
@@ -18,7 +16,6 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   const [hoveredItemId, setHoveredItemId] = useState<string | undefined>(
     undefined,
   );
-  const isMediumBreakpoint = useMediaQuery("(max-width: 992px)");
 
   const location = useLocation();
   const data = location.state;
@@ -76,8 +73,8 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
             skills: !isOpen && location.pathname === "/skills",
             blog: !isOpen && location.pathname === "/blog",
             contact:
-              (!isOpen && location.pathname === "/contact") ||
-              (!isMediumBreakpoint && isOpen),
+              (!isOpen && location.pathname === "/contact") || isOpen,
+            [styles["mobile-open-reset"]]: isOpen,
           },
           styles[`main-menu_toggle`],
         )}

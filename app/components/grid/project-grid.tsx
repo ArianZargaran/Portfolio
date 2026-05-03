@@ -1,8 +1,6 @@
 import classNames from "classnames";
 import React, { useState } from "react";
 
-import { useMediaQuery } from "~/hooks/useMediaQuery";
-
 import "./project-grid.css";
 import { ProjectTile } from "./project-tile";
 import { ProjectsModal } from "./projects-modal";
@@ -91,7 +89,6 @@ const DATA: Data[][] = [FIRST_ROW, SECOND_ROW, THIRD_ROW];
 
 export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
   const [isHovered, setIsHovered] = useState<number[] | null>(null);
-  const isMediumBreakpoint = useMediaQuery("(max-width: 800px)");
   const [selectedProject, setSelectedProject] = useState<ProjectId | null>(
     null,
   );
@@ -121,8 +118,11 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
                 onHoverEnd={() => setIsHovered(null)}
                 onClick={() => setSelectedProject(projectId)}
                 isHovered={
-                  (isHovered && isHovered[0] === id && isHovered[1] === idx) ||
-                  isMediumBreakpoint
+                  !!(
+                    isHovered &&
+                    isHovered[0] === id &&
+                    isHovered[1] === idx
+                  )
                 }
               />
             ))}

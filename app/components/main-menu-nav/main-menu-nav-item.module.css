@@ -24,6 +24,23 @@
 .nav-item_hr {
   background-color: var(--theme_text);
   width: calc(100% - var(--spacing-xl));
+  transform: translateX(-120%);
+  opacity: 0;
+  transition:
+    transform 0.2s linear,
+    opacity 0.2s linear;
+}
+
+.nav-item_hr.is-shown {
+  transform: translateX(-24rem);
+  opacity: 1;
+}
+
+@media (max-width: 992px) {
+  .nav-item_hr {
+    transform: translateX(-24rem);
+    opacity: 1;
+  }
 }
 
 .nav-item_caption {

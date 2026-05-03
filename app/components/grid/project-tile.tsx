@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import { motion } from "motion/react";
 import React from "react";
 
@@ -39,16 +40,9 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
       }}
     >
       <div className="tile-img-wrapper">
-        <motion.img
-          animate={{
-            filter: isHovered ? "grayscale(0)" : "grayscale(1)",
-          }}
-          transition={{
-            duration: 0.3,
-            ease: "easeInOut",
-          }}
+        <img
           src={img}
-          className="tile-img"
+          className={classnames("tile-img", { "is-color": isHovered })}
           alt={alt}
         />
       </div>
