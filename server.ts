@@ -69,9 +69,9 @@ async function run() {
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
-    console.log(`✅ app ready: http://localhost:${port}`);
-
     if (process.env.NODE_ENV === "development") {
+      // eslint-disable-next-line no-console
+      console.log(`✅ app ready: http://localhost:${port}`);
       broadcastDevReady(initialBuild);
     }
   });

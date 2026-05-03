@@ -56,8 +56,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Add `rel="noopener noreferrer"` to external links**
   `app/routes/_index.tsx:81-86` — resume PDF link now has `rel="noopener noreferrer"`.
 
-- [ ] **Remove `console.*` from production paths**
-  Remaining: `server.ts:79,105` (was `:79,105,115` — Fly replay block already gone), `app/entry.server.tsx:71,112`. _(Stale: `db.server.ts` and the original `healthcheck.tsx:22` `console.log` were removed when Prisma was dropped.)_
+- [x] **Remove `console.*` from production paths**
+  `server.ts` — the `✅ app ready` banner now only runs when `NODE_ENV === "development"`; production server boots silently (Vercel has its own ready signal). `entry.server.tsx:71,112` `console.error` calls in `onError` handlers are kept intentionally — the global coding-style rule forbids `console.log` but its own error-handling example uses `console.error`, and the rule "never silently swallow errors" outweighs purity here. SSR renderer crashes still surface to whatever log sink the host provides.
 
 - [ ] **Fix hydration flicker from `useMediaQuery`**
   `app/hooks/useMediaQuery.ts` defaults `matches=false` on SSR then updates on mount. Causes hamburger and nav-underline animation to snap on hydration. Use a CSS-only approach or read user-agent hints.
