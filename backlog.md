@@ -71,8 +71,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Type CSS-var and motion-value styles properly**
   `app/routes/about-me.tsx` now imports `CSSProperties` (type-only) and casts the inline `--illustration-height` style to it. The four illustration prop aliases (`child`, `teenager`, `couple`, `pilot`) widened to `Omit<SVGProps<SVGSVGElement>, "style"> & MotionProps`, so `MotionStyle` wins the intersection and `MotionValue<number>` is accepted on `style.opacity`. All four `as unknown as number` casts in `illustrations-track.tsx` are gone — motion values now flow through `style={{ opacity: childOpacity }}` directly.
 
-- [ ] **Update README for the portfolio**
-  Currently still the Remix Blues Stack template. Document the portfolio purpose and fresh-clone setup. _(Note: the env-var and local-tarball items in this task are now obsolete — DB/session env vars no longer exist after the Prisma drop, and animatea is on npm.)_
+- [x] **Update README for the portfolio**
+  README rewritten end-to-end: portfolio purpose, current stack (Remix on Express, React 18, motion, helmet, vitest + cypress), project layout, fresh-clone setup, scripts table, testing summary, and Vercel deploy note. The Blues Stack template content (Postgres/Prisma, Docker, seed creds, Remix init) is gone — those flows no longer apply.
 
 - [x] **Add security headers via `helmet`**
   `server.ts` now mounts `helmet({ contentSecurityPolicy: false })`. Headers set: HSTS (1y, includeSubDomains), X-Frame-Options SAMEORIGIN, X-Content-Type-Options nosniff, Referrer-Policy no-referrer, Cross-Origin-Opener/Resource-Policy same-origin, Origin-Agent-Cluster, X-DNS-Prefetch-Control off, X-Download-Options noopen, X-Permitted-Cross-Domain-Policies none, X-XSS-Protection 0. CSP intentionally skipped pending a tested config that doesn't break motion/react.
