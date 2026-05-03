@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 type MediaQuery =
   | "(max-width: 575px)"
@@ -8,33 +8,26 @@ type MediaQuery =
   | "(max-width: 992px)"
   | "(max-width: 1200px)";
 
-export const useMediaQuery = (query: MediaQuery) => {
-  const [matches, setMatches] = useState<boolean>(false);
+const getServerSnapshot = () => false;
 
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
-
-    const listener = () => {
-      setMatches(media.matches);
-    };
-
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", listener);
-    } else {
-      media.addListener(listener);
-    }
-
-    return () => {
-      if (typeof media.removeEventListener === "function") {
-        media.removeEventListener("change", listener);
-      } else {
-        media.removeListener(listener);
+export const useMediaQuery = (query: MediaQuery): boolean => {
+  const subscribe = useCallback(
+    (notify: () => void) => {
+      const media = window.matchMedia(query);
+      if (typeof media.addEventListener === "function") {
+        media.addEventListener("change", notify);
+        return () => media.removeEventListener("change", notify);
       }
-    };
-  }, [matches, query]);
+      media.addListener(notify);
+      return () => media.removeListener(notify);
+    },
+    [query],
+  );
 
-  return matches;
+  const getSnapshot = useCallback(
+    () => window.matchMedia(query).matches,
+    [query],
+  );
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 };

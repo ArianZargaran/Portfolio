@@ -56,9 +56,9 @@ describe("useMediaQuery", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns false on the initial render before the effect runs", () => {
+  it("returns the matchMedia snapshot synchronously on first render", () => {
     const { result } = renderHook(() => useMediaQuery("(max-width: 768px)"));
-    // Effect synchronously updates only when the initial mql.matches differs from state.
+    // useSyncExternalStore reads getSnapshot during render — no post-mount setState.
     expect(result.current).toBe(false);
   });
 

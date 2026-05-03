@@ -59,8 +59,11 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Remove `console.*` from production paths**
   `server.ts` — the `✅ app ready` banner now only runs when `NODE_ENV === "development"`; production server boots silently (Vercel has its own ready signal). `entry.server.tsx:71,112` `console.error` calls in `onError` handlers are kept intentionally — the global coding-style rule forbids `console.log` but its own error-handling example uses `console.error`, and the rule "never silently swallow errors" outweighs purity here. SSR renderer crashes still surface to whatever log sink the host provides.
 
-- [ ] **Fix hydration flicker from `useMediaQuery`**
-  `app/hooks/useMediaQuery.ts` defaults `matches=false` on SSR then updates on mount. Causes hamburger and nav-underline animation to snap on hydration. Use a CSS-only approach or read user-agent hints.
+- [~] **Fix hydration flicker from `useMediaQuery`** _(partial)_
+  Hook rewritten on top of `useSyncExternalStore` with a `false` server snapshot, a memoized subscribe, and a `getSnapshot` that reads `window.matchMedia(query).matches` synchronously. The post-mount `setState` round trip is gone, which was the visible "snap" on hydration. The remaining SSR-vs-first-client-paint mismatch (one frame) only fully disappears with a motion → CSS swap on the three consumers (`main-menu-nav.tsx`, `main-menu-nav-item.tsx`, `project-grid.tsx`); tracked separately.
+
+- [ ] **Move motion-driven mobile state in nav + grid to CSS**
+  `main-menu-nav.tsx`, `main-menu-nav-item.tsx`, and `project-grid.tsx` still call `useMediaQuery` to flip motion `animate` props. Replace with CSS hover + media queries so the breakpoint decision is paint-time and never causes a hydration mismatch. Will need to drop motion from a few spots (the nav-item underline, the project-tile grayscale filter) since `motion.*` writes inline styles that beat CSS.
 
 - [x] **Remove dead code in `ProjectsModal`**
   `app/components/grid/projects-modal/index.tsx` rewritten: early `if (!selectedProject) return null;`, then look up the lazy component (the lookup is exhaustive — `Project` is a closed string union) and render it inside `<Suspense>`. The unreachable `<p>Error loading content</p>` ternary branch is gone, and `isOpen` is now a static `true` since the falsy-selection path returns early.
