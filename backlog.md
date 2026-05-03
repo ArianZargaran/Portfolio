@@ -102,8 +102,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Verify barrel `app/components/icons/index.tsx` is used** _(used)_
   6 imports of `IconProps` (5 from `app/components/logos/*` and 1 from `social-nav.tsx`). Barrel stays.
 
-- [ ] **Replace `"No msg"` commit message**
-  Latest commit `0599813` — git history is part of the portfolio.
+- [x] **Replace `"No msg"` commit message**
+  `0599813` (now `c43daa2` after the reword) is rewritten to `refactor: extract ProjectTile, drop deprecated backgrounds, add Skills search` based on the diff content. Done via non-interactive `git rebase --exec` and force-push (`--force-with-lease`) to `main`. A `backup-before-reword` local branch was kept as a safety net.
 
 - [x] **Drop Storybook if unused** _(removed)_
   `stories/` was just the template starter (Button/Header/Page demos). Nothing in `app/`, `test/`, or `cypress/` imported from `stories/` or any `@storybook/*` package. Removed: `.storybook/`, `stories/`, the `storybook` and `build-storybook` npm scripts, all 9 Storybook devDeps (`@chromatic-com/storybook`, `@storybook/addon-essentials/interactions/onboarding`, `@storybook/blocks/react/react-vite/test`, `eslint-plugin-storybook`, `storybook`), and `plugin:storybook/recommended` from the eslint base config. Lockfile regenerated.
