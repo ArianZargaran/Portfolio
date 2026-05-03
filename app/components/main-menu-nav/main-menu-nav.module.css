@@ -50,6 +50,28 @@
   cursor: pointer;
 }
 
+/* The animatea HamburgerIcon ships at 48px (its widest preset). That looks
+   oversized on phones and tablets, so let CSS scale the SVG down at narrow
+   viewports. Sizes follow the same breakpoints used elsewhere in this file. */
+.main-menu_toggle svg {
+  width: 48px;
+  height: 48px;
+}
+
+@media (max-width: 992px) {
+  .main-menu_toggle svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 575px) {
+  .main-menu_toggle svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 /* On mobile, the menu overlay covers the page entirely; the toggle should not
    pick up the contact theme even when isOpen applies the global .contact class.
    Two-class selector outranks the single .contact class so the resets win. */
