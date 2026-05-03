@@ -28,24 +28,13 @@ export const ProjectsModal: React.FC<ProjectsModalProps> = ({
   selectedProject,
   onClose,
 }) => {
-  const SelectedComponent = selectedProject
-    ? modalContentComponents[selectedProject]
-    : null;
+  if (!selectedProject) return null;
 
-  if (SelectedComponent === null) {
-    return null;
-  }
+  const SelectedComponent = modalContentComponents[selectedProject];
 
   return (
     <Suspense>
-      {SelectedComponent ? (
-        <SelectedComponent
-          onClose={onClose}
-          isOpen={Boolean(selectedProject)}
-        />
-      ) : (
-        <p>Error loading content</p>
-      )}
+      <SelectedComponent onClose={onClose} isOpen />
     </Suspense>
   );
 };

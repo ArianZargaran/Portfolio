@@ -62,8 +62,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [ ] **Fix hydration flicker from `useMediaQuery`**
   `app/hooks/useMediaQuery.ts` defaults `matches=false` on SSR then updates on mount. Causes hamburger and nav-underline animation to snap on hydration. Use a CSS-only approach or read user-agent hints.
 
-- [ ] **Remove dead code in `ProjectsModal`**
-  `app/components/grid/projects-modal/index.tsx:35-48` has unreachable `<p>Error loading content</p>` branch after the early null return.
+- [x] **Remove dead code in `ProjectsModal`**
+  `app/components/grid/projects-modal/index.tsx` rewritten: early `if (!selectedProject) return null;`, then look up the lazy component (the lookup is exhaustive — `Project` is a closed string union) and render it inside `<Suspense>`. The unreachable `<p>Error loading content</p>` ternary branch is gone, and `isOpen` is now a static `true` since the falsy-selection path returns early.
 
 - [x] **Resolve placeholder routes `/blog` and `/contact`** _(hidden from menu)_
   Removed `Blog` and `Contact` entries from `MainMenuNav` options in `app/root.tsx`. Routes still resolve at direct URLs (return 200) for when content lands; nav now shows only Home, About, Projects, Skills.
