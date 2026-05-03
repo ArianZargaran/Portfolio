@@ -63,6 +63,13 @@ async function run() {
   // more aggressive with this caching.
   app.use(express.static("public", { maxAge: "1h" }));
 
+  // Chrome DevTools probes this path on every page load looking for a
+  // workspace mapping. Short-circuit it so Remix's catch-all doesn't log a
+  // stack trace and morgan doesn't bother recording it.
+  app.get("/.well-known/appspecific/com.chrome.devtools.json", (_req, res) => {
+    res.status(204).end();
+  });
+
   app.use(morgan("tiny"));
 
   app.all("*", remixHandler);
