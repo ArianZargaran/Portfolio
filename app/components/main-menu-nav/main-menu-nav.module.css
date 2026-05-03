@@ -50,25 +50,26 @@
   cursor: pointer;
 }
 
-/* The animatea HamburgerIcon ships at 48px (its widest preset). That looks
-   oversized on phones and tablets, so let CSS scale the SVG down at narrow
-   viewports. Sizes follow the same breakpoints used elsewhere in this file. */
-.main-menu_toggle svg {
-  width: 48px;
-  height: 48px;
+/* The animatea HamburgerIcon ships at 48px (its widest preset). That's too
+   big for a corner toggle, so override the width/height attributes via CSS.
+   The class is applied directly to the SVG (not a wrapper), so target it
+   without a descendant selector. */
+.main-menu_toggle {
+  width: 32px;
+  height: 32px;
 }
 
 @media (max-width: 992px) {
-  .main-menu_toggle svg {
-    width: 36px;
-    height: 36px;
+  .main-menu_toggle {
+    width: 28px;
+    height: 28px;
   }
 }
 
 @media (max-width: 575px) {
-  .main-menu_toggle svg {
-    width: 28px;
-    height: 28px;
+  .main-menu_toggle {
+    width: 24px;
+    height: 24px;
   }
 }
 
