@@ -31,8 +31,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Fix swapped stylesheet import names**
   `app/root.tsx:19-20` — variables now match their files (`spacingStylesheet` ← `spacing.css`, `themesStylesheet` ← `themes.css`); cascade order in `links()` preserved.
 
-- [ ] **Add real test coverage**
-  `test/` only has `setup-test-env.ts`. `cypress/e2e` has only `smoke.cy.ts`. Coverage is ~0%. Global standard requires ≥80%.
+- [ ] **Add real test coverage** _(first slice landed)_
+  Vitest now covers all three custom hooks: `useMediaQuery` (5 tests), `useElementSize` (3 tests), `useModal`/`Modal` (7 tests) — 15 unit tests total in `app/hooks/*.test.{ts,tsx}`. Added `@testing-library/react@^16` as a devDep. Cypress smoke (`cypress/e2e/smoke.cy.ts`) extended from 1 → 8 tests covering all routes (home, about-me, projects, skills, blog, contact, healthcheck), 404 handling, and trailing-slash redirect. Lint + `tsc` (app and cypress) both clean. Component-level coverage of `app/components/**` is still open and is the next slice toward 80%.
 
 - [x] **Decide: keep or drop Prisma + Postgres** _(dropped)_
   Removed: `prisma/`, `app/db.server.ts`, `app/session.server.ts` (unused), `docker-compose.yml`, `postgres-data/`, `@prisma/client` + `prisma` + `tsx` deps, the `setup`/`docker` npm scripts, and the `prisma` config block. `app/routes/healthcheck.tsx` rewritten as a no-DB self-ping. The Fly multi-region replay block (`server.ts:62-83`) and `fly.toml`'s `release_command = "npx prisma migrate deploy"` are also gone, and the `Dockerfile` no longer installs openssl or runs `prisma generate`. All 7 routes return HTTP 200 on `npm start`.
