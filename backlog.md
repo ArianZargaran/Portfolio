@@ -80,8 +80,8 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Add Open Graph / Twitter meta tags**
   `app/root.tsx:50-63` — `og:title`, `og:description`, `og:type`, `og:image`, `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` added. Reuses the existing description content; image points at `/apple-icon-180x180.png` (consider a dedicated 1200×630 OG image later).
 
-- [ ] **Split `Project` display label from machine ID**
-  `app/components/grid/project-grid.tsx:10` uses `"INITIATIVE ROLL"` etc. as both display string and lookup key. Use `"initiative-roll"` as ID and a separate label.
+- [x] **Split `Project` display label from machine ID**
+  Renamed the union to `ProjectId` with kebab-case values (`"initiative-roll"`, `"airtable"`, …) used as both selection-state values and modal-map keys. Each `Data` entry now carries a separate `label: string` for the eyebrow text and the tile's `aria-label`. `ProjectTile` only takes `label` (no longer needs the id since the parent owns selection). `ProjectsModal` rekeyed onto `ProjectId`. The display string `"INITIATIVE ROLL"` and friends are now data, not types.
 
 ---
 

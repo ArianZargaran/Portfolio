@@ -1,14 +1,12 @@
 import { motion } from "motion/react";
 import React from "react";
 
-import { Project } from "./project-grid";
-
 import "./project-tile.css";
 
 interface ProjectTypeProps {
   img: string;
   alt: string;
-  eyebrow: Project;
+  label: string;
   h2: string;
   isHovered?: boolean;
   onHoverStart?: () => void;
@@ -22,7 +20,7 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
   onClick = () => undefined,
   isHovered = false,
   img,
-  eyebrow,
+  label,
   h2,
   alt,
 }) => (
@@ -35,7 +33,7 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
       type="button"
       onClick={onClick}
       className="tile-button"
-      aria-label={`Open ${eyebrow} project details`}
+      aria-label={`Open ${label} project details`}
       whileHover={{
         scale: 1.03,
       }}
@@ -55,7 +53,7 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
         />
       </div>
       <div className="tile-content">
-        <p className="tile-content-eyebrow">{eyebrow}</p>
+        <p className="tile-content-eyebrow">{label}</p>
         <h2 className="tile-content-headline">{h2}</h2>
       </div>
     </motion.button>

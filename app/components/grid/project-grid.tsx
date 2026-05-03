@@ -7,76 +7,82 @@ import "./project-grid.css";
 import { ProjectTile } from "./project-tile";
 import { ProjectsModal } from "./projects-modal";
 
-export type Project =
-  | "ANIMATEA"
-  | "AIRTABLE"
-  | "NEWSELA"
-  | "APPLE"
-  | "INITIATIVE ROLL"
-  | "WALMART"
-  | "CABIFY"
-  | "REPLEAT";
+export type ProjectId =
+  | "animatea"
+  | "airtable"
+  | "newsela"
+  | "apple"
+  | "initiative-roll"
+  | "walmart"
+  | "cabify"
+  | "repleat";
 
 interface ProjectGridProps {
   className?: string;
 }
 
 interface Data {
+  id: ProjectId;
+  label: string;
   img: string;
   alt: string;
-  eyebrow: Project;
   h2: string;
 }
 
 const FIRST_ROW: Data[] = [
   {
+    id: "airtable",
+    label: "AIRTABLE",
     img: "/airtable.webp",
     alt: "Airtable project preview",
-    eyebrow: "AIRTABLE",
     h2: "This is a title",
   },
   {
+    id: "cabify",
+    label: "CABIFY",
     img: "/cabify.webp",
     alt: "Cabify project preview",
-    eyebrow: "CABIFY",
     h2: "This is a title",
   },
 ];
 
 const SECOND_ROW: Data[] = [
   {
+    id: "animatea",
+    label: "ANIMATEA",
     img: "/animatea.webp",
     alt: "Animatea project preview",
-    eyebrow: "ANIMATEA",
     h2: "This is a title",
   },
-
   {
+    id: "apple",
+    label: "APPLE",
     img: "/apple.webp",
     alt: "Apple project preview",
-    eyebrow: "APPLE",
     h2: "This is a title",
   },
-
   {
+    id: "initiative-roll",
+    label: "INITIATIVE ROLL",
     img: "/roll.webp",
     alt: "Initiative Roll project preview",
-    eyebrow: "INITIATIVE ROLL",
     h2: "This is a title",
   },
 ];
 
 const THIRD_ROW: Data[] = [
   {
+    id: "repleat",
+    label: "REPLEAT",
     img: "/repleat.webp",
     alt: "Repleat project preview",
-    eyebrow: "REPLEAT",
     h2: "This is a title",
   },
   {
+    id: "walmart",
+    label: "WALMART",
     img: "/walmart.webp",
     alt: "Walmart project preview",
-    eyebrow: "WALMART",
     h2: "This is a title",
   },
 ];
@@ -86,7 +92,9 @@ const DATA: Data[][] = [FIRST_ROW, SECOND_ROW, THIRD_ROW];
 export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
   const [isHovered, setIsHovered] = useState<number[] | null>(null);
   const isMediumBreakpoint = useMediaQuery("(max-width: 800px)");
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectId | null>(
+    null,
+  );
 
   const handleModalClose = () => {
     setSelectedProject(null);
@@ -102,16 +110,16 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
       {DATA.map((ROW, id) => {
         return (
           <ul key={id} className={classNames("row", `row-${id}`)}>
-            {ROW.map(({ img, eyebrow, h2, alt }, idx) => (
+            {ROW.map(({ img, label, h2, alt, id: projectId }, idx) => (
               <ProjectTile
-                key={eyebrow}
+                key={projectId}
                 img={img}
-                eyebrow={eyebrow}
+                label={label}
                 h2={h2}
                 alt={alt}
                 onHoverStart={() => setIsHovered([id, idx])}
                 onHoverEnd={() => setIsHovered(null)}
-                onClick={() => setSelectedProject(eyebrow)}
+                onClick={() => setSelectedProject(projectId)}
                 isHovered={
                   (isHovered && isHovered[0] === id && isHovered[1] === idx) ||
                   isMediumBreakpoint
