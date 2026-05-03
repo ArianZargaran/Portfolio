@@ -4,16 +4,39 @@ import { useEffect, useState } from "react";
 
 import "./blurry-circles.css";
 
+interface Position {
+  x: number;
+  y: number;
+}
+
+const CIRCLE_COUNT = 5;
+
+const randomPosition = (): Position => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+});
+
+const generateCircles = (): Position[] =>
+  Array.from({ length: CIRCLE_COUNT }, randomPosition);
+
 export const BlurryBackground = ({ className }: { className?: string }) => {
-  const [circles, setCircles] = useState(generateCircles());
+  // Random positions can only be computed after hydration — picking them
+  // during SSR or the initial client render would mismatch (window is
+  // undefined on the server, so x/y collapses to 0 and React hydration
+  // complains). Render an empty container first, then populate on mount.
+  const [circles, setCircles] = useState<Position[] | null>(null);
 
   useEffect(() => {
+    setCircles(generateCircles());
     const interval = setInterval(() => {
       setCircles(generateCircles());
     }, 6000);
-
     return () => clearInterval(interval);
   }, []);
+
+  if (!circles) {
+    return <div className={classNames(className, "background-container")} />;
+  }
 
   return (
     <div className={classNames(className, "background-container")}>
@@ -26,7 +49,7 @@ export const BlurryBackground = ({ className }: { className?: string }) => {
           }}
           animate={{
             opacity: 1,
-            ...generateRandomPosition(),
+            ...randomPosition(),
           }}
           transition={{
             opacity: {
@@ -50,17 +73,3 @@ export const BlurryBackground = ({ className }: { className?: string }) => {
     </div>
   );
 };
-
-const generateRandomPosition = () => {
-  if (typeof window !== "undefined") {
-    return {
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-    };
-  } else {
-    return { y: 0, x: 0 };
-  }
-};
-
-const generateCircles = (): { x: number; y: number }[] =>
-  Array.from({ length: 5 }, () => generateRandomPosition());
