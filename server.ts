@@ -72,9 +72,23 @@ async function run() {
     if (process.env.NODE_ENV === "development") {
       // eslint-disable-next-line no-console
       console.log(`✅ app ready: http://localhost:${port}`);
-      broadcastDevReady(initialBuild);
+      safeBroadcastDevReady(initialBuild);
     }
   });
+
+  // Remix dev's /ping rejects with 400 when the bundled-server build version
+  // disagrees with what the dev server currently expects (e.g. a stale build
+  // from a previous npm run build, or a mid-rebuild race). Treat that as a
+  // recoverable warning instead of crashing the dev server.
+  function safeBroadcastDevReady(build: ServerBuild) {
+    broadcastDevReady(build).catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "⚠️  broadcastDevReady failed; HMR may be stale until the next rebuild.",
+        err,
+      );
+    });
+  }
 
   async function reimportServer(): Promise<ServerBuild> {
     // cjs: manually remove the server build from the require cache
@@ -101,7 +115,7 @@ async function run() {
       // 1. re-import the server build
       build = await reimportServer();
       // 2. tell Remix that this app server is now up-to-date and ready
-      broadcastDevReady(build);
+      safeBroadcastDevReady(build);
     }
     const chokidar = await import("chokidar");
     chokidar
