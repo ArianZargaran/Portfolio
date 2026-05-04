@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import classNames from "classnames";
 import React from "react";
 
@@ -74,14 +73,14 @@ export const SocialNav: React.FC<SocialNavProps> = ({ className }) => {
       <ul className="social-nav-list">
         {LOGOS.map((logo) => (
           <li className="social-nav-list-item" key={logo.id}>
-            <Link
+            <a
               target="_blank"
               rel="noreferrer"
               className="social-nav-link"
-              to={logo.href}
+              href={logo.href}
             >
               <logo.component className="social-nav-logo" {...logo.props} />
-            </Link>
+            </a>
           </li>
         ))}
       </ul>

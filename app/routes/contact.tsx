@@ -59,9 +59,9 @@ const ContactPage = () => {
           initial={fadeUp.initial}
           animate={fadeUp.animate(0.3)}
         >
-          <Link to="mailto:hello@ari.soy">
+          <a href="mailto:hello@ari.soy">
             <Button>Email me</Button>
-          </Link>
+          </a>
           <Link
             to="/arian-zargaran-resume.pdf"
             target="_blank"
