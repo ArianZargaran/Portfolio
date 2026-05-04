@@ -59,6 +59,52 @@
   margin-top: var(--spacing-sm);
 }
 
+.contact-email-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2xs);
+  color: var(--theme_text);
+  font-size: clamp(14rem, 1.5vw, 16rem);
+}
+
+.contact-email-prefix {
+  opacity: 0.8;
+}
+
+.contact-email-address {
+  color: var(--theme_text);
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 3rem;
+}
+
+.contact-email-address:hover,
+.contact-email-address:focus-visible {
+  opacity: 0.85;
+}
+
+.contact-email-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border: 1px solid var(--theme_border);
+  border-radius: var(--border_radius-xs);
+  background: transparent;
+  color: var(--theme_text);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.contact-email-copy:hover,
+.contact-email-copy:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* Override SocialNav's fixed positioning on the contact page so the
    icons sit inline with the rest of the content. */
 .contact-social {

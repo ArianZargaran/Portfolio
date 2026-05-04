@@ -2,7 +2,10 @@ import { cssBundleHref } from "@remix-run/css-bundle";
 import { LinksFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
+import { Check } from "~/components/icons/check";
+import { Copy } from "~/components/icons/copy";
 import { Download } from "~/components/icons/download";
 import { Isotype } from "~/components/icons/isotype/isotype";
 import Button from "~/components/interactive-elements/button/button";
@@ -16,6 +19,8 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: contactStyles },
 ];
 
+const EMAIL = "hello@ari.soy";
+
 const fadeUp = {
   initial: { opacity: 0, y: -20 },
   animate: (delay: number) => ({
@@ -26,6 +31,34 @@ const fadeUp = {
 };
 
 const ContactPage = () => {
+  const [copied, setCopied] = useState(false);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = EMAIL;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    if (resetTimer.current) clearTimeout(resetTimer.current);
+    resetTimer.current = setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <section className="page contact contact-page">
       <header className="contact-header">
@@ -59,19 +92,40 @@ const ContactPage = () => {
           initial={fadeUp.initial}
           animate={fadeUp.animate(0.3)}
         >
-          <a href="mailto:hello@ari.soy">
-            <Button>Email me</Button>
-          </a>
-          <Link
-            to="/arian-zargaran-resume.pdf"
+          <Button href={`mailto:${EMAIL}`}>Email me</Button>
+          <Button
+            variant="secondary"
+            href="/arian-zargaran-resume.pdf"
             target="_blank"
             rel="noopener noreferrer"
             download="/arian-zargaran-resume.pdf"
           >
-            <Button variant="secondary">
-              Resume <Download height={16} width={16} />
-            </Button>
-          </Link>
+            Resume <Download height={16} width={16} />
+          </Button>
+        </motion.div>
+
+        <motion.div
+          className="contact-email-row"
+          initial={fadeUp.initial}
+          animate={fadeUp.animate(0.45)}
+        >
+          <span className="contact-email-prefix">or write to me at</span>
+          <a className="contact-email-address" href={`mailto:${EMAIL}`}>
+            {EMAIL}
+          </a>
+          <button
+            type="button"
+            className="contact-email-copy"
+            onClick={handleCopy}
+            aria-label={copied ? "Email address copied" : "Copy email address"}
+          >
+            {copied ? (
+              <Check height={16} width={16} />
+            ) : (
+              <Copy height={16} width={16} />
+            )}
+            <span aria-hidden="true">{copied ? "Copied" : "Copy"}</span>
+          </button>
         </motion.div>
 
         <SocialNav className="contact-social" />
