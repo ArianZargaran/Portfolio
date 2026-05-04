@@ -52,3 +52,45 @@
   position: absolute;
   z-index: var(--z-index_xs);
 }
+
+@keyframes home-fade-up {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes home-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.home-fade-up {
+  animation: home-fade-up 0.4s ease-out both;
+}
+
+.home-fade-up-delay-1 {
+  animation: home-fade-up 0.4s ease-out 0.2s both;
+}
+
+.home-fade-up-delay-2 {
+  animation: home-fade-up 0.4s ease-out 0.4s both;
+}
+
+.home-footer-note {
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  z-index: 1000;
+  font-style: oblique;
+  color: var(--theme_text-info);
+  animation: home-fade 0.4s ease-out both;
+}

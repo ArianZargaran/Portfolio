@@ -1,7 +1,6 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
 import { LinksFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { motion } from "motion/react";
 
 import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
 import { Doodles } from "~/components/backgrounds/doodles/doodles";
@@ -26,55 +25,14 @@ const IndexPage = () => {
       <SocialNav className="home-social" />
       <div className="home-content_container">
         <Isotype className="home-content_isotype" height={72} width={72} />
-        <motion.h1
-          className="home-content_headline"
-          initial={{
-            y: -20,
-            opacity: 0,
-          }}
-          animate={{
-            y: 0,
-            opacity: 1,
-            transition: {
-              duration: 0.4,
-            },
-          }}
-        >
+        <h1 className="home-content_headline home-fade-up">
           Hi, this is{" "}
           <strong className="home-content_upsell">Arian Zargaran</strong>.
-        </motion.h1>
-        <motion.h2
-          className="home-content_subheadline"
-          initial={{
-            y: -20,
-            opacity: 0,
-          }}
-          animate={{
-            y: 0,
-            opacity: 1,
-            transition: {
-              duration: 0.4,
-              delay: 0.2,
-            },
-          }}
-        >
+        </h1>
+        <h2 className="home-content_subheadline home-fade-up-delay-1">
           Welcome to my site!
-        </motion.h2>
-        <motion.div
-          initial={{
-            y: -20,
-            opacity: 0,
-          }}
-          animate={{
-            y: 0,
-            opacity: 1,
-            transition: {
-              duration: 0.4,
-              delay: 0.4,
-            },
-          }}
-          className="home-cta-wrapper"
-        >
+        </h2>
+        <div className="home-cta-wrapper home-fade-up-delay-2">
           <Link to="/projects">
             <Button>My Projects</Button>
           </Link>
@@ -88,24 +46,9 @@ const IndexPage = () => {
               Resume <Download height={16} width={16} />
             </Button>
           </Link>
-        </motion.div>
+        </div>
       </div>
-      <motion.p
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 8,
-          zIndex: 1000,
-          fontStyle: "oblique",
-          color: "var(--theme_text-info)",
-        }}
-        initial={{
-          opacity: 0,
-        }}
-        animate={{ opacity: 1 }}
-      >
-        * Authors: 1.85% AI; 98.15% Ari
-      </motion.p>
+      <p className="home-footer-note">* Authors: 1.85% AI; 98.15% Ari</p>
     </section>
   );
 };
