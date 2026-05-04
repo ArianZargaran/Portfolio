@@ -1,6 +1,8 @@
-.svg path {
-  fill: var(--theme_bg);
-  fill-opacity: 1;
-  fill-rule: nonzero;
-  stroke: none;
+.svg {
+  width: 1496px;
+  height: 1496px;
+  background-color: var(--theme_bg);
+  -webkit-mask: url(/doodles.svg) no-repeat center / contain;
+  mask: url(/doodles.svg) no-repeat center / contain;
+  pointer-events: none;
 }
