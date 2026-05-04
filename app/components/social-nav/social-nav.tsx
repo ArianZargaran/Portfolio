@@ -56,7 +56,7 @@ const LOGOS: {
   {
     id: "email",
     component: Email,
-    href: "mailto:arianzf@gmail.com",
+    href: "mailto:hello@ari.soy",
     props: {
       height: 24,
       width: 24,

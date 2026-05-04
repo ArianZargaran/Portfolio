@@ -59,7 +59,7 @@ const ContactPage = () => {
           initial={fadeUp.initial}
           animate={fadeUp.animate(0.3)}
         >
-          <Link to="mailto:arianzf@gmail.com">
+          <Link to="mailto:hello@ari.soy">
             <Button>Email me</Button>
           </Link>
           <Link
