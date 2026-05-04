@@ -71,18 +71,20 @@ export const SocialNav: React.FC<SocialNavProps> = ({ className }) => {
   return (
     <nav className={classNames(className, "social-nav")}>
       <ul className="social-nav-list">
-        {LOGOS.map((logo) => (
-          <li className="social-nav-list-item" key={logo.id}>
-            <a
-              target="_blank"
-              rel="noreferrer"
-              className="social-nav-link"
-              href={logo.href}
-            >
-              <logo.component className="social-nav-logo" {...logo.props} />
-            </a>
-          </li>
-        ))}
+        {LOGOS.map((logo) => {
+          const isExternal = /^https?:/.test(logo.href);
+          return (
+            <li className="social-nav-list-item" key={logo.id}>
+              <a
+                className="social-nav-link"
+                href={logo.href}
+                {...(isExternal && { target: "_blank", rel: "noreferrer" })}
+              >
+                <logo.component className="social-nav-logo" {...logo.props} />
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
