@@ -16,6 +16,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   const [hoveredItemId, setHoveredItemId] = useState<string | undefined>(
     undefined,
   );
+  const [isWide, setIsWide] = useState<boolean>(false);
 
   const location = useLocation();
   const data = location.state;
@@ -26,20 +27,25 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
     }
   }, [data]);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 992px)");
+    const update = () => setIsWide(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   const containerVariants: Variants = {
     hidden: {
-      opacity: 0,
-      y: -100,
+      transition: {
+        staggerChildren: 0.08,
+        staggerDirection: isWide ? 1 : -1,
+      },
     },
     visible: {
-      opacity: 1,
-      y: 0,
       transition: {
-        type: "tween",
-        ease: "easeOut",
-        staggerChildren: 0.2,
-        duration: 0.4,
-        staggerDirection: -1,
+        staggerChildren: 0.08,
+        staggerDirection: isWide ? -1 : 1,
       },
     },
   };
@@ -47,17 +53,22 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
   const itemVariants: Variants = {
     hidden: {
       opacity: 0,
-      y: -100,
+      x: isWide ? 100 : 0,
+      y: isWide ? 0 : -100,
+      transition: {
+        type: "tween",
+        ease: "easeIn",
+        duration: 0.3,
+      },
     },
     visible: {
       opacity: 1,
+      x: 0,
       y: 0,
       transition: {
         type: "tween",
         ease: "easeOut",
-        staggerChildren: 0.2,
-        duration: 0.4,
-        staggerDirection: -1,
+        duration: 0.35,
       },
     },
   };
