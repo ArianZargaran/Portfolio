@@ -4,6 +4,7 @@ import { Link } from "@remix-run/react";
 
 import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
 import { Doodles } from "~/components/backgrounds/doodles/doodles";
+import { Noise } from "~/components/backgrounds/noise/noise";
 import { Download } from "~/components/icons/download";
 import { Isotype } from "~/components/icons/isotype/isotype";
 import Button from "~/components/interactive-elements/button/button";
@@ -22,9 +23,14 @@ const IndexPage = () => {
     <section className="page home-page">
       <BlurryBackground className="home-background" />
       <Doodles className="home-background" />
+      <Noise />
       <SocialNav className="home-social" />
       <div className="home-content_container">
-        <Isotype className="home-content_isotype" height={72} width={72} />
+        <Isotype
+          className="home-content_isotype home-fade-final"
+          height={72}
+          width={72}
+        />
         <h1 className="home-content_headline home-fade-up">
           Hi, this is{" "}
           <strong className="home-content_upsell">Arian Zargaran</strong>.

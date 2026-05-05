@@ -85,11 +85,16 @@
   animation: home-fade-up 0.4s ease-out 0.4s both;
 }
 
+.home-fade-final {
+  animation: home-fade 1s ease-out 0.9s both;
+}
+
 .home-footer-note {
   position: absolute;
   bottom: 0;
   left: 8px;
   z-index: 1000;
+  font-size: 12rem;
   font-style: oblique;
   color: var(--theme_text-info);
   animation: home-fade 0.4s ease-out both;
