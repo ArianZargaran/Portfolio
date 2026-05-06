@@ -16,9 +16,9 @@ interface ProjectTypeProps {
 }
 
 export const ProjectTile: React.FC<ProjectTypeProps> = ({
-  onHoverStart = () => undefined,
-  onHoverEnd = () => undefined,
-  onClick = () => undefined,
+  onHoverStart,
+  onHoverEnd,
+  onClick,
   isHovered = false,
   img,
   label,

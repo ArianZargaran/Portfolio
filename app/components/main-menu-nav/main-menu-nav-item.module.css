@@ -9,10 +9,10 @@
 
 @media (min-width: 992px) {
   .nav-item_wrapper {
-    margin-top: calc(var(--spacing-2xl) + var(--spacing-sm));
-    min-height: calc(100% - (var(--spacing-2xl) + var(--spacing-sm)));
+    padding-top: calc(var(--spacing-2xl) + var(--spacing-sm));
+    min-height: 100%;
     box-sizing: border-box;
-    margin-right: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
   }
 }
 

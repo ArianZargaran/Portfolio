@@ -31,8 +31,11 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 - [x] **Fix swapped stylesheet import names**
   `app/root.tsx:19-20` — variables now match their files (`spacingStylesheet` ← `spacing.css`, `themesStylesheet` ← `themes.css`); cascade order in `links()` preserved.
 
-- [ ] **Add real test coverage** _(first slice landed)_
-  Vitest now covers all three custom hooks: `useMediaQuery` (5 tests), `useElementSize` (3 tests), `useModal`/`Modal` (7 tests) — 15 unit tests total in `app/hooks/*.test.{ts,tsx}`. Added `@testing-library/react@^16` as a devDep. Cypress smoke (`cypress/e2e/smoke.cy.ts`) extended from 1 → 8 tests covering all routes (home, about-me, projects, skills, blog, contact, healthcheck), 404 handling, and trailing-slash redirect. Lint + `tsc` (app and cypress) both clean. Component-level coverage of `app/components/**` is still open and is the next slice toward 80%.
+- [x] **Add real test coverage**
+  Slice 1 (prior): hooks covered — `useElementSize` (3) + `useModal`/`Modal` (7) — and Cypress smoke extended to 8 routes/redirects. (`useMediaQuery` was deleted in a later refactor.) Slice 2 (this commit): 8 behavior components got dedicated test files and the 2 trivial background components got smoke tests — `timeline-event` (5), `button` (7), `project-tile` (9), `project-grid` (5), `projects-modal/index` (7), `social-nav` (7), `main-menu-nav` (5), `main-menu-nav-item` (7), `doodles` (4), `noise` (4). 70 tests across 12 files now pass. `vitest.config.ts` gained a `coverage` block (v8 provider; text/html/lcov reporters; thresholds: lines/branches/statements 80, functions 70). Final numbers: lines 99.2%, statements 99.2%, branches 85.3%, functions 74.1%. Functions threshold is 70 (not 80) because v8 counts default-prop arrow no-ops and inline closures as separate functions — comment in `vitest.config.ts` documents the trade-off. Excluded from coverage (out of scope): server entrypoints, routes, constants (pure data), pure-SVG icon/logo/illustration files, `illustrations-track`, `blurry-circles`, and the eight project modal content stubs.
+
+- [x] **Push functions coverage from 70% → 80%**
+  Two changes landed: (1) dropped the dead default-prop no-ops in `app/components/grid/project-tile.tsx` (motion.li / motion.button tolerate undefined handlers — the defaults were guarding against an impossible scenario); (2) extended `main-menu-nav.test.tsx` with a `vi.hoisted`-controlled `useLocation` mock plus a new test that flips `location.state` to `{ isMenuNavigation: true }`, exercising the `useEffect` body that auto-closes the menu on intra-menu navigation. Functions coverage went from 74.07% → 83.33% (20/24); branches 88.24%; lines 99.60%. Threshold in `vitest.config.ts` ratcheted from 70 → 80.
 
 - [x] **Decide: keep or drop Prisma + Postgres** _(dropped)_
   Removed: `prisma/`, `app/db.server.ts`, `app/session.server.ts` (unused), `docker-compose.yml`, `postgres-data/`, `@prisma/client` + `prisma` + `tsx` deps, the `setup`/`docker` npm scripts, and the `prisma` config block. `app/routes/healthcheck.tsx` rewritten as a no-DB self-ping. The Fly multi-region replay block (`server.ts:62-83`) and `fly.toml`'s `release_command = "npx prisma migrate deploy"` are also gone, and the `Dockerfile` no longer installs openssl or runs `prisma generate`. All 7 routes return HTTP 200 on `npm start`.
@@ -82,6 +85,9 @@ Generated from repo audit on 2026-04-30. Tasks sorted by priority.
 
 - [x] **Split `Project` display label from machine ID**
   Renamed the union to `ProjectId` with kebab-case values (`"initiative-roll"`, `"airtable"`, …) used as both selection-state values and modal-map keys. Each `Data` entry now carries a separate `label: string` for the eyebrow text and the tile's `aria-label`. `ProjectTile` only takes `label` (no longer needs the id since the parent owns selection). `ProjectsModal` rekeyed onto `ProjectId`. The display string `"INITIATIVE ROLL"` and friends are now data, not types.
+
+- [ ] **Replace placeholder timeline content on About Me**
+  `app/constants/timeline-data-set.ts` currently ships 8 duplicate "Published First Video" entries plus a "To be continued…" sentinel — visibly broken UX on a live portfolio. Structure is already in place (exported `TimelineEntry` interface with `id`/`headline`/`description`/`date`, stable kebab-case ids, `key={id}` on the consumer). Just needs 4–8 real biographical events from Ari and the placeholder rows swapped out. Keep the final `to-be-continued` sentinel as the dashed-rail closer.
 
 ---
 
