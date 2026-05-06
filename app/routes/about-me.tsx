@@ -18,6 +18,9 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: aboutPage },
 ];
 
+// tuned y-target for the radial-dot backgroundPosition loop — lands on a clean tile boundary so the repeat has no visible seam
+const DOT_GRID_ANIMATE_Y = "19.765rem";
+
 const AboutMePage = () => {
   const { ref, dimensions } = useElementSize<HTMLDivElement>();
   return (
@@ -40,7 +43,7 @@ const AboutMePage = () => {
             ease: "linear",
           }}
           animate={{
-            backgroundPosition: "0 0, -3rem 19.765rem",
+            backgroundPosition: `0 0, -3rem ${DOT_GRID_ANIMATE_Y}`,
           }}
         />
         <div className="illustration-window">
@@ -56,10 +59,10 @@ const AboutMePage = () => {
           } as CSSProperties
         }
       >
-        {data.map(({ headline, date, description }, idx) => {
+        {data.map(({ id, headline, date, description }, idx) => {
           return (
             <TimelineEvent
-              key={date}
+              key={id}
               headline={headline}
               date={date}
               description={description}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+// Returns pixel values. Project sets `html { font-size: 6.25% }` (see app/stylesheets/fonts.css), making 1rem ≡ 1px — so these numbers can be interpolated directly into rem-valued CSS variables.
 interface Dimensions {
   width: number;
   height: number;
