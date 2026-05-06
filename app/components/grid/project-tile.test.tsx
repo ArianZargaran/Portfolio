@@ -26,13 +26,40 @@ describe("ProjectTile", () => {
     ).toBeInTheDocument();
   });
 
-  it("sets aria-label to 'Open <label> project details' on the button", () => {
+  it("sets aria-label to 'Expand <label> project tile' when not active", () => {
     render(<ProjectTile {...defaultProps} />);
     expect(
       screen.getByRole("button", {
-        name: `Open ${defaultProps.label} project details`,
+        name: `Expand ${defaultProps.label} project tile`,
       })
     ).toBeInTheDocument();
+  });
+
+  it("sets aria-label to '<label> project tile, expanded' when isActive is true", () => {
+    render(<ProjectTile {...defaultProps} isActive />);
+    expect(
+      screen.getByRole("button", {
+        name: `${defaultProps.label} project tile, expanded`,
+      })
+    ).toBeInTheDocument();
+  });
+
+  it("adds is-active class on the li when isActive is true", () => {
+    const { container } = render(<ProjectTile {...defaultProps} isActive />);
+    const li = container.querySelector("li")!;
+    expect(li.className.includes("is-active")).toBe(true);
+  });
+
+  it("does not add is-active class when isActive is false or omitted", () => {
+    const { container, rerender } = render(<ProjectTile {...defaultProps} />);
+    expect(
+      container.querySelector("li")!.className.includes("is-active"),
+    ).toBe(false);
+
+    rerender(<ProjectTile {...defaultProps} isActive={false} />);
+    expect(
+      container.querySelector("li")!.className.includes("is-active"),
+    ).toBe(false);
   });
 
   it("calls onClick when the button is clicked", () => {

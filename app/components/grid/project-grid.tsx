@@ -1,11 +1,10 @@
 import classNames from "classnames";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import "./project-grid.css";
 import { ProjectTile } from "./project-tile";
-import { ProjectsModal } from "./projects-modal";
 
-export type ProjectId =
+type ProjectId =
   | "animatea"
   | "airtable"
   | "newsela"
@@ -89,34 +88,63 @@ const DATA: Data[][] = [FIRST_ROW, SECOND_ROW, THIRD_ROW];
 
 export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
   const [isHovered, setIsHovered] = useState<number[] | null>(null);
-  const [selectedProject, setSelectedProject] = useState<ProjectId | null>(
-    null,
-  );
+  const [activeProject, setActiveProject] = useState<ProjectId | null>(null);
 
-  const handleModalClose = () => {
-    setSelectedProject(null);
+  const activeRowIdx = activeProject
+    ? DATA.findIndex((row) => row.some((p) => p.id === activeProject))
+    : -1;
+
+  const handleTileClick = (id: ProjectId) => {
+    setActiveProject(id);
   };
 
-  return (
-    <div className="grid">
-      <ProjectsModal
-        selectedProject={selectedProject ?? undefined}
-        onClose={handleModalClose}
-      />
+  useEffect(() => {
+    if (!activeProject) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (!target?.closest?.(".tile")) {
+        setActiveProject(null);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [activeProject]);
 
+  useEffect(() => {
+    if (!activeProject) return;
+    const timer = window.setTimeout(() => {
+      const el = document.querySelector(
+        `[data-project-id="${activeProject}"]`,
+      );
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [activeProject]);
+
+  return (
+    <div
+      className={classNames("grid", { "has-active": activeProject !== null })}
+    >
       {DATA.map((ROW, id) => {
         return (
-          <ul key={id} className={classNames("row", `row-${id}`)}>
+          <ul
+            key={id}
+            className={classNames("row", `row-${id}`, {
+              "is-active-row": id === activeRowIdx,
+            })}
+          >
             {ROW.map(({ img, label, h2, alt, id: projectId }, idx) => (
               <ProjectTile
                 key={projectId}
+                id={projectId}
                 img={img}
                 label={label}
                 h2={h2}
                 alt={alt}
                 onHoverStart={() => setIsHovered([id, idx])}
                 onHoverEnd={() => setIsHovered(null)}
-                onClick={() => setSelectedProject(projectId)}
+                onClick={() => handleTileClick(projectId)}
+                isActive={activeProject === projectId}
                 isHovered={
                   !!(
                     isHovered &&

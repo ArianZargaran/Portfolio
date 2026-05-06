@@ -12,28 +12,32 @@
 }
 
 .row {
-  height: calc((var(--projects-article-height) + var(--gap)) / 3);
+  flex: 1;
+  min-height: 0;
   display: flex;
   gap: var(--spacing-md);
+  transition: flex 400ms ease;
 }
 
-.row:nth-child(2) {
-  height: calc(
-    (var(--projects-article-height) - (var(--gap) * 6) - var(--spacing-md)) / 3
-  );
+.grid.has-active .row.is-active-row {
+  flex: 3;
 }
 
 @media screen and (max-width: 800px) {
   .grid {
+    position: static;
+    inset: auto;
     display: flex;
     overflow: visible;
     min-height: min-content;
     flex-direction: column;
   }
 
-  .row {
+  .row,
+  .grid.has-active .row.is-active-row {
     display: flex;
     flex-direction: column;
     flex: auto;
+    transition: none;
   }
 }

@@ -5,21 +5,25 @@ import React from "react";
 import "./project-tile.css";
 
 interface ProjectTypeProps {
+  id?: string;
   img: string;
   alt: string;
   label: string;
   h2: string;
   isHovered?: boolean;
+  isActive?: boolean;
   onHoverStart?: () => void;
   onHoverEnd?: () => void;
   onClick?: () => void;
 }
 
 export const ProjectTile: React.FC<ProjectTypeProps> = ({
+  id,
   onHoverStart,
   onHoverEnd,
   onClick,
   isHovered = false,
+  isActive = false,
   img,
   label,
   h2,
@@ -28,13 +32,18 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
   <motion.li
     onHoverStart={onHoverStart}
     onHoverEnd={onHoverEnd}
-    className="tile"
+    className={classnames("tile", { "is-active": isActive })}
+    data-project-id={id}
   >
     <motion.button
       type="button"
       onClick={onClick}
       className="tile-button"
-      aria-label={`Open ${label} project details`}
+      aria-label={
+        isActive
+          ? `${label} project tile, expanded`
+          : `Expand ${label} project tile`
+      }
       whileHover={{
         scale: 1.03,
       }}

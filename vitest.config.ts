@@ -30,7 +30,6 @@ export default defineConfig({
         "app/components/illustrations/{child,couple,pilot,teenager}.tsx",
         "app/components/illustrations/illustrations-track/**",
         "app/components/backgrounds/blurry-circles/**",
-        "app/components/grid/projects-modal/{airtable,animatea,apple,cabify,newsela,repleat,roll,walmart}.tsx",
       ],
       thresholds: {
         lines: 80,
