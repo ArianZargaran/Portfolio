@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ChatQuickRepliesProps {
-  options: ReadonlyArray<string>;
+  options: readonly string[];
   onSelect?: (option: string) => void;
 }
 
