@@ -7,7 +7,7 @@ describe("SocialNav", () => {
   it("renders a nav element containing exactly 5 links", () => {
     render(<SocialNav />);
     const nav = screen.getByRole("navigation");
-    expect(nav).toBeDefined();
+    expect(nav).toBeInTheDocument();
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(5);
   });
@@ -31,8 +31,8 @@ describe("SocialNav", () => {
     );
     expect(externalLinks).toHaveLength(3);
     for (const link of externalLinks) {
-      expect(link.getAttribute("target")).toBe("_blank");
-      expect(link.getAttribute("rel")).toBe("noreferrer");
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noreferrer");
     }
   });
 
@@ -43,8 +43,8 @@ describe("SocialNav", () => {
       l.getAttribute("href")?.startsWith("tel:")
     );
     expect(telLink).toBeDefined();
-    expect(telLink!.getAttribute("target")).toBeNull();
-    expect(telLink!.getAttribute("rel")).toBeNull();
+    expect(telLink!).not.toHaveAttribute("target");
+    expect(telLink!).not.toHaveAttribute("rel");
   });
 
   it("does not set target or rel on the mailto: link", () => {
@@ -54,21 +54,19 @@ describe("SocialNav", () => {
       l.getAttribute("href")?.startsWith("mailto:")
     );
     expect(mailtoLink).toBeDefined();
-    expect(mailtoLink!.getAttribute("target")).toBeNull();
-    expect(mailtoLink!.getAttribute("rel")).toBeNull();
+    expect(mailtoLink!).not.toHaveAttribute("target");
+    expect(mailtoLink!).not.toHaveAttribute("rel");
   });
 
   it("merges a custom className with the base social-nav class on the nav element", () => {
     render(<SocialNav className="my-class" />);
     const nav = screen.getByRole("navigation");
-    expect(nav.className).toContain("social-nav");
-    expect(nav.className).toContain("my-class");
+    expect(nav).toHaveClass("social-nav");
+    expect(nav).toHaveClass("my-class");
   });
 
   it("renders exactly 5 list items inside the nav", () => {
     render(<SocialNav />);
-    const nav = screen.getByRole("navigation");
-    const items = nav.querySelectorAll("li");
-    expect(items).toHaveLength(5);
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
   });
 });

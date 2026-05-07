@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { TimelineEvent } from "./timeline-event";
@@ -19,32 +19,28 @@ describe("TimelineEvent", () => {
   });
 
   it("defaults to right orientation when prop is omitted", () => {
-    const { container } = render(<TimelineEvent {...defaultProps} />);
+    render(<TimelineEvent {...defaultProps} />);
 
-    const root = container.firstElementChild as HTMLElement;
-
-    expect(root.className).toContain("right");
-    expect(root.className).not.toContain("left");
+    const root = screen.getByTestId("timeline-event");
+    // eslint-disable-next-line jest-dom/prefer-to-have-class
+    expect(root.className).toMatch(/right/);
+    // eslint-disable-next-line jest-dom/prefer-to-have-class
+    expect(root.className).not.toMatch(/left/);
   });
 
   it("applies the left class when orientation left is passed", () => {
-    const { container } = render(
-      <TimelineEvent {...defaultProps} orientation="left" />
-    );
+    render(<TimelineEvent {...defaultProps} orientation="left" />);
 
-    const root = container.firstElementChild as HTMLElement;
-
-    expect(root.className).toContain("left");
+    // eslint-disable-next-line jest-dom/prefer-to-have-class
+    expect(screen.getByTestId("timeline-event").className).toMatch(/left/);
   });
 
   it("renders the bullet element nested inside the line element", () => {
-    const { container } = render(<TimelineEvent {...defaultProps} />);
+    render(<TimelineEvent {...defaultProps} />);
 
-    const line = container.querySelector("[class*='line']") as HTMLElement;
-    expect(line).not.toBeNull();
-
-    const bullet = line.querySelector("[class*='bullet']") as HTMLElement;
-    expect(bullet).not.toBeNull();
+    const line = screen.getByTestId("timeline-line");
+    expect(line).toBeInTheDocument();
+    expect(within(line).getByTestId("timeline-bullet")).toBeInTheDocument();
   });
 
   it("renders headline as h3 and description as a paragraph", () => {

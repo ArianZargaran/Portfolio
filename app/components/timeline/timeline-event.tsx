@@ -17,10 +17,13 @@ export const TimelineEvent: React.FC<TimelineEventProps> = ({
   orientation = "right",
 }) => {
   return (
-    <div className={classNames(styles["timeline-event"], styles[orientation])}>
+    <div
+      data-testid="timeline-event"
+      className={classNames(styles["timeline-event"], styles[orientation])}
+    >
       <p className={styles.date}>{date}</p>
-      <div className={styles.line}>
-        <div className={styles.bullet} />
+      <div data-testid="timeline-line" className={styles.line}>
+        <div data-testid="timeline-bullet" className={styles.bullet} />
       </div>
       <div className={styles.box}>
         <div className={styles.content}>

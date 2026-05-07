@@ -6,14 +6,14 @@ import Button from "./button";
 describe("Button", () => {
   it("renders a button element by default when no href is provided", () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole("button")).toBeDefined();
+    expect(screen.getByRole("button")).toBeInTheDocument();
   });
 
   it("renders an anchor element with the correct href when href is provided", () => {
     render(<Button href="https://example.com">Link</Button>);
     const link = screen.getByRole("link");
-    expect(link).toBeDefined();
-    expect(link.getAttribute("href")).toBe("https://example.com");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "https://example.com");
   });
 
   it("forwards target, rel, and download attributes onto the anchor element", () => {
@@ -28,14 +28,14 @@ describe("Button", () => {
       </Button>
     );
     const link = screen.getByRole("link");
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toBe("noopener noreferrer");
-    expect(link.getAttribute("download")).toBe("file.pdf");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAttribute("download", "file.pdf");
   });
 
   it("renders children content inside the element", () => {
     render(<Button>My Label</Button>);
-    expect(screen.getByRole("button").textContent).toBe("My Label");
+    expect(screen.getByRole("button")).toHaveTextContent("My Label");
   });
 
   it("forwards onClick to the button element and calls the handler on click", () => {
@@ -47,16 +47,18 @@ describe("Button", () => {
 
   it("forwards aria-label via rest props to the button element", () => {
     render(<Button aria-label="close dialog">X</Button>);
-    expect(screen.getByRole("button").getAttribute("aria-label")).toBe(
-      "close dialog"
+    expect(screen.getByRole("button")).toHaveAttribute(
+      "aria-label", "close dialog"
     );
   });
 
   it("composes custom className with the base button and primary variant classes", () => {
     render(<Button className="my-custom-class">Styled</Button>);
     const el = screen.getByRole("button");
-    expect(el.className).toContain("button");
-    expect(el.className).toContain("primary");
-    expect(el.className).toContain("my-custom-class");
+    // eslint-disable-next-line jest-dom/prefer-to-have-class
+    expect(el.className).toMatch(/button/);
+    // eslint-disable-next-line jest-dom/prefer-to-have-class
+    expect(el.className).toMatch(/primary/);
+    expect(el).toHaveClass("my-custom-class");
   });
 });

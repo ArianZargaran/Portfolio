@@ -45,21 +45,16 @@ describe("ProjectTile", () => {
   });
 
   it("adds is-active class on the li when isActive is true", () => {
-    const { container } = render(<ProjectTile {...defaultProps} isActive />);
-    const li = container.querySelector("li")!;
-    expect(li.className.includes("is-active")).toBe(true);
+    render(<ProjectTile {...defaultProps} isActive />);
+    expect(screen.getByTestId("project-tile")).toHaveClass("is-active");
   });
 
   it("does not add is-active class when isActive is false or omitted", () => {
-    const { container, rerender } = render(<ProjectTile {...defaultProps} />);
-    expect(
-      container.querySelector("li")!.className.includes("is-active"),
-    ).toBe(false);
+    const { rerender } = render(<ProjectTile {...defaultProps} />);
+    expect(screen.getByTestId("project-tile")).not.toHaveClass("is-active");
 
     rerender(<ProjectTile {...defaultProps} isActive={false} />);
-    expect(
-      container.querySelector("li")!.className.includes("is-active"),
-    ).toBe(false);
+    expect(screen.getByTestId("project-tile")).not.toHaveClass("is-active");
   });
 
   it("calls onClick when the button is clicked", () => {
@@ -92,8 +87,8 @@ describe("ProjectTile", () => {
     // those events from fireEvent.mouseEnter, so the callbacks can't be reliably asserted via RTL.
     // This test confirms mounting and dispatching mouse events without handlers does not throw.
     expect(() => {
-      const { container } = render(<ProjectTile {...defaultProps} />);
-      const li = container.querySelector("li")!;
+      render(<ProjectTile {...defaultProps} />);
+      const li = screen.getByTestId("project-tile");
       fireEvent.mouseEnter(li);
       fireEvent.mouseLeave(li);
     }).not.toThrow();
@@ -107,14 +102,14 @@ describe("ProjectTile", () => {
     // will catch regressions; if not, the test still confirms no error is thrown.
     const onHoverStart = vi.fn();
     const onHoverEnd = vi.fn();
-    const { container } = render(
+    render(
       <ProjectTile
         {...defaultProps}
         onHoverStart={onHoverStart}
         onHoverEnd={onHoverEnd}
       />
     );
-    const li = container.querySelector("li")!;
+    const li = screen.getByTestId("project-tile");
     fireEvent.mouseEnter(li);
     fireEvent.mouseLeave(li);
     // Skipping strict call-count assertions — motion hover is not reliably

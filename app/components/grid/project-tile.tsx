@@ -34,6 +34,7 @@ export const ProjectTile: React.FC<ProjectTypeProps> = ({
     onHoverEnd={onHoverEnd}
     className={classnames("tile", { "is-active": isActive })}
     data-project-id={id}
+    data-testid="project-tile"
   >
     <motion.button
       type="button"

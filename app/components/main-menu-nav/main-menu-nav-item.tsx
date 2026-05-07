@@ -29,6 +29,7 @@ export const MainMenuNavItem: React.FC<Option> = ({
     >
       <h2 className={styles["nav-item_heading"]}>{option}</h2>
       <hr
+        data-testid="nav-item-hr"
         className={classnames(styles["nav-item_hr"], {
           [styles["is-shown"]]: isHovered,
         })}

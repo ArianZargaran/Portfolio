@@ -5,16 +5,16 @@ import { Noise } from "./noise";
 
 describe("Noise", () => {
   it("renders an aria-hidden div", () => {
-    const { container } = render(<Noise data-testid="noise" />);
-    const el = container.querySelector("div[aria-hidden='true']");
-    expect(el).not.toBeNull();
+    render(<Noise data-testid="noise" />);
+    expect(screen.getByTestId("noise")).toHaveAttribute("aria-hidden", "true");
   });
 
   it("merges a custom className with the styles.noise class", () => {
     render(<Noise data-testid="noise" className="my-extra" />);
     const el = screen.getByTestId("noise");
-    expect(el.className).toContain("my-extra");
-    expect(el.className).toContain("noise");
+    expect(el).toHaveClass("my-extra");
+    // eslint-disable-next-line jest-dom/prefer-to-have-class
+    expect(el.className).toMatch(/noise/);
   });
 
   it("forwards arbitrary HTML attributes via rest props", () => {
@@ -27,6 +27,6 @@ describe("Noise", () => {
 
   it("does not crash when className is omitted", () => {
     const { container } = render(<Noise />);
-    expect(container.firstChild).not.toBeNull();
+    expect(container).not.toBeEmptyDOMElement();
   });
 });

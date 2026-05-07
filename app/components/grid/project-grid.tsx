@@ -123,12 +123,14 @@ export const ProjectsGrid: React.FC<ProjectGridProps> = () => {
 
   return (
     <div
+      data-testid="projects-grid"
       className={classNames("grid", { "has-active": activeProject !== null })}
     >
       {DATA.map((ROW, id) => {
         return (
           <ul
             key={id}
+            data-testid="projects-row"
             className={classNames("row", `row-${id}`, {
               "is-active-row": id === activeRowIdx,
             })}

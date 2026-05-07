@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import MainMenuNav from "./main-menu-nav";
@@ -10,9 +11,19 @@ const { useLocationMock } = vi.hoisted(() => ({
   })),
 }));
 
+interface LinkMockProps extends ComponentProps<"a"> {
+  to: string;
+}
+
+interface HamburgerIconMockProps {
+  isOpen: boolean;
+  onClick?: () => void;
+  className?: string;
+}
+
 vi.mock("@remix-run/react", () => ({
   useLocation: useLocationMock,
-  Link: ({ to, children, ...rest }: any) => (
+  Link: ({ to, children, ...rest }: LinkMockProps) => (
     <a href={to} {...rest}>
       {children}
     </a>
@@ -20,7 +31,7 @@ vi.mock("@remix-run/react", () => ({
 }));
 
 vi.mock("animatea", () => ({
-  HamburgerIcon: ({ isOpen, onClick, className }: any) => (
+  HamburgerIcon: ({ isOpen, onClick, className }: HamburgerIconMockProps) => (
     <button
       type="button"
       data-testid="menu-toggle"
@@ -64,13 +75,13 @@ describe("MainMenuNav", () => {
 
     const toggle = screen.getByTestId("menu-toggle");
     expect(toggle).toBeInTheDocument();
-    expect(toggle.getAttribute("data-open")).toBe("false");
+    expect(toggle).toHaveAttribute("data-open", "false");
   });
 
   it("does not render the nav list when menu is initially closed", () => {
     render(<MainMenuNav options={fakeOptions} />);
 
-    expect(screen.queryByRole("list")).toBeNull();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
   });
 
   it("shows the nav list and sets data-open to true after clicking the toggle", () => {
@@ -79,8 +90,8 @@ describe("MainMenuNav", () => {
     fireEvent.click(screen.getByTestId("menu-toggle"));
 
     expect(screen.getByRole("list")).toBeInTheDocument();
-    expect(screen.getByTestId("menu-toggle").getAttribute("data-open")).toBe(
-      "true"
+    expect(screen.getByTestId("menu-toggle")).toHaveAttribute(
+      "data-open", "true"
     );
   });
 
@@ -106,7 +117,7 @@ describe("MainMenuNav", () => {
     // AnimatePresence mode="wait" keeps the exiting element mounted until its
     // exit animation settles — wait for the DOM to clear asynchronously.
     await waitFor(() => {
-      expect(screen.queryByRole("list")).toBeNull();
+      expect(screen.queryByRole("list")).not.toBeInTheDocument();
     });
   });
 
@@ -123,7 +134,7 @@ describe("MainMenuNav", () => {
     rerender(<MainMenuNav options={fakeOptions} />);
 
     await waitFor(() => {
-      expect(screen.queryByRole("list")).toBeNull();
+      expect(screen.queryByRole("list")).not.toBeInTheDocument();
     });
   });
 });
