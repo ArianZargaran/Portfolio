@@ -82,8 +82,8 @@ const ContactPage = () => {
           initial={fadeUp.initial}
           animate={fadeUp.animate(0.15)}
         >
-          I&apos;m always open to interesting work, a quick chat, or just a
-          hello. The fastest way to reach me is email — anything else below
+          I&apos;m always open to collaborating, a quick chat, or just sharing a
+          quick hello. The fastest way to reach me is by email — anything else below
           works too.
         </motion.p>
 
