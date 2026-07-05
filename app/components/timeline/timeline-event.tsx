@@ -1,6 +1,8 @@
 import classNames from "classnames";
 import React from "react";
 
+import { renderInlineMarkdown } from "~/utils/inline-markdown";
+
 import styles from "./timeline-event.module.css";
 
 interface TimelineEventProps {
@@ -8,6 +10,11 @@ interface TimelineEventProps {
   description: string;
   date: string;
   orientation?: "right" | "left";
+  image?: {
+    src: string;
+    alt: string;
+  };
+  onOpen?: () => void;
 }
 
 export const TimelineEvent: React.FC<TimelineEventProps> = ({
@@ -15,7 +22,24 @@ export const TimelineEvent: React.FC<TimelineEventProps> = ({
   description,
   date,
   orientation = "right",
+  image,
+  onOpen,
 }) => {
+  const content = (
+    <div className={styles.content}>
+      {image ? (
+        <img
+          className={styles.image}
+          src={image.src}
+          alt={image.alt}
+          loading="lazy"
+        />
+      ) : null}
+      <h3 className={styles.headline}>{headline}</h3>
+      <p>{renderInlineMarkdown(description)}</p>
+    </div>
+  );
+
   return (
     <div
       data-testid="timeline-event"
@@ -26,10 +50,19 @@ export const TimelineEvent: React.FC<TimelineEventProps> = ({
         <div data-testid="timeline-bullet" className={styles.bullet} />
       </div>
       <div className={styles.box}>
-        <div className={styles.content}>
-          <h3 className={styles.headline}>{headline}</h3>
-          <p>{description}</p>
-        </div>
+        {onOpen ? (
+          <button
+            type="button"
+            className={styles["box-button"]}
+            onClick={onOpen}
+            aria-haspopup="dialog"
+            aria-label={`Read more about ${headline}`}
+          >
+            {content}
+          </button>
+        ) : (
+          content
+        )}
       </div>
     </div>
   );

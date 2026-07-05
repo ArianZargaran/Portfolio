@@ -47,6 +47,33 @@
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
+/* Reset button chrome so the card looks identical whether or not it is
+   clickable; the affordance is the hover lift + cursor. */
+.box-button {
+  all: unset;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+.box-button .content {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.box-button:hover .content,
+.box-button:focus-visible .content {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.box-button:focus-visible .content {
+  outline: 2rem solid var(--theme_upsell-border);
+  outline-offset: 2rem;
+}
+
 .left .content {
   border-radius: 7rem;
   border-top-right-radius: 1rem;
@@ -85,4 +112,17 @@
   margin-bottom: var(--spacing-sm);
   font-weight: var(--font-weight-bold);
   color: var(--theme_text-info);
+}
+
+.image {
+  /* Bleed to the card edges: cancel .content's padding so the image reads as
+     the card's header, then restore breathing room below. */
+  display: block;
+  width: calc(100% + var(--spacing-md) * 2);
+  margin: calc(var(--spacing-sm) * -1) calc(var(--spacing-md) * -1)
+    var(--spacing-sm);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
 }
