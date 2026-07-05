@@ -134,6 +134,10 @@ export const data: TimelineEntry[] = [
     description:
       "Legos, cooking, home renovations — everything I love shares the same DNA: **craft plus beauty**. Apple taught me they're inseparable; *good design is the user experience*. It's what I bring to every interface I build.",
     date: "Always",
+    image: {
+      src: "/timeline-engineering-aesthetics.png",
+      alt: "Triptych of hands assembling a Lego architecture set, a plated homemade dish, and a freshly leveled wooden shelf",
+    },
     story:
       "Since I was a child I've been the kind of person who loves style and aesthetics — and it gets really interesting when you mix that with engineering. Look at everything I do for fun: **Legos, cooking, home renovations**. All of them share the same DNA — a craft that has to *work* and a result that has to be *beautiful*. Neither half is optional. Part of that learning comes from Apple, a company famous for its care for UI and UX, and it's what I try to bring to my work daily. I feel genuinely moved by the fact that I get to build user experiences through interfaces: good design comes with the best user experience, and vice versa.",
   },
@@ -143,6 +147,10 @@ export const data: TimelineEntry[] = [
     description:
       "Three rules I live by. **Quality is a need, not an option** — be good to the user. **Do the simple thing that works**, then make it better every single day. And **high trust, low ego** — some days you ride as the leader, some days as the *gregario*.",
     date: "Today",
+    image: {
+      src: "/timeline-my-principles.png",
+      alt: "Pixel-art scene of two teammate cyclists on a sunrise mountain road, one passing a water bottle to the other",
+    },
     story:
       "Every chapter above distilled into three rules. **Quality is a need, not an option** — Apple taught me that delivering something people love isn't polish at the end; it's generosity toward the person on the other side of the screen. **Do the simple thing that works, then make it better every single day** — Walmart taught me to ship fast without a safety net, and my own promise taught me that daily practice compounds into everything. **High trust, low ego** — Airtable taught me that some days you ride as the leader and some days as the *gregario*, and the team wins either way. These aren't aspirations; they're habits with scars behind them.",
   },

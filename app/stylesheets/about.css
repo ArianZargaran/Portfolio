@@ -1,49 +1,55 @@
 .about-page {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: flex-start;
+  /* The fixed logo (.media-container-link) is the taller of the two fixed
+     nav elements: spacing-sm offset + spacing-sm padding + 48rem icon +
+     spacing-sm padding ≈ 96rem from the viewport top. Shared here (not
+     declared directly on .media-container) so .page-header below can
+     reference the same value — both exist to keep scrolling content clear
+     of the same two fixed elements. */
+  --nav-clearance: calc(var(--spacing-3xl) + var(--spacing-lg));
+
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--spacing-xl);
+  padding-inline: var(--spacing-2xl);
   background-color: var(--theme_bg);
   position: relative;
+  align-items: start;
 }
 
 .headline {
   color: var(--theme_upsell-text);
   font-weight: var(--font-weight-bold);
-  margin: calc(var(--spacing-xl) * -1) 0 calc(var(--spacing-2xs));
+  text-align: center;
+  margin: var(--spacing-sm) 0 0;
 }
 
+/* Sticky left rail: cols 1-3, pinned for the height of the viewport while
+   the timeline (cols 4-12) scrolls past on the right. */
 .media-container {
-  position: fixed;
+  /* --nav-clearance (defined on .about-page): justify-content:center below
+     only centers content *within* the padded box, never above it, so this
+     padding-top is a hard floor — content can get no closer to the fixed
+     logo/hamburger than that, regardless of viewport height or how little
+     content there is to center. */
+  grid-column: 1 / span 3;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  display: flex;
-  background-image: linear-gradient(var(--theme_bg) 97%, transparent);
+  gap: var(--spacing-sm);
   z-index: 2;
-  padding-bottom: var(--spacing-lg);
+  padding: var(--nav-clearance) var(--spacing-sm) var(--spacing-lg);
 }
 
-.media-container-background {
-  position: absolute;
-  inset: 0;
-  bottom: 20rem;
-  z-index: -1;
-
-  background-image: linear-gradient(transparent 20%, var(--theme_bg) 100%),
-    radial-gradient(var(--theme_upsell-bg) 1rem, transparent 1rem);
-  background-position:
-    0 0,
-    -3rem -3rem;
-
-  background-size:
-    100% 100%,
-    var(--spacing-md) var(--spacing-md);
-}
-
+/* Fixed to the viewport corner, not absolute within .media-container: this
+   page's padding-inline shifts where the sidebar column starts, and an
+   absolutely-positioned link would drift with it. Matches the nav toggle
+   (main-menu-nav.module.css), which anchors to the viewport the same way. */
 .media-container-link {
-  position: absolute;
+  position: fixed;
   z-index: var(--z-index_2xs);
   top: var(--spacing-sm);
   left: var(--spacing-sm);
@@ -52,43 +58,113 @@
 }
 
 .media-container-heading {
-  height: var(--projects-header-height);
+  /* Not --projects-header-height: that variable is only defined in
+     projects.css, which this page never loads — calc() referencing an
+     undefined custom property is invalid and drops the whole declaration,
+     silently zeroing it out. */
+  height: 48rem;
 }
 
-.illustration-window {
-  width: 550rem;
-  position: relative;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  justify-content: flex-start;
+.media-container-illustration {
+  width: 100%;
 }
 
 .timeline {
-  --illustration-height: 50rem;
-
-  max-width: 85vw;
+  grid-column: 4 / span 9;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-top: calc(var(--illustration-height, 450px));
+  /* --nav-clearance (defined on .about-page), not spacing-2xl: that was
+     short of .page-header's own height, so the first event's top sat inside
+     the header's solid zone and got hidden by it on initial render, before
+     any scrolling ever happened. */
+  padding-top: var(--nav-clearance);
+}
+
+/* An actual header band, not a bare mask div: it holds the logo link (moved
+   here from .media-container — that Link was position:fixed already, so it
+   never contributed to .media-container's flex centering and is free to
+   move) and gives the whole top strip a shared backdrop. The hamburger
+   toggle itself still renders elsewhere (MainMenuNav, mounted once in
+   root.tsx for every route) so it can't be a DOM child here without
+   restructuring every page's nav — but it occupies the same fixed top-right
+   corner and this header's z-index (10) sits below its --z-index_2xl (800),
+   so visually it reads as one bar. Solid through most of the height, not a
+   gradient from the first pixel: scrolling cards need to be fully hidden,
+   not ghosting through a see-through fade, until right at the bottom edge
+   where it hands off to the page. pointer-events:none so it doesn't block
+   clicks on the timeline underneath; the logo link opts back in below. */
+.page-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: var(--nav-clearance);
+  background: linear-gradient(
+    to bottom,
+    var(--theme_bg) 0%,
+    var(--theme_bg) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.page-header .media-container-link {
+  pointer-events: auto;
 }
 
 @media (max-width: 992px) {
-  .timeline {
-    width: 78vw;
-    max-width: 700rem;
+  .about-page {
+    display: flex;
+    flex-direction: column;
   }
-}
 
-@media (min-width: 992px) {
+  .media-container {
+    position: static;
+    height: auto;
+    width: 100%;
+    /* --nav-clearance (defined above): the fixed logo/hamburger don't move
+       with the page, and without a real content flow to push against them
+       (no illustration on mobile, see display:none below), the heading is
+       the first thing that could butt up against them — same guaranteed
+       floor as desktop, not the old broken-variable value that used to
+       compute to 0 here. */
+    padding-top: var(--nav-clearance);
+    /* The base rule's padding shorthand (spacing-lg top/bottom) still
+       applies underneath since only padding-top is overridden here — this
+       was leaving a dead gap below "About me" and above the timeline. */
+    padding-bottom: 0;
+  }
+
+  /* Illustrations don't render on mobile at all — the sidebar is sticky and
+     scroll-tracked, which only makes sense pinned alongside a long read; as
+     a normal in-flow block on a narrow screen it's just a big image users
+     scroll past once. Logo and "About me" heading still show. */
+  .media-container-illustration {
+    display: none;
+  }
+
   .timeline {
-    width: 64vw;
-    max-width: 1150rem;
+    /* 100%, not a vw fraction: vw ignores .about-page's own padding-inline,
+       so it either overflows the gutter or drifts off-center from it. */
+    width: 100%;
+    max-width: 700rem;
+    margin: 0 auto;
+    /* Not --nav-clearance: on mobile .media-container above already pays
+       that clearance (its own padding-top), pushing the heading below
+       .page-header before .timeline even starts — stacking the same value
+       here again was double-counting it and shoving the first event way
+       down. Just a little breathing room below the heading. */
+    padding-top: var(--spacing-sm);
   }
 }
 
 .timeline-modal {
+  --modal-max-height: 85vh;
+
   padding: 0;
   border: none;
   border-radius: 10rem;
@@ -97,6 +173,29 @@
   width: min(640rem, 90vw);
   overflow: hidden;
   box-shadow: 0 20rem 60rem rgba(0, 0, 0, 0.5);
+  /* The dialog box itself has no built-in cap, so a long story just grew
+     the box past the viewport with no way to reach the rest — <dialog>
+     doesn't add page scroll for its own overflow. position:relative makes
+     this the close button's containing block now that the button lives
+     here instead of inside the scrolling body (see .timeline-modal_body). */
+  position: relative;
+  max-height: var(--modal-max-height);
+}
+
+/* [open]-scoped, not on .timeline-modal directly: the UA stylesheet hides a
+   closed dialog via `dialog:not([open]) { display: none }`, but author
+   styles win over UA styles regardless of specificity — an unconditional
+   display:flex here overrode that, so the CLOSED dialog stayed flex-
+   displayed and kept participating in .about-page's grid (auto-placed,
+   width min(640rem,90vw)), blowing out whichever column it landed in and
+   squeezing the timeline into a sliver. Scoping to [open] (which
+   showModal()/show() set automatically) restores the default display:none
+   while closed. display:flex here is what lets the image stay put at a
+   fixed height while only the text scrolls (see .timeline-modal_body and
+   .timeline-modal_content), instead of both scrolling as one block. */
+.timeline-modal[open] {
+  display: flex;
+  flex-direction: column;
 }
 
 .timeline-modal::backdrop {
@@ -109,14 +208,31 @@
   width: 100%;
   aspect-ratio: 21 / 9;
   object-fit: cover;
+  /* Fixed at its aspect-ratio height, never compressed by the flex column
+     below — it's .timeline-modal_content that should give way and scroll,
+     not this. */
+  flex-shrink: 0;
 }
 
 .timeline-modal_body {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Without this, a flex item's default min-height:auto refuses to shrink
+     below its content's natural size — the classic nested-flex-scroll trap.
+     That kept this whole article growing past .timeline-modal's cap instead
+     of letting .timeline-modal_content (below) be the thing that scrolls. */
+  min-height: 0;
 }
 
 .timeline-modal_content {
   padding: var(--spacing-md);
+  /* The actual scroll container now: takes whatever height is left after
+     the fixed-height image above it, and scrolls internally once the
+     header + story don't fit — the image stays put. min-height:0 for the
+     same nested-flex-shrink reason as .timeline-modal_body above. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .timeline-modal_header {
