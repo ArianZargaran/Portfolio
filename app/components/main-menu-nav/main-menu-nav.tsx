@@ -91,8 +91,8 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
         )}
         isOpen={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        height={24}
-        width={48}
+        height={48}
+        width={64}
       />
       <AnimatePresence mode="wait" initial={false}>
         {isOpen ? (

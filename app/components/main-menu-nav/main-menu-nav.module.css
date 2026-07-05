@@ -53,25 +53,25 @@
 /* The animatea HamburgerIcon ships at 48px (its widest preset). That's too
    big for a corner toggle, so override the width/height attributes via CSS.
    The class is applied directly to the SVG (not a wrapper), so target it
-   without a descendant selector. The 2:1 box must match the icon's 8x4
-   viewBox (width=48 height=24 props): equal x/y scale keeps the open-state
+   without a descendant selector. The 4:3 box must match the icon's 4:3
+   viewBox (width=64 height=48 props): equal x/y scale keeps the open-state
    X rotation at a true 45deg instead of skewing. */
 .main-menu_toggle {
   width: 32px;
-  height: 16px;
+  height: 24px;
 }
 
 @media (max-width: 992px) {
   .main-menu_toggle {
     width: 28px;
-    height: 14px;
+    height: 21px;
   }
 }
 
 @media (max-width: 575px) {
   .main-menu_toggle {
     width: 24px;
-    height: 12px;
+    height: 18px;
   }
 }
 
