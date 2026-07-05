@@ -57,6 +57,13 @@
   gap: var(--spacing-sm);
   justify-content: center;
   margin-top: var(--spacing-sm);
+  /* The CTA buttons mirror the home hero buttons instead of the red contact
+     theme. Scoped here (not on .contact) so the email copy button and other
+     contact elements keep the theme's french-gray border. */
+  --theme_text: var(--color_purple-shadow-100);
+  --theme_border: var(--color_purple-shadow-700);
+  --theme_border-info: var(--color_purple-shadow-700);
+  --theme_bg-strong: var(--color_purple-shadow-100);
 }
 
 .contact-email-row {
