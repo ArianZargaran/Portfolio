@@ -1,9 +1,13 @@
 .illustrations-track {
   display: flex;
   flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
+  /* hidden, not auto: the track pans programmatically (scrollLeft driven by
+     page scroll progress), so it must stay a scroll container — but with auto
+     the browser treats it as user-scrollable and swallows wheel events over
+     the illustration band instead of scrolling the page. Not clip: clip
+     removes the scroll container entirely and scrollLeft stops working. */
+  overflow-x: hidden;
+  overflow-y: clip;
   white-space: nowrap;
   gap: calc(var(--spacing-xl) + var(--spacing-2xl));
   padding: 0 150rem;
