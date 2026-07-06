@@ -15,16 +15,38 @@ describe("ProjectsGrid", () => {
     expect(screen.getAllByTestId("projects-row")).toHaveLength(3);
   });
 
-  it("each tile has a unique expand aria-label for AIRTABLE, CABIFY, and ANIMATEA", () => {
+  it("keeps a placeholder tile in the grid for topics with no images yet", () => {
     render(<ProjectsGrid />);
     expect(
-      screen.getByRole("button", { name: /expand airtable project tile/i }),
+      screen.getByRole("button", { name: /expand back-end and infra project tile/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /expand cabify project tile/i }),
+      screen.getByRole("button", { name: /expand mobile apps project tile/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /expand animatea project tile/i }),
+      screen.getByRole("button", {
+        name: /expand ai implementations, automations project tile/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("each tile has a unique expand aria-label per topic", () => {
+    render(<ProjectsGrid />);
+    expect(
+      screen.getByRole("button", { name: /expand design systems project tile/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /expand product front-end engineering project tile/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /expand non-technical \(linguistic\) qa project tile/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /expand own designs project tile/i }),
     ).toBeInTheDocument();
   });
 
@@ -35,7 +57,7 @@ describe("ProjectsGrid", () => {
     expect(grid).not.toHaveClass("has-active");
 
     fireEvent.click(
-      screen.getByRole("button", { name: /expand airtable project tile/i }),
+      screen.getByRole("button", { name: /expand design systems project tile/i }),
     );
 
     expect(grid).toHaveClass("has-active");
@@ -49,12 +71,16 @@ describe("ProjectsGrid", () => {
     const grid = screen.getByTestId("projects-grid");
 
     fireEvent.click(
-      screen.getByRole("button", { name: /expand cabify project tile/i }),
+      screen.getByRole("button", {
+        name: /expand product front-end engineering project tile/i,
+      }),
     );
     expect(grid).toHaveClass("has-active");
 
     fireEvent.click(
-      screen.getByRole("button", { name: /cabify project tile, expanded/i }),
+      screen.getByRole("button", {
+        name: /product front-end engineering project tile, expanded/i,
+      }),
     );
     expect(grid).toHaveClass("has-active");
   });
@@ -64,7 +90,9 @@ describe("ProjectsGrid", () => {
     const grid = screen.getByTestId("projects-grid");
 
     fireEvent.click(
-      screen.getByRole("button", { name: /expand cabify project tile/i }),
+      screen.getByRole("button", {
+        name: /expand product front-end engineering project tile/i,
+      }),
     );
     expect(grid).toHaveClass("has-active");
 
@@ -77,27 +105,27 @@ describe("ProjectsGrid", () => {
     const grid = screen.getByTestId("projects-grid");
 
     fireEvent.click(
-      screen.getByRole("button", { name: /expand airtable project tile/i }),
+      screen.getByRole("button", { name: /expand design systems project tile/i }),
     );
     expect(grid).toHaveClass("has-active");
 
-    const appleTile = screen.getByRole("button", {
-      name: /expand apple project tile/i,
+    const ownDesignsTile = screen.getByRole("button", {
+      name: /expand own designs project tile/i,
     });
-    fireEvent.mouseDown(appleTile);
-    fireEvent.click(appleTile);
+    fireEvent.mouseDown(ownDesignsTile);
+    fireEvent.click(ownDesignsTile);
 
     expect(grid).toHaveClass("has-active");
     const rows = screen.getAllByTestId("projects-row");
-    expect(rows[1]).toHaveClass("is-active-row");
-    expect(rows[1]).toHaveClass("row-1");
+    expect(rows[2]).toHaveClass("is-active-row");
+    expect(rows[2]).toHaveClass("row-2");
   });
 
   it("clicking a different tile swaps the active row", () => {
     render(<ProjectsGrid />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /expand airtable project tile/i }),
+      screen.getByRole("button", { name: /expand design systems project tile/i }),
     );
     expect(screen.getAllByTestId("projects-row")[0]).toHaveClass(
       "is-active-row",
@@ -105,11 +133,13 @@ describe("ProjectsGrid", () => {
     expect(screen.getAllByTestId("projects-row")[0]).toHaveClass("row-0");
 
     fireEvent.click(
-      screen.getByRole("button", { name: /expand apple project tile/i }),
+      screen.getByRole("button", {
+        name: /expand non-technical \(linguistic\) qa project tile/i,
+      }),
     );
-    expect(screen.getAllByTestId("projects-row")[1]).toHaveClass(
+    expect(screen.getAllByTestId("projects-row")[2]).toHaveClass(
       "is-active-row",
     );
-    expect(screen.getAllByTestId("projects-row")[1]).toHaveClass("row-1");
+    expect(screen.getAllByTestId("projects-row")[2]).toHaveClass("row-2");
   });
 });
