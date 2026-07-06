@@ -106,16 +106,31 @@
   }
 }
 
+/* A narrow row (any tile other than the active one, once its sibling grows
+   to flex:3) leaves too little width for the full eyebrow/headline — without
+   a clamp, text just wraps past the tile's own height and gets cut off
+   mid-line by .tile's overflow:hidden. Line-clamping to a fixed number of
+   lines with an ellipsis keeps it readable at any width instead. */
 .tile-content-eyebrow {
   color: var(--theme_text-info);
   font-size: 13rem;
   line-height: 20rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
 }
 
 .tile-content-headline {
   color: var(--theme_text);
   font-size: 17rem;
   line-height: 24rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 @media screen and (max-width: 800px) {
