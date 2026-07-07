@@ -43,7 +43,7 @@ const visualRegressionChunk: KnowledgeChunk = {
    verification (JS-rendered Webby page, freshworks.com returned a 403). */
 const aiModeChunk: KnowledgeChunk = {
   id: "project-ai-mode",
-  text: "AI Mode: he built the front-end for this AI-powered web assistant at Freshworks (React, with Framer Motion for animation — Safari, especially on mobile, caused a lot of problems), honored at the 2026 Webby Awards for Best Use of AI. It streamlines self-service on freshworks.com through a sleek, unobtrusive 'toolbar' experience — AI-powered smart search, instant summaries, and recommended journeys — helping visitors find what they need without hunting for it. The wider system: built on Node and Freshworks' existing Next.js infrastructure; content ingestion was tried two ways — pulling structured entries from Contentful, and scraping pages directly — and direct scraping worked better; retrieval runs on Pinecone, with GPT-3 handling both the embeddings and answer generation; analytics run through a custom abstraction layer on top of GA4; content moderation relies on upfront analysis of what the system can reasonably be asked, ongoing content curation, and fallbacks for when a user goes off-topic or asks irrelevant questions.",
+  text: "AI Mode: he built the front-end for this AI-powered web assistant at Freshworks — a two-person team, him on front-end and one engineer on back-end — using React, with Framer Motion for animation. Safari, especially on mobile, caused a lot of problems: Figma's design tooling doesn't account for how certain Safari versions actually render, so gaps invisible in the design file only surfaced once built; he solved them with pure CSS fixes rather than JS workarounds. Honored at the 2026 Webby Awards for Best Use of AI. It streamlines self-service on freshworks.com through a sleek, unobtrusive 'toolbar' experience — AI-powered smart search, instant summaries, and recommended journeys — helping visitors find what they need without hunting for it. The wider system: built on Node and Freshworks' existing Next.js infrastructure; content ingestion was tried two ways — pulling structured entries from Contentful, and scraping pages directly — and direct scraping worked better; retrieval runs on Pinecone, with GPT-3 handling both the embeddings and answer generation; analytics run through a custom abstraction layer on top of GA4; content moderation relies on upfront analysis of what the system can reasonably be asked, ongoing content curation, and fallbacks for when a user goes off-topic or asks irrelevant questions.",
 };
 
 /* Deeper STAR-format stories behind three of the shorter chunks above —
@@ -75,6 +75,18 @@ const starStoryChunks: KnowledgeChunk[] = [
     id: "story-cms-architecture-comparison",
     text: "CMS architecture, Airtable vs. Freshworks: at Airtable, Contentful content models were built for fluid customization — content creators could customize templates however they wanted, achieved by continually expanding content models with more and more keys over time. At Freshworks, content and producer flows are intentionally rigid and strict, but the underlying architecture is a knowledge graph: entities like 'product' have attached related entities — capabilities, clients, campaign assets, and more — that scale up as a tree. Content lives on one side, the UI on the other, fully decoupled; UI components stay 'dumb,' carrying no business logic, purely rendering whatever data the graph hands them. A content-resolution layer knows exactly what to pick from the graph and how to render it, whether there's one product or ten. He considers the Freshworks knowledge-graph approach the better-working system of the two.",
   },
+  {
+    id: "story-product-vs-marketing-design-systems",
+    text: "Product vs. marketing design systems: Cabify's design system was a product design system (the app itself), while Airtable's and Freshworks' were brand/marketing design systems (the marketing site) — a fundamentally different category. He was the main contributor to Cabify's product design system, building components that other teams consumed as well as himself. He's had repeated conversations, first with Airtable's product team and now again at Freshworks, about consolidating a company's product and marketing design systems into one; both times the conclusion was that it isn't practical. The two don't belong on the same spectrum: marketing colors run more saturated where product colors are more muted, and marketing typography is editorial and expressive where product typography is the functional opposite — among other structural discrepancies.",
+  },
+  {
+    id: "story-walmart-accessibility",
+    text: "Walmart accessibility work: after Walmart faced a large accessibility-related fine, he implemented screen reader support, keyboard navigation, and color contrast fixes on the checkout page specifically. That remediation work helped Walmart avoid further penalties from regulators.",
+  },
+  {
+    id: "story-tradeoff-awareness",
+    text: "Freedom and responsibility as a tech lead, a concrete example: at Freshworks, the codebase still uses styled-components, a library that's been deprecated by its own author since modern native CSS now covers most of what it used to provide. His top choice would be to migrate to modular CSS (CSS Modules) instead, but he deliberately deferred that migration given the scale of impact it would have on the existing codebase. His broader view: every decision about stack, approach, or principles as a technical leader comes with a tradeoff, and being aware of that tradeoff is the job.",
+  },
 ];
 
 /* Same topics as the Projects page grid (app/components/grid/project-grid.tsx)
@@ -95,7 +107,7 @@ const projectChunks: KnowledgeChunk[] = [
   },
   {
     id: "project-own-designs",
-    text: "Own Designs: personal and friends'-project work designed and built end-to-end, often starting in Figma as the designer, not just the engineer. Repleat is a mobile wellness app covering sleep, eating, and workouts. Initiative Roll is an app for tracking a Dungeons & Dragons dungeon master's story and game (a combat tracker).",
+    text: "Own Designs: personal and friends' projects where he worked as the designer in Figma — not the engineer who built them. Repleat is a mobile wellness app covering sleep, eating, and workouts. Initiative Roll is an app for tracking a Dungeons & Dragons dungeon master's story and game (a combat tracker).",
   },
 ];
 
