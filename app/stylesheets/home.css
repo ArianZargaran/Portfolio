@@ -89,6 +89,17 @@
   animation: home-fade 1s ease-out 0.9s both;
 }
 
+/* X's own module hardcodes its hover to #000 for every page — against
+   Home's dark navy background that computes to ~1.34:1 contrast (WCAG
+   needs 3:1+ for graphics), nearly invisible. Scoped here rather than in
+   x.module.css so Skills (light background, where black works fine) keeps
+   its own hover. Home's own ramp is blue-popscle (see colors.css) — a
+   lighter shade of it pops against the navy (~8:1 contrast) without
+   reaching for red. */
+.home-social a[href*="x.com"]:hover .social-nav-logo path {
+  fill: var(--color_blue-popscle-300);
+}
+
 .home-footer-note {
   position: absolute;
   bottom: 0;

@@ -128,8 +128,14 @@
   fill: #fff;
 }
 
+/* Not github.module.css's own #9401ff hover purple — against this page's
+   dark red bg that computes to ~1.25:1 contrast (WCAG needs 3:1+ for
+   graphics), since both colors sit at similar brightness regardless of
+   hue. A darker purple makes this worse, not better — dark-on-dark stays
+   low contrast no matter the hue. Only a *lighter* purple actually reads:
+   this one computes to ~4.4:1. */
 .contact-social a[href*="github.com"]:hover .social-nav-logo path {
-  fill: #9401ff;
+  fill: #e0c3ff;
 }
 
 @media (max-width: 575px) {
