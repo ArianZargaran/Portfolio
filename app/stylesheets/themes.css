@@ -74,7 +74,16 @@
   --theme_upsell-bg: var(--color_orange-1);
   --theme_text-strong: var(--color_blue-1);
   --theme_text-info: var(--color_neutral-1);
-  --theme_upsell-text: var(--color_orange-1);
+  /* Was var(--color_orange-1) — never defined anywhere in colors.css, so
+     this custom property was invalid at computed-value time. Anything
+     relying on it (e.g. the phone icon's hover stroke in phone.module.css)
+     fell back to an unset/inherited value instead of an actual color —
+     for stroke-only SVGs that means no stroke at all, i.e. the icon just
+     vanishes. Contact's own ramp is redline (see --theme_bg above), so
+     another redline shade would still blend into its own background —
+     borrowing blue-popscle instead, the same way Home/About/Skills borrow
+     redline as their pop-accent against their own non-red backgrounds. */
+  --theme_upsell-text: var(--color_blue-popscle-400);
 }
 
 .blog {

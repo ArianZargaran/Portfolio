@@ -119,6 +119,19 @@
   margin: var(--spacing-md) auto var(--spacing-lg);
 }
 
+/* GitHub's default fill (var(--theme_upsell-border), shared with the X and
+   LinkedIn icons in their own modules) reads as too washed-out against this
+   page's saturated red background — a subjective call, not a bug, so it's
+   bumped to solid white here only, scoped to the contact page, rather than
+   in github.module.css where it'd also shift every other page's icon. */
+.contact-social a[href*="github.com"] .social-nav-logo path {
+  fill: #fff;
+}
+
+.contact-social a[href*="github.com"]:hover .social-nav-logo path {
+  fill: #9401ff;
+}
+
 @media (max-width: 575px) {
   .contact-content {
     padding: var(--spacing-sm);
