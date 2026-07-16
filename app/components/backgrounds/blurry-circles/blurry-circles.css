@@ -1,7 +1,12 @@
 .background-container {
   position: fixed;
   width: 100vw;
+  /* 100vh fallback for browsers without dvh support; mobile Safari's address
+     bar hides on scroll and 100vh stays sized to the shortest viewport,
+     leaving a sliver of unstyled page background exposed at the bottom once
+     it hides. 100dvh tracks the actual visible viewport instead. */
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   z-index: -1;
 }

@@ -9,7 +9,14 @@
 }
 
 .home-content_container {
-  position: absolute;
+  /* Not position:absolute: with no top/left set, an absolutely-positioned
+     flex item falls back to a browser-computed "static position" — and
+     Safari's flexbox static-position algorithm diverges sharply from
+     Chromium's for a centered (align-items/justify-content:center) parent,
+     landing hundreds of px off-screen instead of centered. position:relative
+     keeps this a normal flex child (deterministic centering everywhere)
+     while still creating a stacking context for z-index below. */
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;

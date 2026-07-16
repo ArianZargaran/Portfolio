@@ -24,3 +24,13 @@
 .social-nav-logo {
   padding: var(--spacing-md) var(--spacing-sm);
 }
+
+/* At narrow widths, 5 icons at full padding push the row's right edge past
+   304rem — overlapping the hamburger toggle (fixed to the opposite/right
+   edge, shrinking at this same breakpoint in main-menu-nav.module.css).
+   Tighter horizontal padding keeps the row clear of it. */
+@media (max-width: 575px) {
+  .social-nav-logo {
+    padding: var(--spacing-md) var(--spacing-xs);
+  }
+}

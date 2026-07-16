@@ -24,7 +24,21 @@ h3 {
 */
 
 html {
-  font-size: 6.25%;
+  /* Every size in this codebase is a "rem" unit standing in for px, so this
+     must compute to exactly 1px. Written as a percentage (6.25% of the 16px
+     browser default) it used to — except Safari enforces an internal minimum
+     logical font size that clamps any *percentage/em-relative* computed
+     value below its floor (observed: 6.25% here resolved to 9px instead of
+     1px on Safari specifically). Since every rem-based size in the codebase
+     is built on that 1px assumption, the clamp inflated spacing, padding,
+     and layout everywhere by roughly 9x, shoving content off-screen. A
+     literal px value isn't subject to that clamp at all — same 1rem = 1px
+     result, but immune to the bug. -webkit-text-size-adjust: 100% is kept as
+     a defensive no-op against Safari's separate narrow-viewport text
+     autosizing. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-size: 1px;
 }
 
 body {

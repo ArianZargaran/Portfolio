@@ -75,6 +75,11 @@
 }
 
 .tile-content {
+  /* No box-sizing:border-box reset exists anywhere in this codebase, so
+     width:100% (content-box by default) plus this padding made the box
+     ~30rem wider than .tile itself — .tile's overflow:hidden then clipped
+     the excess, cutting headline text off mid-word instead of wrapping it. */
+  box-sizing: border-box;
   width: 100%;
   background-color: var(--theme_upsell-bg);
   padding: var(--spacing-md);

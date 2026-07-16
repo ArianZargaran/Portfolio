@@ -6,7 +6,13 @@
 .main-menu_ul {
   display: flex;
   min-width: 100vw;
+  /* 100vh is the fallback for browsers without dvh support; mobile Safari's
+     address bar shows/hides as you scroll, and 100vh there is measured
+     against the *shortest* possible viewport (bar shown), leaving a gap of
+     leftover page peeking past the bottom of this full-screen overlay once
+     the bar hides. 100dvh tracks the actual visible viewport instead. */
   min-height: 100vh;
+  min-height: 100dvh;
   flex-direction: column;
 }
 
@@ -17,6 +23,7 @@
 .main-menu_nav-item {
   background: var(--theme_bg);
   min-height: calc(100vh / var(--options-length));
+  min-height: calc(100dvh / var(--options-length));
   display: flex;
 }
 

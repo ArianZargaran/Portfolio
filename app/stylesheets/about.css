@@ -200,6 +200,10 @@
 
 .timeline-modal::backdrop {
   background: rgba(4, 12, 24, 0.7);
+  /* Safari needs the -webkit- prefix for backdrop-filter on ::backdrop
+     (and on plenty of older Safari versions generally); without it the
+     blur silently doesn't render there, backdrop still dims fine. */
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
 
