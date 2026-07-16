@@ -61,14 +61,18 @@ export const BlurryBackground = ({ className }: { className?: string }) => {
             repeat: Infinity,
             repeatType: "mirror",
           }}
-          className="blurry-circle"
-          style={{
-            background:
-              index % 2 === 0
-                ? `radial-gradient(circle, rgba(35, 120, 209, 0.5), rgba(158, 54, 58, 0.5))`
-                : `radial-gradient(circle, rgba(158, 54, 58, 0.5), rgba(35, 120, 209, 0.5))`,
-          }}
-        />
+          className="blurry-circle-wrapper"
+        >
+          <div
+            className="blurry-circle"
+            style={{
+              background:
+                index % 2 === 0
+                  ? `radial-gradient(circle, rgba(35, 120, 209, 0.5), rgba(158, 54, 58, 0.5))`
+                  : `radial-gradient(circle, rgba(158, 54, 58, 0.5), rgba(35, 120, 209, 0.5))`,
+            }}
+          />
+        </motion.div>
       ))}
     </div>
   );
