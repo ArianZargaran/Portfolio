@@ -11,24 +11,23 @@
   z-index: -1;
 }
 
-/* Position/size + Framer Motion's animated x/y transform live here, separate
-   from the blur below. Safari's compositor rasterizes a filter:blur into a
-   texture sized to its own box, and when that same element also carries an
-   animated transform, the texture is cached without the extra margin the
-   blur needs to fade out smoothly — the pre-blur square box edge shows
-   through mid-animation. Chromium doesn't have this bug. Keeping the
-   transform-animated element free of any filter sidesteps it entirely. */
 .blurry-circle-wrapper {
   position: absolute;
-  width: 550rem;
-  height: 550rem;
+  width: 900rem;
+  height: 900rem;
 }
 
+/* No filter:blur — Safari tiles large composited layers internally, and a
+   blur has to sample past its own tile's edge to fade out; when the
+   neighboring tile isn't available during rasterization, the fade cuts off
+   hard right at the tile boundary (~every 512px), producing a visible
+   rectangular seam unrelated to any circle's actual position. The softness
+   here instead comes entirely from the radial-gradient's own stops (in
+   blurry-circles.tsx), fading all the way to transparent well inside this
+   box's edges — nothing for Safari's tiler to cut off, and no filter or
+   blend-mode for it to miscompute across a tile boundary either. */
 .blurry-circle {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   opacity: 1;
-  filter: blur(100rem);
-  mix-blend-mode: screen;
 }

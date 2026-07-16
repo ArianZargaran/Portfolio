@@ -68,8 +68,8 @@ export const BlurryBackground = ({ className }: { className?: string }) => {
             style={{
               background:
                 index % 2 === 0
-                  ? `radial-gradient(circle, rgba(35, 120, 209, 0.5), rgba(158, 54, 58, 0.5))`
-                  : `radial-gradient(circle, rgba(158, 54, 58, 0.5), rgba(35, 120, 209, 0.5))`,
+                  ? `radial-gradient(circle, rgba(35, 120, 209, 0.5) 0%, rgba(158, 54, 58, 0.35) 30%, transparent 70%)`
+                  : `radial-gradient(circle, rgba(158, 54, 58, 0.5) 0%, rgba(35, 120, 209, 0.35) 30%, transparent 70%)`,
             }}
           />
         </motion.div>
