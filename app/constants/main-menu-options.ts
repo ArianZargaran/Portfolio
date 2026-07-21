@@ -17,10 +17,10 @@ export const MAIN_MENU_OPTIONS: Option[] = [
   },
   {
     id: "ID3",
-    option: "Projects",
+    option: "Work",
     caption: "Thoughts go LIVE: My code in action.",
-    href: "/projects",
-    theme: "projects",
+    href: "/work",
+    theme: "work",
   },
   {
     id: "ID4",

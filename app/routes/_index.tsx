@@ -39,8 +39,8 @@ const IndexPage = () => {
           Welcome to my site!
         </h2>
         <div className="home-cta-wrapper home-fade-up-delay-2">
-          <Link to="/projects">
-            <Button>My Projects</Button>
+          <Link to="/work">
+            <Button>My Work</Button>
           </Link>
           <Link
             to="/arian-zargaran-resume.pdf"

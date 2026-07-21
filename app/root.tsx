@@ -7,6 +7,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "@remix-run/react";
 
 import MainMenuNav from "~/components/main-menu-nav/main-menu-nav";
@@ -32,13 +33,29 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: borderStylesheet },
 ];
 
+/** Maps a pathname to its page-theme class (see themes.css) so the <body>
+    behind the page-enter fade always matches the page settling in, instead
+    of a hardcoded theme leaking through mid-transition. `startsWith` on
+    /work covers nested routes like /work/diagrams/*. */
+const themeClassForPathname = (pathname: string): string => {
+  if (pathname === "/about-me") return "about";
+  if (pathname.startsWith("/work")) return "work";
+  if (pathname === "/skills") return "skills";
+  if (pathname === "/blog") return "blog";
+  if (pathname === "/contact") return "contact";
+  return "home";
+};
+
 export default function App() {
+  const location = useLocation();
+  const bodyThemeClass = themeClassForPathname(location.pathname);
+
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Arian Zargaran | Front-End Engineer</title>
+        <title>Arian Zargaran | Design Engineer</title>
         <meta name="author" content="Arian Zargaran" />
         <meta
           name="description"
@@ -48,7 +65,7 @@ export default function App() {
           name="keywords"
           content="Front-End Developer, React, TypeScript, Framer Motion, Web Development Portfolio, UI/UX Design, Arian Zargaran"
         />
-        <meta property="og:title" content="Arian Zargaran | Front-End Engineer" />
+        <meta property="og:title" content="Arian Zargaran | Design Engineer" />
         <meta
           property="og:description"
           content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
@@ -56,7 +73,7 @@ export default function App() {
         <meta property="og:type" content="website" />
         <meta property="og:image" content="/apple-icon-180x180.png" />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Arian Zargaran | Front-End Engineer" />
+        <meta name="twitter:title" content="Arian Zargaran | Design Engineer" />
         <meta
           name="twitter:description"
           content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
@@ -139,7 +156,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="body home">
+      <body className={`body ${bodyThemeClass}`}>
         <MainMenuNav options={MAIN_MENU_OPTIONS} />
         <Outlet />
         <ScrollRestoration />

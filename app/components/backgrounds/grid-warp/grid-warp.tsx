@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import styles from "./grid-warp.module.css";
 
 /**
- * Full-viewport dot-grid background for the projects page. A faint, evenly
+ * Full-viewport dot-grid background for the work page. A faint, evenly
  * spaced grid sits behind the bento tiles; dots near the pointer displace
  * away from it like a rubber sheet and warm toward the site's redline
  * identity color. Honors prefers-reduced-motion by dropping the idle

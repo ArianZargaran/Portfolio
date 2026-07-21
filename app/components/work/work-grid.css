@@ -1,0 +1,23 @@
+.work-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.work-row {
+  display: flex;
+  flex-direction: row;
+  /* Wrap is what gives an expanded card its own full-width line: it jumps
+     to flex-basis 100% (and order -1, see work-card.css), and its siblings
+     reflow onto the next line at their normal size instead of being
+     squeezed into unreadable slivers beside it. */
+  flex-wrap: wrap;
+  gap: var(--gap);
+  align-items: stretch;
+}
+
+@media screen and (max-width: 800px) {
+  .work-row {
+    flex-direction: column;
+  }
+}

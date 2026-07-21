@@ -2,9 +2,9 @@ describe("smoke tests", () => {
   it("renders the home page with hero copy and CTAs", () => {
     cy.visitAndCheck("/");
     cy.findByRole("heading", { level: 1 }).should("contain.text", "Arian Zargaran");
-    cy.findByRole("link", { name: /my projects/i })
+    cy.findByRole("link", { name: /my work/i })
       .should("have.attr", "href")
-      .and("include", "/projects");
+      .and("include", "/work");
     cy.findByRole("link", { name: /resume/i })
       .should("have.attr", "rel")
       .and("include", "noopener");
@@ -17,9 +17,16 @@ describe("smoke tests", () => {
     cy.findByRole("heading", { name: /about me/i }).should("exist");
   });
 
-  it("renders the projects page with the grid", () => {
-    cy.visitAndCheck("/projects");
-    cy.findByRole("heading", { name: /^projects$/i }).should("exist");
+  it("renders the work page with the grid", () => {
+    cy.visitAndCheck("/work");
+    cy.findByRole("heading", { name: /^work$/i }).should("exist");
+  });
+
+  it("redirects the old /projects URL to /work", () => {
+    cy.request({ url: "/projects", followRedirect: false }).then((response) => {
+      expect(response.status).to.eq(301);
+      expect(response.redirectedToUrl).to.match(/\/work$/);
+    });
   });
 
   it("renders the skills page with a working search input", () => {

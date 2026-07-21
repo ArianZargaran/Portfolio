@@ -26,7 +26,7 @@
   --theme_text-strong: var(--color_purple-shadow-600);
 }
 
-.projects {
+.work {
   --theme_bg: var(--color_grey-blue-leaf-700);
   --theme_text: var(--color_grey-blue-leaf-100);
   --theme_border: var(--color_grey-blue-leaf-600);

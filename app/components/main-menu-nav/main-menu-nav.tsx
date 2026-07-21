@@ -80,7 +80,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
           {
             index: !isOpen && location.pathname === "/",
             about: !isOpen && location.pathname === "/about-me",
-            projects: !isOpen && location.pathname === "/projects",
+            work: !isOpen && location.pathname === "/work",
             skills: !isOpen && location.pathname === "/skills",
             blog: !isOpen && location.pathname === "/blog",
             contact:

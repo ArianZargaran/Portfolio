@@ -1,0 +1,378 @@
+/* Shared chrome for self-hosted Work diagrams (app/routes/work.diagrams.*).
+   Restyled from Claude.ai artifacts the diagrams were originally built in —
+   same content and structure, retokened onto the site's own .work palette
+   (grey-blue-leaf ramp) and Work Sans instead of the artifacts' own light
+   theme, so a diagram reads as part of ari.soy rather than an embed. */
+.work-diagram-page {
+  --wd-bg: var(--theme_bg);
+  --wd-surface: var(--theme_upsell-bg);
+  --wd-surface-2: var(--color_grey-blue-leaf-600);
+  --wd-ink: var(--theme_text);
+  --wd-ink-soft: var(--color_grey-blue-leaf-300);
+  --wd-ink-faint: var(--theme_text-info);
+  --wd-line: var(--theme_border);
+  --wd-line-strong: var(--color_grey-blue-leaf-400);
+  --wd-accent: var(--color_blue-popscle-400);
+  --wd-accent-soft: var(--color_blue-popscle-800);
+  --wd-code-bg: #0c0f13;
+  --wd-code-ink: var(--color_grey-blue-leaf-200);
+  --wd-ok: #6cc48a;
+  --wd-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas,
+    monospace;
+
+  /* Base .page is position:absolute with top/bottom:0, clamped to one
+     viewport tall — fine for pages that fit, but this content routinely
+     runs longer. Past the fold the box's own background stopped covering,
+     letting the body's blue-popscle bg show through underneath. work.css
+     does the same override for the (also long) Work page itself. */
+  position: static;
+  min-height: 100vh;
+  background: var(--wd-bg);
+  color: var(--wd-ink);
+}
+
+.work-diagram-page_back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  color: var(--wd-ink-faint);
+  font-family: var(--wd-mono);
+  font-size: 13rem;
+  letter-spacing: 0.4px;
+  text-decoration: none;
+  padding: var(--spacing-md) var(--spacing-lg) 0;
+}
+
+.work-diagram-page_back:hover {
+  color: var(--wd-ink);
+}
+
+.work-diagram_wrap {
+  max-width: 960rem;
+  margin: 0 auto;
+  padding: clamp(19.2rem, 4vw, 41.6rem) var(--spacing-lg) 64rem;
+}
+
+.work-diagram_eyebrow {
+  font-family: var(--wd-mono);
+  font-size: 11.52rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wd-accent);
+  margin: 0 0 9.6rem;
+}
+
+.work-diagram_wrap h1 {
+  font-size: clamp(28.8rem, 4vw, 41.6rem);
+  letter-spacing: -0.025em;
+  margin: 0 0 8rem;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.work-diagram_thesis {
+  font-size: 16.8rem;
+  color: var(--wd-ink-soft);
+  max-width: 60ch;
+  margin: 0 0 32rem;
+}
+
+.work-diagram_thesis b {
+  color: var(--wd-ink);
+  font-weight: 620;
+}
+
+.work-diagram_card {
+  background: var(--wd-surface);
+  border: 1px solid var(--wd-line);
+  border-radius: 14px;
+  padding: 20.8rem 22.4rem;
+  margin: 0 0 16rem;
+}
+
+.work-diagram_step {
+  display: flex;
+  align-items: center;
+  gap: 8.8rem;
+  font-family: var(--wd-mono);
+  font-size: 11.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wd-ink-faint);
+  margin: 0 0 14.4rem;
+}
+
+.work-diagram_step b {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--wd-accent-soft);
+  color: var(--wd-accent);
+  font-size: 11.52rem;
+}
+
+.work-diagram_card h2 {
+  font-size: 18.4rem;
+  letter-spacing: -0.01em;
+  margin: 0 0 3.2rem;
+}
+
+.work-diagram_sub {
+  color: var(--wd-ink-soft);
+  font-size: 14.72rem;
+  margin: 0 0 16rem;
+}
+
+.work-diagram_axes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14.4rem;
+}
+
+.work-diagram_axis {
+  background: var(--wd-surface-2);
+  border: 1px solid var(--wd-line);
+  border-radius: 11px;
+  padding: 13.6rem 16rem;
+}
+
+.work-diagram_axis-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 9.6rem;
+}
+
+.work-diagram_axis-h .work-diagram_n {
+  font-weight: 640;
+  font-size: 15.68rem;
+}
+
+.work-diagram_axis-h .work-diagram_k {
+  font-family: var(--wd-mono);
+  font-size: 11.52rem;
+  color: var(--wd-ink-faint);
+}
+
+.work-diagram_swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.work-diagram_sw {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.work-diagram_chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.work-diagram_chip {
+  font-family: var(--wd-mono);
+  font-size: 12.48rem;
+  padding: 0.28em 0.7em;
+  border-radius: 7px;
+  background: var(--wd-surface);
+  border: 1px solid var(--wd-line-strong);
+  color: var(--wd-ink-soft);
+}
+
+.work-diagram_prom {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--wd-line-strong);
+  max-width: 340px;
+}
+
+.work-diagram_prom span {
+  flex: 1;
+  text-align: center;
+  font-family: var(--wd-mono);
+  font-size: 11.84rem;
+  padding: 0.4em 0.3em;
+  color: #fff;
+}
+
+.work-diagram_eq {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rem;
+  flex-wrap: wrap;
+  margin: 17.6rem 0 3.2rem;
+  font-family: var(--wd-mono);
+  color: var(--wd-ink-faint);
+  font-size: 14.4rem;
+}
+
+.work-diagram_eq b {
+  color: var(--wd-ink);
+  font-size: 16.8rem;
+}
+
+.work-diagram_eq .work-diagram_big {
+  color: var(--wd-accent);
+  font-size: 21.6rem;
+  font-weight: 700;
+}
+
+.work-diagram_cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14.4rem;
+}
+
+@media (max-width: 620px) {
+  .work-diagram_cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.work-diagram_col {
+  background: var(--wd-surface-2);
+  border: 1px solid var(--wd-line);
+  border-radius: 11px;
+  padding: 14.4rem 16rem;
+}
+
+.work-diagram_col.work-diagram_delta {
+  border-color: var(--wd-accent);
+}
+
+.work-diagram_col h3 {
+  margin: 0 0 1.6rem;
+  font-size: 15.2rem;
+}
+
+.work-diagram_col .work-diagram_pct {
+  font-family: var(--wd-mono);
+  font-size: 11.52rem;
+  color: var(--wd-ink-faint);
+  margin: 0 0 11.2rem;
+}
+
+.work-diagram_col.work-diagram_delta .work-diagram_pct {
+  color: var(--wd-accent);
+}
+
+.work-diagram_tok {
+  font-family: var(--wd-mono);
+  font-size: 12.8rem;
+  padding: 0.32em 0.55em;
+  border-radius: 6px;
+  margin: 0 0 5px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8rem;
+}
+
+.work-diagram_tok.work-diagram_base {
+  background: var(--wd-surface);
+  border: 1px solid var(--wd-line);
+  color: var(--wd-ink-soft);
+}
+
+.work-diagram_tok.work-diagram_var {
+  background: var(--wd-accent-soft);
+  border: 1px solid var(--wd-accent);
+  color: var(--wd-accent);
+  font-weight: 600;
+}
+
+.work-diagram_tok .work-diagram_v {
+  color: var(--wd-ink-faint);
+  font-weight: 400;
+}
+
+.work-diagram_codelabel {
+  font-family: var(--wd-mono);
+  font-size: 10.88rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wd-ink-faint);
+  margin: 14.4rem 0 4.8rem;
+}
+
+.work-diagram_card pre {
+  margin: 6.4rem 0 0;
+  background: var(--wd-code-bg);
+  border: 1px solid var(--wd-line);
+  border-radius: 10px;
+  padding: 14.4rem 16rem;
+  overflow-x: auto;
+}
+
+.work-diagram_card code {
+  font-family: var(--wd-mono);
+}
+
+.work-diagram_card pre code {
+  font-size: 12.8rem;
+  line-height: 1.55;
+  color: var(--wd-code-ink);
+  white-space: pre;
+}
+
+.work-diagram_ck {
+  color: var(--wd-accent);
+}
+
+.work-diagram_cc {
+  color: var(--wd-ink-faint);
+  font-style: italic;
+}
+
+.work-diagram_cs {
+  color: var(--wd-ok);
+}
+
+.work-diagram_out {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11.2rem;
+  margin-top: 4.8rem;
+}
+
+@media (max-width: 620px) {
+  .work-diagram_out {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.work-diagram_stat {
+  background: var(--wd-surface);
+  border: 1px solid var(--wd-line);
+  border-radius: 10px;
+  padding: 12.8rem;
+  text-align: center;
+}
+
+.work-diagram_stat .work-diagram_big {
+  font-size: 21.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.work-diagram_stat .work-diagram_lbl {
+  font-size: 12.16rem;
+  color: var(--wd-ink-faint);
+  margin-top: 2.4rem;
+}
+
+.work-diagram_footer {
+  margin-top: 22.4rem;
+  font-family: var(--wd-mono);
+  font-size: 11.84rem;
+  color: var(--wd-ink-faint);
+  text-align: center;
+}

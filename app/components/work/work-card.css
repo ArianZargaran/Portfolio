@@ -1,0 +1,279 @@
+.work-card {
+  flex: 1;
+  min-width: 0;
+  background-color: var(--border_bg);
+  border: 1px solid var(--theme_upsell-bg);
+  border-radius: var(--border_radius-sm);
+  overflow: hidden;
+  position: relative;
+  scroll-margin-top: var(--spacing-md);
+  /* All choreography is in-flow: these are the only movement channels, and
+     none of them is a transform, so a card can only ever slide along its
+     row — never overlap a neighbor or leave the wrapper. flex-basis is
+     deliberately NOT here: every visible shrink/grow in this system is
+     carried by flex-grow alone (basis stays 0% at rest; is-expanded is the
+     only rule that ever changes it, jumping to 100%). If basis transitioned
+     too, the moment is-expanded is removed (settling) the card would fall
+     back to THIS rule and animate its basis 100%→0% over 350ms — and for
+     that whole window a reappearing row-mate's fit next to the
+     still-mid-shrink card flips every frame as flexbox re-wraps, visibly
+     pushing everything below down and then snapping it back up. Every basis
+     change must be atomic; only grow/margin/opacity animate. */
+  transition:
+    flex-grow 350ms ease-in-out,
+    margin-left 350ms ease-in-out,
+    opacity 250ms ease,
+    transform 300ms ease;
+  /* Column so the face can flex-fill the card and pin its content strip to
+     the bottom edge (see .work-card_face / .work-card_media below). */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Phase "vacating"/"returning": the sibling shrinks in place toward the
+   gutter. The negative margin cancels exactly one flex gap as the width
+   reaches 0, so the expanding card lands flush on the wrapper edge instead
+   of stopping a gap short — the "gutter travels with the card" effect.
+   pointer-events off so a mid-flight sliver can't catch a click. The
+   translateY here has no visible effect while opacity is 0 — it exists so
+   is-relocated below has a real "from" value to transition out of. */
+.work-row.is-active-row .work-card.is-vacating {
+  flex: 0 1 0%;
+  opacity: 0;
+  transform: translateY(-8px);
+  margin-left: calc(-1 * var(--gap));
+  pointer-events: none;
+}
+
+/* Phase "open": the expanded card owns its full-width line (order -1 keeps
+   it on top). The basis jump to 100% must be INSTANT, not transitioned:
+   siblings already handed over the line during vacating, so the jump is
+   invisible — but if flex-basis animated its way to 100%, there'd be a
+   mid-transition window where a returning sibling still fits beside it and
+   the wrap algorithm would flash it back onto line 1 before kicking it down
+   again. Excluding flex-basis from this card's transitions closes that
+   window; flex-grow still animates, which is what keeps the horizontal
+   growth smooth while the sibling shrinks. */
+.work-row.is-active-row .work-card.is-expanded {
+  order: -1;
+  flex: 1 1 100%;
+  transition:
+    flex-grow 350ms ease-in-out,
+    margin-left 350ms ease-in-out,
+    opacity 250ms ease;
+}
+
+/* Phase "open": vacated siblings re-enter on the line below at full size,
+   with a soft fade-up instead of a transform flight from their old spot.
+   Only opacity/transform are listed here — flex-grow and margin-left are
+   deliberately excluded (left snapping instantly to the base rule's
+   values), same atomicity reason as is-expanded above: transitioning width
+   up from 0 would have the sibling crawl across the lower line and flirt
+   with fitting back onto the expanded card's line.
+
+   This used to be a self-contained @keyframes animation instead of a
+   transition — reproduced live and confirmed the actual bug: a CSS
+   animation that never gets a chance to truly start (the tab was
+   backgrounded at the exact moment the class was applied, which pauses
+   rendering) can get stuck at its "from" state indefinitely, especially
+   with two siblings entering at once. A transition just tracks a target
+   value and reliably catches up whenever rendering resumes — every other
+   piece of this choreography already relies on transitions for exactly
+   that self-healing property; this was the one exception, and it's the one
+   that got stuck. */
+.work-row.is-active-row .work-card.is-relocated {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-card {
+    transition: none;
+  }
+
+  /* is-relocated declares its own transition (higher specificity than the
+     plain .work-card rule above), so it needs its own override here too —
+     otherwise reduced-motion would disable everything except this one. */
+  .work-row.is-active-row .work-card.is-relocated {
+    transition: none;
+  }
+}
+
+.work-card_face {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  /* Fills the card and lets the media area absorb any extra height the row
+     stretches this card to — which is what pulls the content strip down to
+     the card's bottom edge on every card in the row. */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.work-card_media {
+  position: relative;
+  flex: 1;
+  min-height: 200rem;
+  overflow: hidden;
+  background-color: var(--theme_upsell-bg);
+}
+
+/* Expanded: the body below the face is what should take the extra height,
+   not the media panel — pin the face back to its natural size. */
+.work-card.is-expanded .work-card_face {
+  flex: 0 0 auto;
+}
+
+.work-card.is-expanded .work-card_media {
+  flex: none;
+  height: 200rem;
+}
+
+.work-card_img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 0 20%;
+  filter: grayscale(1);
+  opacity: 0;
+  transition:
+    filter 0.3s ease-in-out,
+    opacity 0.8s ease;
+}
+
+.work-card_img.is-visible {
+  opacity: 1;
+}
+
+.work-card:hover .work-card_img {
+  filter: grayscale(0);
+}
+
+/* No asset yet for this card — flat muted stripes hold the media slot so the
+   bento rhythm stays stable while assets land (same pattern the old grid
+   used for pending topics, minus any "Coming soon" copy). */
+.work-card_media.is-pending {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--theme_upsell-bg),
+    var(--theme_upsell-bg) 12rem,
+    var(--theme_bg-strong) 12rem,
+    var(--theme_bg-strong) 24rem
+  );
+  opacity: 0.35;
+}
+
+.work-card_content {
+  /* border-box: no global box-sizing reset exists in this codebase, and
+     width-100%-plus-padding under content-box is exactly what clipped the
+     old tiles' text on mobile. */
+  box-sizing: border-box;
+  width: 100%;
+  background-color: var(--theme_upsell-bg);
+  padding: var(--spacing-md);
+}
+
+.work-card_eyebrow {
+  color: var(--theme_text-info);
+  font-size: 13rem;
+  line-height: 20rem;
+  letter-spacing: 0.4px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+.work-card_kind {
+  color: var(--theme_text-info);
+  font-size: 11rem;
+  line-height: 16rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: var(--spacing-2xs);
+  /* Always one line tall, even on the Signal frame where it's empty — the
+     headline below must not shift up and down as frames cycle. */
+  min-height: 16rem;
+}
+
+.work-card_headline {
+  color: var(--theme_text);
+  font-size: 17rem;
+  line-height: 24rem;
+  margin-top: var(--spacing-2xs);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  /* Exactly two lines reserved, whether the frame's text fills them or not:
+     every card's content strip is the same height, so the strips line up
+     across a row and never bounce while cycling. */
+  height: 48rem;
+}
+
+.work-card_body {
+  box-sizing: border-box;
+  border-top: 1px solid var(--theme_border);
+  padding: var(--spacing-md);
+  overflow: hidden;
+  /* Flat and opaque, unlike the tile face: the page's dot-grid texture
+     showing through under long body copy fights the reading flow. */
+  background-color: #0e1317;
+}
+
+.work-card_block {
+  margin-bottom: var(--spacing-md);
+}
+
+.work-card_block-kind {
+  color: var(--theme_text-info);
+  font-size: 11rem;
+  line-height: 16rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-2xs);
+}
+
+.work-card_block-text {
+  color: var(--theme_text);
+  line-height: 1.6;
+}
+
+.work-card_meta {
+  color: var(--theme_text-info);
+  font-style: italic;
+  font-size: 13rem;
+  margin-top: var(--spacing-sm);
+}
+
+.work-card_link {
+  display: inline-block;
+  color: var(--theme_text);
+  text-decoration: underline;
+  text-underline-offset: 3rem;
+  margin-top: var(--spacing-xs);
+}
+
+@media screen and (max-width: 800px) {
+  .work-card_media {
+    min-height: 25vw;
+  }
+
+  .work-card_content {
+    padding: var(--spacing-sm);
+    min-height: 0;
+  }
+}

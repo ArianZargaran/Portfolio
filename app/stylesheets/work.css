@@ -1,47 +1,43 @@
 :root {
-  --projects-header-height: 88rem;
+  --work-header-height: 88rem;
   --gap: var(--spacing-md);
-  --projects-article-height: calc(
-    100vh - var(--projects-header-height) - (var(--gap) * 2)
+  --work-article-height: calc(
+    100vh - var(--work-header-height) - (var(--gap) * 2)
   );
 }
 
-.projects-page {
+/* The page scrolls vertically at every width: eleven cards (and any one of
+   them expanded) never fit a locked viewport, so unlike the old Projects
+   page there is no overflow:hidden clamp here. */
+.work-page {
   position: static;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 @media screen and (max-width: 800px) {
-  .projects-page {
-    overflow: visible;
-  }
-
-  .projects-article {
-    overflow-y: visible;
+  .work-article {
     min-height: auto;
   }
 }
 
-.projects-header {
-  height: var(--projects-header-height);
+.work-header {
+  height: var(--work-header-height);
   border-bottom: 1px solid var(--theme_border);
 }
 
-.projects-article {
-  overflow-y: hidden;
+.work-article {
   flex: 1;
   width: 100%;
   max-width: 1024px;
-  min-height: calc(var(--projects-article-height));
+  min-height: calc(var(--work-article-height));
   margin: 0 auto;
   position: relative;
   padding-bottom: var(--gap);
   padding-top: var(--gap);
 }
 
-.projects-header-heading {
+.work-header-heading {
   color: var(--theme-text);
   gap: var(--spacing-xs);
   display: flex;
