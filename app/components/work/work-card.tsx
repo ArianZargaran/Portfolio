@@ -174,6 +174,17 @@ export const WorkCardTile: React.FC<WorkCardProps> = ({
                   {card.link.label}
                 </a>
               ) : null}
+              {card.diagrams?.length ? (
+                <ul className="work-card_diagrams">
+                  {card.diagrams.map((diagram) => (
+                    <li key={diagram.href}>
+                      <a className="work-card_link" href={diagram.href}>
+                        {diagram.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </motion.div>
           </motion.div>
         ) : null}

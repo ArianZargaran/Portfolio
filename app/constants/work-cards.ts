@@ -37,6 +37,10 @@ export interface WorkCard {
   meta: string;
   /** Present only when the work is publicly reachable. */
   link?: { href: string; label: string };
+  /** Self-hosted diagram deep-dives (see app/routes/work_.diagrams.*),
+      distinct from `link`: these are internal detail pages, not the live
+      product. A card can have zero, one, or several. */
+  diagrams?: { href: string; label: string }[];
   /** Card visuals; diagrams and screenshots join these as assets land. */
   images: GalleryImage[];
 }
@@ -46,10 +50,20 @@ const BRANDKIT: WorkCard = {
   eyebrow: "DESIGN SYSTEMS",
   signal: "27 themes from one shared base. Launches went 5x faster.",
   meta: "Airtable · 2021–2025 · still in production",
-  link: {
-    href: "/work/diagrams/brandkit-theming",
-    label: "See the semantic theming diagram",
-  },
+  diagrams: [
+    {
+      href: "/work/diagrams/brandkit-theming",
+      label: "Diagram: semantic theming",
+    },
+    {
+      href: "/work/diagrams/brandkit-naming-convention",
+      label: "Diagram: the naming convention",
+    },
+    {
+      href: "/work/diagrams/brandkit-architecture",
+      label: "Diagram: architecture & data flow",
+    },
+  ],
   images: [
     { src: "/airtable.webp", alt: "Airtable Brandkit Design System preview" },
   ],
@@ -92,6 +106,12 @@ const AI_DESIGN_TO_CODE: WorkCard = {
   eyebrow: "AI × DESIGN",
   signal: "Put the intelligence in the rules, not the agent.",
   meta: "Freshworks · 2025–present",
+  diagrams: [
+    {
+      href: "/work/diagrams/ai-design-to-code",
+      label: "Diagram: structure over agents",
+    },
+  ],
   images: [
     {
       src: "/freshworks-f1.webp",
@@ -204,6 +224,12 @@ const CONTENT_MODELING: WorkCard = {
   eyebrow: "ARCHITECTURE JUDGMENT",
   signal: "Same problem, opposite content models. Both right.",
   meta: "Airtable + Freshworks",
+  diagrams: [
+    {
+      href: "/work/diagrams/content-modeling",
+      label: "Diagram: two ways to model content",
+    },
+  ],
   images: [
     {
       src: "/content-modeling-graph.webp",
