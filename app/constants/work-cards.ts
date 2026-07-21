@@ -94,8 +94,8 @@ const AI_DESIGN_TO_CODE: WorkCard = {
   meta: "Freshworks · 2025–present",
   images: [
     {
-      src: "/freshworks-ai.webp",
-      alt: "Freshworks' Freddy AI assistant answering a product question",
+      src: "/freshworks-f1.webp",
+      alt: "Freshworks branding on a McLaren Formula 1 car",
     },
   ],
   blocks: [
