@@ -48,6 +48,13 @@ type Phase = "vacating" | "open" | "closing" | "leaving" | "settling";
 
 const VACATE_MS = 350; // row-mate shrink/reappear transition duration
 const SETTLE_MS = 300; // matches the sibling's reenter transition duration
+/* How long the closing card's own "is-settling-dip" class stays on before
+   being lifted again — short on purpose. The dip only needs to exist long
+   enough for the opacity/transform transition to visibly start moving
+   before reversing course back to normal; a full dip-and-hold would look
+   like its own separate beat instead of a single soft "settle" flourish
+   synced with the atomic width snap. See work-card.css for why this exists. */
+const SETTLE_DIP_MS = 90;
 /* Safety net for the body's onExitComplete event — see the "closing" note
    above. Comfortably longer than the body's real ~300ms exit so it never
    fires first in the normal case; only matters if the tab was backgrounded
@@ -56,6 +63,12 @@ const BODY_EXIT_FALLBACK_MS = 900;
 
 export const WorkGrid: React.FC = () => {
   const [phases, setPhases] = useState<Record<string, Phase>>({});
+  /* Set for exactly one short beat when a card enters "settling" — see
+     is-settling-dip in work-card.css. A plain window.setTimeout (not the
+     shared schedule()/timers bookkeeping below) because it's cosmetic only
+     and keyed independently of the real phase-advance timer already
+     scheduled for the same id at that same moment. */
+  const [dipping, setDipping] = useState<Record<string, boolean>>({});
   const timers = useRef<Record<string, number>>({});
   /* Mirrors `phases` synchronously for the onBodyExitComplete callback,
      which fires from Framer's own event loop — by the time it runs, the
@@ -107,6 +120,18 @@ export const WorkGrid: React.FC = () => {
     setCardPhase(id, "leaving");
     schedule(id, VACATE_MS, () => {
       setCardPhase(id, "settling");
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      if (!reducedMotion) {
+        setDipping((prev) => ({ ...prev, [id]: true }));
+        window.setTimeout(() => {
+          setDipping((prev) => {
+            const { [id]: _, ...rest } = prev;
+            return rest;
+          });
+        }, SETTLE_DIP_MS);
+      }
       schedule(id, SETTLE_MS, () => setCardPhase(id, null));
     });
   };
@@ -235,6 +260,7 @@ export const WorkGrid: React.FC = () => {
                       isSibling &&
                       !anyClaimingOrReturning &&
                       anyHoldingOrReleasing,
+                    "is-settling-dip": dipping[card.id] === true,
                   })}
                   onBodyExitComplete={() => handleBodyExitComplete(card.id)}
                   onToggle={() => handleToggle(card.id)}

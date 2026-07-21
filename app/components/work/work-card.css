@@ -89,6 +89,23 @@
     transform 300ms ease;
 }
 
+/* Phase "settling", the closing card itself (not its row-mates): releasing
+   is-expanded snaps flex-basis 100%→0% with zero transition — unavoidable,
+   see the note on the base rule above. On open that same atomic jump lands
+   right after the row-mates have already faded to invisible, so it reads as
+   seamless; on close it lands in the same instant the row-mates are only
+   just starting to fade back in, so the card's own width pop had nothing
+   to visually justify it and read as a bare glitch instead of a settle.
+   This class is toggled on for one short beat at that exact instant (see
+   work-grid.tsx's dip state) and off again — opacity/transform are already
+   in the base rule's transition list, so the dip-and-recover rides the
+   existing 250ms/300ms transitions rather than needing its own, and stays
+   self-healing the same way every other step here does. */
+.work-row.is-active-row .work-card.is-settling-dip {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .work-card {
     transition: none;
@@ -99,6 +116,14 @@
      otherwise reduced-motion would disable everything except this one. */
   .work-row.is-active-row .work-card.is-relocated {
     transition: none;
+  }
+
+  /* Neutralized rather than just detransitioned: with transitions off, the
+     dip's opacity/scale values would otherwise apply and release instantly,
+     reading as a flicker — the opposite of what reduced-motion asks for. */
+  .work-row.is-active-row .work-card.is-settling-dip {
+    opacity: 1;
+    transform: none;
   }
 }
 

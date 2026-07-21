@@ -111,6 +111,86 @@ const projectChunks: KnowledgeChunk[] = [
   },
 ];
 
+/* Added from Ari's own written knowledge-base doc (first-person source,
+   converted to the third-person voice the rest of this corpus uses).
+   Each chunk below is new ground, not a restatement of a STAR story or
+   project chunk already above — where the source doc overlapped with
+   existing chunks (the Airtable/Jordan mentoring story, the Airtable vs.
+   Freshworks CMS comparison), only the genuinely new angle was kept. */
+const philosophyChunks: KnowledgeChunk[] = [
+  {
+    id: "philosophy-design-engineer",
+    text: "What \"design engineer\" means to him: someone who refuses to hand off at the wireframe. He takes taste — typography, motion, color, spacing — and expresses it directly in production code, so nothing gets lost in translation between a designer's intent and what actually ships. He can sit in Figma arguing about optical alignment, then open the editor and implement the exact easing curve that makes a transition feel right. That double-fluency between design and front-end engineering is the whole job.",
+  },
+  {
+    id: "philosophy-design-taste",
+    text: "His design taste: drawn to calm, confident interfaces over loud, over-colored maximalism. He sees a dichotomy in the field right now — big-type, expressive-asset maximalism on one side, the AI-era aesthetic of minimalism on the other — and sits on the minimalist side, but with meaningful care for the user: the right feedback, small touches of surprise, never sterile. His one-line definition of premium: \"premium means taking care of the small details\" — the details nobody notices consciously are exactly the ones that make something feel expensive and considered.",
+  },
+  {
+    id: "philosophy-through-line",
+    text: "The through-line across his work: structure, restraint, and legibility. The semantic theming system, the naming framework, the type scale, the hand-built charts, the calm visual taste — all the same instinct: find the small set of rules underneath the apparent complexity, and let those rules do the work. He's always looking for how little actually needs to change, the few axes that explain the whole space. Good systems aren't about adding more; they're about finding the minimum that generates everything.",
+  },
+  {
+    id: "philosophy-player-coach",
+    text: "\"Player-coach\" is how he describes his own leadership style: he led three contractor engineers across South America at Airtable without ever stepping out of the code to do it. He wasn't anyone's manager — he was their technical point of contact — and his view is that you lead by staying in the work, not by stepping out of it. He drove design-system adoption the same way: not by decree, but by running learning sessions and teaching it until people wanted to use it. Adoption is the real metric for a design system, not how many components got shipped.",
+  },
+  {
+    id: "philosophy-career-direction",
+    text: "What he wants to work on next: considered, interactive, data-driven moments on the web — experiences that show rather than tell — built without losing calm and restraint. He sees a gap right now between sites that are editorially beautiful but static, and the interactive, data-storytelling craft that's actually possible, and wants to spend his time closing that gap with taste and real engineering underneath.",
+  },
+];
+
+const brandkitDeepDiveChunks: KnowledgeChunk[] = [
+  {
+    id: "brandkit-semantic-theming",
+    text: "Semantic theming, the piece he's proudest of: Airtable's brand needed 27 themes (a colorful, expandable palette, each in light and dark), and the naive path — 27 separate theme files — is unmaintainable and a performance tax on every page. He found the three axes underneath: color, mode (light/dark), and \"prominence\" (a term he coined for a color's strength: subtle, default, or strong). Nine colors times three prominence levels times light/dark equals 27. The real unlock was noticing how little actually changes between themes — most tokens are shared, only a handful vary (an upsell background, a highlight) — so instead of full theme files he built one shared base plus tiny compound utility classes, where the three parameters compound into a single class per variant carrying only the delta. Components read values through CSS custom properties (var()), so they're completely theme-agnostic. Adding a new theme is one more compound class; the components never change. All of it pre-AI, pure architecture.",
+  },
+  {
+    id: "brandkit-naming-convention",
+    text: "The Brandkit naming convention became a framework, not just a naming rule: a single string names the same thing across three tools. A hero organism variant in Figma, a `variant` value in Contentful, and the component in code all say the exact same string — for example `hero-media-centered`. The payoff: everyone could locate and discuss the same thing by one name, producers could self-serve (pick a variant in Contentful and the right component renders, no developer needed), new hires and contractors ramped onto one framework instead of three paradigms, and different domains could work in parallel because the name was the contract between them.",
+  },
+  {
+    id: "brandkit-architecture-hinge",
+    text: "Brandkit's architecture: atomic design is the spine — quarks/tokens, atoms, molecules, organisms, templates, pages — the same vocabulary shared across Figma, Contentful, and code, with Templates as the hinge between them. A URL maps to a Contentful Page entry (a Template type) by its slug; at build time Next.js fetches that entry via static site generation, so marketing pages are static and fast by construction. The page makes all its backend calls at the top, then each organism section is wrapped by a higher-order component that massages the data and hands it to pure, \"dummy\" design-system components — the container/presentational split, where templates and HOCs stay smart and the design system stays dumb and reusable.",
+  },
+  {
+    id: "brandkit-migration-honesty",
+    text: "An honest reflection on the Brandkit migration: visual-regression coverage protected the design system at the component level, but there was no full-URL Playwright coverage across the hundreds of pages on the live site, many still on old design systems — at one point three look-and-feels coexisted live at once. The lesson: you can perfect a design system in isolation, but rolling it into a living codebase is always a progressive migration, never one shot — you strangle the old system gradually until you're at 100%, the strangler-fig pattern. Three look-and-feels coexisting wasn't a failure; it's what the middle of a real migration actually looks like.",
+  },
+];
+
+const craftChunks: KnowledgeChunk[] = [
+  {
+    id: "craft-ai-design-to-code",
+    text: "On AI design-to-code, at Freshworks: the intelligence belongs in the rules, not in the agent. Given a well-structured design system — clear tokens, a naming framework, atomic components — a model can assemble UI reliably because the constraints do the reasoning; the determinism lives in the system, the model just navigates it. A good design system is the best possible context for AI: it turns \"generate a page\" from an open-ended creative gamble into a bounded assembly problem. That's context engineering applied to front-end work.",
+  },
+  {
+    id: "craft-motion-pill-rotation",
+    text: "A proof piece for his motion craft: a pill-shaped eyebrow element (used as a link or modal trigger) with an AI-style rotating radial-gradient border, the same pattern seen on Google's AI Mode button loading state. The perceptual problem: at a constant rotation speed, the highlight visibly speeds up around the short curved ends and drags along the long straight sides, and the longer the label, the worse it looks — most implementations in the field just use constant speed. His fix was to interpolate the rotation speed from the pill's own dimensions along a specific curve, so the perceived rotation speed stays constant regardless of content length. Optical correction applied to motion, the same idea as optically aligning type, done in math — nobody consciously sees it, they just feel that it's right.",
+  },
+  {
+    id: "craft-motion-flip-card",
+    text: "Another motion detail he owns on his projects: a flip card whose flip direction is aware of context — it rotates in the direction that matches where the interaction came from, so the motion feels physically coherent instead of arbitrary. He considers these small directional decisions what separates motion that feels designed from motion that just moves, and he always respects prefers-reduced-motion — craft includes knowing when to hold an animation back.",
+  },
+  {
+    id: "craft-typography",
+    text: "Typography is probably where he's most obsessive. He thinks in a semantic type scale (t-shirt sizing, type tokens) rather than hardcoded pixel values, so a system stays consistent and themeable. He pays attention to vertical metrics and the gap between a font's bounding box and its actual cap height (the problem tools like Capsize solve), to measure (line length) for readability, and to font loading — font-display, FOUT vs. FOIT, and the cumulative-layout-shift cost of swapping fonts. Fonts he's worked with across projects: Calibri (customized at Cabify), Lora and Inter (at Freshworks), and Work Sans (on his own site, ari.soy). Type isn't decoration to him — it's identity, and on the best sites the typeface carries the whole brand.",
+  },
+  {
+    id: "craft-content-modeling-tradeoff",
+    text: "On content-modeling philosophy in general: presentation-first models map closely to how things render, letting producers self-serve and see what they're building; entity- or domain-driven models structure content around what it *is* rather than how it looks — more reusable and future-proof (the COPE principle: create once, publish everywhere), but harder for non-technical producers to reason about. The real decision is a flexibility-vs-consistency tradeoff: presentation-first gives producers freedom and speed, entity-driven gives durability and cross-channel reuse. There's no universal right answer — it depends on who's authoring and how many surfaces the content has to serve.",
+  },
+  {
+    id: "craft-dataviz-philosophy",
+    text: "His data-visualization philosophy: think in terms of preattentive attributes (the things the eye decodes before conscious attention, like position, length, and color) and Tufte's data-ink ratio — maximize the ink that carries data, minimize everything else. Color should encode meaning, not decorate. That's why he'll hand-build a chart when it matters: a library gives you a chart, a hand-built one gives you a chart that says exactly what you mean and nothing you don't.",
+  },
+];
+
+const brumaProjectChunk: KnowledgeChunk = {
+  id: "project-bruma-realtor-dashboard",
+  text: "Bruma is a dashboard he built end to end for a realtor in Venezuela, using Vite, React, and TypeScript, Supabase for the backend, and react-leaflet for mapping. He's proud of hand-building the charts himself in CSS and SVG rather than pulling in a charting library — partly a bundle-size and control decision, partly craft: building a chart yourself means controlling every pixel of the data-ink, the color encoding, and the interaction, instead of fighting a library's defaults, and it keeps the visual language consistent with the rest of the dashboard. Repo: github.com/ArianZargaran/bruma-website.",
+};
+
 export const KNOWLEDGE_BASE: KnowledgeChunk[] = [
   ...timelineChunks,
   ...skillChunks,
@@ -118,4 +198,8 @@ export const KNOWLEDGE_BASE: KnowledgeChunk[] = [
   aiModeChunk,
   ...starStoryChunks,
   ...projectChunks,
+  ...philosophyChunks,
+  ...brandkitDeepDiveChunks,
+  ...craftChunks,
+  brumaProjectChunk,
 ];

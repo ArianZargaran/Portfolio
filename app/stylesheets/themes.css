@@ -36,6 +36,12 @@
   --theme_text-strong: var(--color_grey-blue-leaf-100);
   --theme_text-info: var(--color_grey-blue-leaf-500);
   --theme_upsell-text: var(--color_grey-blue-leaf-200);
+  /* Was undefined — invalid at computed-value time, same failure mode as
+     the .contact fix below: the hamburger toggle's `stroke: var(...)`
+     declaration became invalid and got ignored entirely, so the browser
+     fell back to the animatea icon's own hardcoded stroke="#000" — solid
+     black, invisible against this theme's dark bg. */
+  --theme_upsell-border: var(--color_grey-blue-leaf-200);
 }
 
 .skills {
@@ -84,6 +90,13 @@
      borrowing blue-popscle instead, the same way Home/About/Skills borrow
      redline as their pop-accent against their own non-red backgrounds. */
   --theme_upsell-text: var(--color_blue-popscle-400);
+  /* Same missing-token bug as above, just never caught for this specific
+     property: also undefined, which invalidated the hamburger toggle's
+     `stroke: var(--theme_upsell-border)` declaration and let it fall back
+     to animatea's hardcoded stroke="#000" — invisible against this dark
+     redline background. White, per Ari — plain contrast against the red,
+     no borrowed accent hue needed here. */
+  --theme_upsell-border: var(--color_anti-flash-100);
 }
 
 .blog {
