@@ -142,6 +142,10 @@ const philosophyChunks: KnowledgeChunk[] = [
 
 const brandkitDeepDiveChunks: KnowledgeChunk[] = [
   {
+    id: "brandkit-tenure-and-mandate",
+    text: "He owned Brandkit, the design system behind airtable.com, for three years and seven months. When he arrived, the codebase had passed through a series of individual contractors, each with a different paradigm — there were two or three different look-and-feels live on one site at the same time, and more variants of the same button than anyone could keep track of. With hundreds of URLs and no source of truth, broken pages lingered in the long tail with no central place to fix them. A broken page isn't tech debt to him — it's the brand showing up wrong. His job was to turn a brand that was almost too expressive to maintain into something anyone on the team could ship with confidence. The system he built is still in use today, past his time there.",
+  },
+  {
     id: "brandkit-semantic-theming",
     text: "Semantic theming, the piece he's proudest of: Airtable's brand needed 27 themes (a colorful, expandable palette, each in light and dark), and the naive path — 27 separate theme files — is unmaintainable and a performance tax on every page. He found the three axes underneath: color, mode (light/dark), and \"prominence\" (a term he coined for a color's strength: subtle, default, or strong). Nine colors times three prominence levels times light/dark equals 27. The real unlock was noticing how little actually changes between themes — most tokens are shared, only a handful vary (an upsell background, a highlight) — so instead of full theme files he built one shared base plus tiny compound utility classes, where the three parameters compound into a single class per variant carrying only the delta. Components read values through CSS custom properties (var()), so they're completely theme-agnostic. Adding a new theme is one more compound class; the components never change. All of it pre-AI, pure architecture.",
   },
