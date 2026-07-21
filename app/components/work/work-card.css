@@ -147,6 +147,15 @@
 .work-card_media {
   position: relative;
   flex: 1;
+  /* Explicit, not relying on the flex default: .work-card_face is a
+     <button>, and browsers' UA stylesheet sets align-items:flex-start on
+     buttons (so display:flex on a button doesn't auto-stretch its native
+     rendering) — that silently overrides the usual cross-axis stretch this
+     child was depending on, collapsing it to zero width since its only
+     content is absolutely positioned (removed from intrinsic sizing).
+     .work-card_content already carried this same width:100% for the same
+     reason; this was the one child missing it. */
+  width: 100%;
   min-height: 200rem;
   overflow: hidden;
   background-color: var(--theme_upsell-bg);
@@ -169,12 +178,33 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 0 20%;
+  object-position: center;
   filter: grayscale(1);
   opacity: 0;
   transition:
     filter 0.3s ease-in-out,
     opacity 0.8s ease;
+}
+
+/* Same crop anchor open and closed, for every card — a switch between two
+   anchors had nothing to animate it (object-position transitions didn't
+   actually interpolate in practice) and read as a hard jump the instant a
+   card opened or closed. One anchor per card, no state-dependent swap. */
+
+/* RAG Chat's illustration: nudged up so the two characters' faces
+   (upper-middle of the source image) stay in frame instead of the crop
+   centering on their laps. */
+.work-card[data-work-card="rag-chat"] .work-card_img {
+  object-position: center 30%;
+}
+
+/* RAG Chat's illustration is centered horizontally in its own frame (a
+   person + robot scene, not a screenshot with a natural top-left focal
+   point) — the generic expanded crop above clips it, so this card opts
+   back into centering even while expanded, nudged up for the same
+   faces-in-frame reason as the closed rule above. */
+.work-card[data-work-card="rag-chat"].is-expanded .work-card_img {
+  object-position: center 30%;
 }
 
 .work-card_img.is-visible {

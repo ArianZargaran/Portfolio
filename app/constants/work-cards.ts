@@ -1,5 +1,5 @@
 /**
- * Source of the Work page's 11 cards. Cards are titled per use-case (the
+ * Source of the Work page's 12 cards. Cards are titled per use-case (the
  * learning/contribution leads), never per project: the employer or product is
  * metadata inside the expanded view, not the headline. Every block has two
  * lengths: `face` cycles on the collapsed card (headline-sized), `expanded`
@@ -191,10 +191,11 @@ const MOTION: WorkCard = {
   eyebrow: "MOTION & MICRO-INTERACTIONS",
   signal: "Optical correction, applied to motion.",
   meta: "Freshworks · ongoing · I own motion on the team",
+  link: { href: "https://www.freshworks.com", label: "Visit Freshworks" },
   images: [
     {
-      src: "/motion-flip-cards.webp",
-      alt: "Freshworks testimonial flip cards",
+      src: "/motion-cards.webp",
+      alt: "Colorful color-swatch cards with hex codes and RGB/CMYK values",
     },
   ],
   blocks: [
@@ -232,8 +233,8 @@ const CONTENT_MODELING: WorkCard = {
   ],
   images: [
     {
-      src: "/content-modeling-graph.webp",
-      alt: "Entity-relationship knowledge graph, nodes and edges",
+      src: "/content-modeling-graph-2.webp",
+      alt: "Knowledge graph diagram, colored nodes connected by edges",
     },
   ],
   blocks: [
@@ -407,6 +408,46 @@ const POUK: WorkCard = {
   ],
 };
 
+const AI_MODE: WorkCard = {
+  id: "ai-mode-webby",
+  eyebrow: "WEBBY HONOREE",
+  signal: "A two-person team built an AI assistant. The industry noticed.",
+  meta: "Freshworks · Webby Awards Honoree, Best Use of AI",
+  link: { href: "/ai-mode-demo.webm", label: "Watch a demo" },
+  images: [
+    {
+      src: "/ai-mode.webp",
+      alt: "The AI Mode assistant answering a question on freshworks.com",
+    },
+  ],
+  blocks: [
+    {
+      kind: "problem",
+      face: "Freshworks needed visitors to self-serve on freshworks.com without it feeling like hunting through menus.",
+      expanded:
+        "AI Mode is an AI-powered web assistant embedded as a sleek, unobtrusive toolbar on freshworks.com. Two of us built it: me on the front-end, one engineer on the back-end. The brief was self-service that didn't feel like self-service — smart search, instant summaries, and recommended journeys that help visitors find what they need without hunting for it.",
+    },
+    {
+      kind: "craft",
+      face: "Figma doesn't know how Safari actually renders. The gaps only showed up once we built it.",
+      expanded:
+        "The hardest part wasn't the AI, it was Safari. Figma's design tooling doesn't account for how certain Safari versions actually render, so gaps invisible in the design file only surfaced once the thing was built — mobile Safari worst of all. I fixed every one with pure CSS, no JavaScript workarounds: the kind of cross-browser craft that never makes a case-study slide but is most of the actual work.",
+    },
+    {
+      kind: "decision",
+      face: "Direct scraping beat structured Contentful pulls for the knowledge base. The messier source was the honest one.",
+      expanded:
+        "We tried two ways to feed the assistant's knowledge base: pulling structured entries from Contentful, and scraping the live pages directly. Direct scraping won — it matched what visitors actually see. Retrieval runs on Pinecone, with GPT-3 handling both the embeddings and the answer generation, and a content-moderation layer that curates what the system can reasonably be asked and falls back gracefully when a visitor goes off-topic.",
+    },
+    {
+      kind: "outcome",
+      face: "AI Mode earned a Webby Awards Honoree mention for Best Use of AI.",
+      expanded:
+        "AI Mode was recognized as a Webby Awards Honoree in the Best Use of AI category — real, external validation for a two-person team's work on a problem that's easy to get wrong: helping people self-serve without it feeling like talking to a chatbot.",
+    },
+  ],
+};
+
 const RAG_CHAT: WorkCard = {
   id: "rag-chat",
   eyebrow: "LIVE ON THIS SITE",
@@ -443,14 +484,15 @@ const RAG_CHAT: WorkCard = {
 
 /**
  * Row layout mirrors the bento rhythm: wide pairs for the centerpieces,
- * trios for the supporting cards, and the RAG chat as a full-width closer
- * (it's meta and lives on this same site, so it reads as an invitation, not
- * another case study). The page scrolls; rows are not viewport-locked.
+ * trios for the supporting cards. The closing row pairs the RAG chat with
+ * pouk.ai — both are personal, both meta (a live demo and a "look what I
+ * build for fun" note), so they read as one closing beat together.
+ * The page scrolls; rows are not viewport-locked.
  */
 export const WORK_ROWS: WorkCard[][] = [
   [BRANDKIT, AI_DESIGN_TO_CODE],
-  [SIX_WEEK_REDESIGN, MOTION, CONTENT_MODELING],
-  [BRUMA, CHECKOUT_AT_SCALE],
-  [QUALITY_ORIGINS, TYPOGRAPHY_DEPTH, POUK],
-  [RAG_CHAT],
+  [SIX_WEEK_REDESIGN, MOTION, AI_MODE],
+  [QUALITY_ORIGINS, TYPOGRAPHY_DEPTH],
+  [BRUMA, CHECKOUT_AT_SCALE, CONTENT_MODELING],
+  [RAG_CHAT, POUK],
 ];
