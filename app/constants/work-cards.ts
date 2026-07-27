@@ -41,6 +41,9 @@ export interface WorkCard {
       distinct from `link`: these are internal detail pages, not the live
       product. A card can have zero, one, or several. */
   diagrams?: { href: string; label: string }[];
+  /** External reference links beyond the primary `link` — award pages,
+      press, etc. Always opens in a new tab. */
+  references?: { href: string; label: string }[];
   /** Card visuals; diagrams and screenshots join these as assets land. */
   images: GalleryImage[];
 }
@@ -414,6 +417,12 @@ const AI_MODE: WorkCard = {
   signal: "A two-person team built an AI assistant. The industry noticed.",
   meta: "Freshworks · Webby Awards Honoree, Best Use of AI",
   link: { href: "/ai-mode-demo.webm", label: "Watch a demo" },
+  references: [
+    {
+      href: "https://winners.webbyawards.com/2026/websites-and-mobile-sites/features-design/best-use-of-ai/373543/aipowered-web-assistant",
+      label: "See the Webby Honoree listing",
+    },
+  ],
   images: [
     {
       src: "/ai-mode.webp",
