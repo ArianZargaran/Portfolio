@@ -195,6 +195,12 @@ const MOTION: WorkCard = {
   signal: "Optical correction, applied to motion.",
   meta: "Freshworks · ongoing · I own motion on the team",
   link: { href: "https://www.freshworks.com", label: "Visit Freshworks" },
+  references: [
+    {
+      href: "https://codepen.io/Arian-Zargaran/pen/019fa948-116f-7870-b019-1aad65404eb8",
+      label: "Play with an auto-peek tilt-card demo",
+    },
+  ],
   images: [
     {
       src: "/motion-cards.webp",
