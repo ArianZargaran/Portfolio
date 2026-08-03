@@ -200,6 +200,10 @@ const MOTION: WorkCard = {
       href: "https://codepen.io/Arian-Zargaran/pen/019fa948-116f-7870-b019-1aad65404eb8",
       label: "Play with an auto-peek tilt-card demo",
     },
+    {
+      href: "https://claude.ai/code/artifact/db7cb193-3b46-4da9-9eda-a4021633f998",
+      label: "Deep-dive: the motion spec sheet",
+    },
   ],
   images: [
     {
