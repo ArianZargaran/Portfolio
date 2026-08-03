@@ -436,6 +436,10 @@ const AI_MODE: WorkCard = {
       href: "https://ai-mode-lac.vercel.app/",
       label: "Deep-dive: Ask Nova sample runs",
     },
+    {
+      href: "https://claude.ai/code/artifact/c1e31afd-239b-4591-ba61-659b0570beb5",
+      label: "Reference: AI Mode architecture & design",
+    },
   ],
   images: [
     {
@@ -519,3 +523,4 @@ export const WORK_ROWS: WorkCard[][] = [
   [BRUMA, CHECKOUT_AT_SCALE, CONTENT_MODELING],
   [RAG_CHAT, POUK],
 ];
+
