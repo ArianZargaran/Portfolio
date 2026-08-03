@@ -432,6 +432,10 @@ const AI_MODE: WorkCard = {
       href: "https://winners.webbyawards.com/2026/websites-and-mobile-sites/features-design/best-use-of-ai/373543/aipowered-web-assistant",
       label: "See the Webby Honoree listing",
     },
+    {
+      href: "https://ai-mode-lac.vercel.app/",
+      label: "Deep-dive: Ask Nova sample runs",
+    },
   ],
   images: [
     {
