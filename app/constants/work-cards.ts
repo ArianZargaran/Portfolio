@@ -436,10 +436,6 @@ const AI_MODE: WorkCard = {
       href: "/work/diagrams/ask-nova",
       label: "Deep-dive: Ask Nova design & architecture",
     },
-    {
-      href: "https://claude.ai/code/artifact/c1e31afd-239b-4591-ba61-659b0570beb5",
-      label: "Reference: AI Mode architecture & design",
-    },
   ],
   images: [
     {
