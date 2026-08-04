@@ -433,8 +433,8 @@ const AI_MODE: WorkCard = {
       label: "See the Webby Honoree listing",
     },
     {
-      href: "https://ai-mode-lac.vercel.app/",
-      label: "Deep-dive: Ask Nova sample runs",
+      href: "/work/diagrams/ask-nova",
+      label: "Deep-dive: Ask Nova design & architecture",
     },
     {
       href: "https://claude.ai/code/artifact/c1e31afd-239b-4591-ba61-659b0570beb5",
