@@ -1175,3 +1175,66 @@
   margin-left: 6.4rem;
   vertical-align: middle;
 }
+
+/* ---- Ask Nova: pipeline chain, guard tone, hot badge ---- */
+
+.work-diagram_pipe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7.2rem;
+  align-items: center;
+  margin: 12.8rem 0;
+}
+
+.work-diagram_pnode {
+  background: var(--wd-surface);
+  border: 1px solid var(--wd-line-strong);
+  border-radius: 8px;
+  padding: 7.2rem 11.2rem;
+}
+
+.work-diagram_pnode .work-diagram_pt {
+  font-weight: 640;
+  font-size: 13.12rem;
+}
+
+.work-diagram_pnode .work-diagram_pd {
+  font-family: var(--wd-mono);
+  font-size: 10.4rem;
+  color: var(--wd-ink-faint);
+  margin-top: 1.6rem;
+}
+
+.work-diagram_pnode.work-diagram_model {
+  border-color: var(--wd-accent);
+  background: var(--wd-accent-soft);
+}
+
+.work-diagram_pnode.work-diagram_model .work-diagram_pt {
+  color: var(--wd-accent);
+}
+
+.work-diagram_parrow {
+  font-family: var(--wd-mono);
+  color: var(--wd-ink-faint);
+  font-size: 12rem;
+  flex: none;
+}
+
+/* Guard tone reuses --wd-mcp (this file's established "flagged" accent)
+   rather than adding a new color — the guardrail rows are conceptually the
+   same "special-cased" signal as the MCP badges elsewhere in this set. */
+.work-diagram_stagebody.work-diagram_guard {
+  border-color: var(--wd-mcp);
+}
+
+.work-diagram_philosophy.work-diagram_guard {
+  background: var(--wd-mcp-soft);
+  border-color: var(--wd-mcp);
+}
+
+.work-diagram_badge.work-diagram_hot {
+  border-color: var(--wd-accent);
+  color: var(--wd-accent);
+  background: var(--wd-accent-soft);
+}
