@@ -1081,13 +1081,23 @@ export const MotionSpecSheet: React.FC = () => (
           </text>
           <text
             x="325"
-            y="70"
+            y="68"
             fill="#868c97"
             fontFamily="ui-monospace, monospace"
             fontSize="10.5"
             textAnchor="middle"
           >
-            CSS transition 0.6s · accumulates ±180°
+            CSS transition 0.6s
+          </text>
+          <text
+            x="325"
+            y="81"
+            fill="#868c97"
+            fontFamily="ui-monospace, monospace"
+            fontSize="10.5"
+            textAnchor="middle"
+          >
+            accumulates ±180°
           </text>
 
           <rect
