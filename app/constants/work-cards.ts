@@ -201,7 +201,7 @@ const MOTION: WorkCard = {
       label: "Play with an auto-peek tilt-card demo",
     },
     {
-      href: "https://claude.ai/code/artifact/db7cb193-3b46-4da9-9eda-a4021633f998",
+      href: "/work/diagrams/motion-spec-sheet",
       label: "Deep-dive: the motion spec sheet",
     },
   ],

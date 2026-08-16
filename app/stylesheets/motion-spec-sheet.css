@@ -1,0 +1,938 @@
+/* Motion & Micro-interactions spec sheet (app/routes/work_.diagrams.motion-spec-sheet.tsx).
+   Ported from the Claude.ai artifact it was authored in.
+
+   Unlike the other self-hosted Work diagrams, this page does NOT retoken onto
+   the site's shared --wd-* palette: it is deliberately its own standalone
+   dark "oscilloscope / instrument panel" world, a display that stays dark
+   regardless of ambient room light by the nature of the metaphor — so it does
+   not follow prefers-color-scheme or the site's theme switching. That is a
+   design decision carried over verbatim from the source.
+
+   SCOPING RULE (load-bearing): the artifact declared its palette on :root and
+   painted the grid onto bare `body`. Both are document-scoped, so dropping
+   them in as-is clobbers the site's real global theme variables and breaks
+   colors on every other route. Every single rule in this file is therefore
+   nested under .motion-lab-page (the route shell) or .motion-lab (the content
+   column). Nothing here may ever select bare :root, html, or body. */
+
+.motion-lab-page {
+  color-scheme: dark;
+
+  --ink: #0a0c0f;
+  --panel: #12151b;
+  --panel-raised: #191d25;
+  --line: #262b34;
+  --line-soft: #1b1f26;
+  --text: #e6e3db;
+  --text-dim: #868c97;
+  --text-faint: #565b64;
+  --trace: #f2a53c;
+  --trace-dim: #7a5b2c;
+  --trace-cool: #4fb4c7;
+  --trace-cool-dim: #2c5b63;
+  --radius: 10px;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas,
+    monospace;
+  --sans: -apple-system, "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
+
+  /* Base .page is position:absolute with top/bottom:0, clamped to one
+     viewport tall. This page is several viewports of scroll runway, so the
+     same override work-diagram.css makes is needed here. */
+  position: static;
+  min-height: 100vh;
+
+  /* The artifact painted these on <body>; they belong to the page shell. */
+  background-color: var(--ink);
+  background-image: linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.motion-lab-page *,
+.motion-lab-page *::before,
+.motion-lab-page *::after {
+  box-sizing: border-box;
+}
+
+.motion-lab-page ::selection {
+  background: var(--trace);
+  color: var(--ink);
+}
+
+/* Back-to-Work chrome, styled locally: this route does not import
+   work-diagram.css, so it has no --wd-* tokens to borrow. */
+.motion-lab-page_back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-decoration: none;
+  padding: 24px 28px 0;
+  transition: color 0.2s ease;
+}
+
+.motion-lab-page_back:hover {
+  color: var(--trace);
+}
+
+.motion-lab-page_back:focus-visible {
+  outline: 2px solid var(--trace);
+  outline-offset: 2px;
+}
+
+/* ---------- the content column (the artifact's .page) ---------- */
+.motion-lab {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 40px 28px 96px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* The site ships a full Meyer reset (margin/padding/font zeroed on every
+   element), which the artifact never had. Anything below that leaned on UA
+   defaults — paragraph margins, monospace <code>, italic <em> — has to be
+   restated explicitly, scoped here. */
+.motion-lab p {
+  margin: 1em 0;
+}
+
+.motion-lab em {
+  font-style: italic;
+}
+
+.motion-lab code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--text);
+}
+
+.motion-lab a {
+  color: var(--trace);
+}
+
+/* ---------- header plate ---------- */
+.motion-lab .plate {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+}
+
+.motion-lab .plate_id {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--trace);
+}
+
+.motion-lab .plate_status {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  text-align: right;
+}
+
+.motion-lab .plate_status span {
+  color: var(--trace-cool);
+}
+
+.motion-lab h1 {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 28px 0 12px;
+  text-wrap: balance;
+}
+
+.motion-lab .dek {
+  color: var(--text-dim);
+  font-size: 17px;
+  max-width: 62ch;
+  margin: 0 0 8px;
+}
+
+.motion-lab .byline {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+  margin: 18px 0 0;
+}
+
+.motion-lab .byline strong {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* ---------- section scaffolding ---------- */
+.motion-lab section.spec {
+  margin-top: 72px;
+}
+
+.motion-lab .spec_head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.motion-lab .spec_tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--trace-cool);
+  background: rgba(79, 180, 199, 0.1);
+  border: 1px solid var(--trace-cool-dim);
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.motion-lab h2 {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.motion-lab .spec p {
+  color: var(--text-dim);
+  max-width: 66ch;
+}
+
+.motion-lab .spec p.quote {
+  color: var(--text);
+  font-size: 17px;
+  border-left: 2px solid var(--trace);
+  padding-left: 16px;
+  margin: 20px 0 28px;
+}
+
+/* ---------- provenance / history note ---------- */
+.motion-lab .provenance {
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--trace-cool);
+  border-radius: 6px;
+  background: var(--panel);
+  padding: 20px 22px;
+  margin: 0 0 28px;
+  max-width: 66ch;
+}
+
+.motion-lab .provenance_head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.motion-lab .provenance_label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--trace-cool);
+}
+
+.motion-lab .provenance_meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.motion-lab .provenance dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 18px;
+  row-gap: 12px;
+  margin: 0;
+}
+
+.motion-lab .provenance dt {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding-top: 2px;
+  white-space: nowrap;
+}
+
+.motion-lab .provenance dd {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.motion-lab .provenance dd em {
+  color: var(--text);
+  font-style: normal;
+  border-bottom: 1px dotted var(--text-faint);
+}
+
+@media (max-width: 575px) {
+  .motion-lab .provenance dl {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+  }
+
+  .motion-lab .provenance dt {
+    padding-top: 10px;
+  }
+}
+
+.motion-lab .rig {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin: 24px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 720px) {
+  .motion-lab .rig.two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.motion-lab .rig_label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 14px;
+}
+
+.motion-lab .hint {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 14px 0 1em;
+  max-width: 66ch;
+}
+
+/* ---------- demo 1: direction-aware flip ---------- */
+.motion-lab .flip-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.motion-lab .flip-scene {
+  width: 220px;
+  height: 140px;
+  perspective: 900px;
+  cursor: pointer;
+}
+
+/* Two independent rotateY channels composited into one transform, rather
+   than one shared value: --ml-spin is the click-driven flip (JS sets it,
+   accumulates forever), --ml-peek is the load-time hint (CSS keyframes own
+   it, always 0deg at rest). Keeping them apart means the peek can play at
+   ANY spin state without fighting or resetting it -- no JS guard needed
+   to avoid clobbering an in-progress flip.
+
+   NOTE on the names: @property registrations are document-scoped and cannot
+   be nested under a class, so these carry an --ml- prefix (the artifact used
+   bare --spin / --peek) purely so nothing this page registers can collide
+   with another route's custom properties. The mechanism is unchanged. */
+@property --ml-spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --ml-peek {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.motion-lab .flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--ml-spin) + var(--ml-peek)));
+  /* Only --ml-spin transitions here -- --ml-peek's motion is fully owned by
+     its own @keyframes animation below, so the two never contend over the
+     same timing. */
+  transition: --ml-spin 0.6s cubic-bezier(0.3, 0.1, 0.2, 1);
+}
+
+.motion-lab .flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.motion-lab .line {
+  display: block;
+}
+
+.motion-lab .flip-face.front {
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+}
+
+.motion-lab .flip-face.back {
+  background: linear-gradient(135deg, var(--trace-dim), #2a1f10);
+  color: var(--trace);
+  transform: rotateY(180deg);
+  border: 1px solid var(--trace-dim);
+}
+
+.motion-lab .flip-zones {
+  display: flex;
+  width: 220px;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- demo 2: perceived-speed pill ---------- */
+/* Rebuilt to match the real component (EyebrowPill): --border-angle is a
+   PLAIN custom property (no @property registration) set via inline style
+   on the pill itself every animation frame, not baked into CSS keyframes.
+   It inherits normally into ::before, which just reads it. There is no
+   highlight "band" here, on purpose -- the gradient is a two-stop full
+   sweep (the accent at alpha 0 at 0%, ramping to full accent at 100%,
+   putting the crisp edge at the front of the motion), not a narrow glow, so
+   there's no separate highlight-width-vs-arc-length problem to fight. All
+   the correction work happens in JS, in the lookup table. */
+.motion-lab .pill-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.motion-lab .pill {
+  --border-angle: 90deg;
+  position: relative;
+  width: 168px;
+  height: 46px;
+  border-radius: 23px;
+  background: var(--panel-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.motion-lab .pill::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 25px;
+  padding: 2px;
+  /* Comet orientation: the sweep rotates clockwise (increasing
+     --border-angle), and the sharp opaque edge sits at the --border-angle
+     boundary with the fade trailing counterclockwise BEHIND it -- head
+     leads, tail follows. Stop order matters here: transparent first,
+     ramping clockwise up to full accent at the lap's end, puts the crisp
+     edge on the leading side of the motion (the previous order reversed
+     it, so the tail pointed in the direction of travel). The transparent
+     stop reuses the accent's own channels so browsers that interpolate
+     through non-premultiplied alpha never flash gray mid-fade. */
+  background: conic-gradient(
+    from var(--border-angle) at 50% 50%,
+    rgba(242, 165, 60, 0),
+    var(--trace)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.motion-lab .curve-chart {
+  width: 100%;
+  height: 130px;
+  display: block;
+  margin-top: 8px;
+}
+
+.motion-lab .curve-legend {
+  display: flex;
+  gap: 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 6px;
+}
+
+.motion-lab .curve-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.motion-lab .swatch {
+  width: 10px;
+  height: 2px;
+  display: inline-block;
+}
+
+/* ---------- the flip's own on-load "peek" ---------- */
+/* Same .flip-card, one extra state: a small self-cancelling wiggle that
+   plays once on load, before any click. This used to be a separate demo
+   card (a discoverability fix bolted on after the fact) -- folded into
+   the flip-card itself here because in production it's the same
+   component, not a second one. Angle is intentionally smaller than a
+   real flip commit (well under the ~90deg backface-visibility threshold)
+   so it teases the motion without ever showing the back face. */
+.motion-lab .flip-card.is-peeking {
+  animation: motion-lab-flip-peek-hint 1.4s ease-in-out 1;
+}
+
+@keyframes motion-lab-flip-peek-hint {
+  0% {
+    --ml-peek: 0deg;
+  }
+  25% {
+    --ml-peek: -28deg;
+  }
+  50% {
+    --ml-peek: 0deg;
+  }
+  75% {
+    --ml-peek: -28deg;
+  }
+  100% {
+    --ml-peek: 0deg;
+  }
+}
+
+.motion-lab .replay-btn {
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.motion-lab .replay-btn:hover {
+  border-color: var(--trace);
+  color: var(--trace);
+}
+
+/* ---------- demo 3: pinned vertical scrub carousel ---------- */
+/* The runway is the trick: a tall scroll container whose only job is to
+   give the sticky shell scrubbing distance. The shell pins while the
+   runway passes, and scroll progress through the runway -- not time --
+   drives the active index. Matches the live section's
+   data-carousel-pinned="true" / data-carousel-scrub="true" behavior:
+   3181px of section height on the real page for four slides. */
+.motion-lab .vcar-runway {
+  height: 260vh;
+  position: relative;
+  margin: 24px 0;
+}
+
+.motion-lab .vcar-shell {
+  position: sticky;
+  top: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 170px 1fr 1fr;
+  gap: 20px;
+  height: 400px;
+  box-sizing: border-box;
+}
+
+.motion-lab .vcar-label-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.motion-lab .vcar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.motion-lab .vcar-label:hover {
+  color: var(--text-dim);
+}
+
+.motion-lab .vcar-label-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--text-faint);
+  flex: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.motion-lab .vcar-label.is-active {
+  color: var(--text);
+}
+
+.motion-lab .vcar-label.is-active .vcar-label-marker {
+  background: var(--trace);
+  border-color: var(--trace);
+}
+
+/* Text column: a clipped viewport over a vertically shifting track --
+   the "motion-shift" directive on the vertical axis. Only transform
+   animates (compositor-only), same discipline as everything else here. */
+.motion-lab .vcar-viewport {
+  overflow: hidden;
+  position: relative;
+}
+
+.motion-lab .vcar-track {
+  height: 100%;
+  transition: transform 0.32s ease;
+}
+
+.motion-lab .vcar-slide {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  padding-right: 8px;
+}
+
+.motion-lab .vcar-slide h3 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.motion-lab .vcar-slide p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Media column: layers stacked in one grid cell, never scrolling --
+   data-carousel-pin-media="true". Cross-fade only, opacity 0.32s,
+   measured verbatim from the live section's computed styles. */
+.motion-lab .vcar-media-stack {
+  position: relative;
+}
+
+.motion-lab .vcar-media-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
+    linear-gradient(160deg, var(--panel-raised), #10141b);
+  background-size: 24px 24px, 24px 24px, cover;
+  opacity: 0;
+  transition: opacity 0.32s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.motion-lab .vcar-media-layer.is-active {
+  opacity: 1;
+}
+
+.motion-lab .vcar-media-index {
+  font-family: var(--mono);
+  font-size: 44px;
+  font-weight: 600;
+  color: var(--trace);
+  line-height: 1;
+}
+
+.motion-lab .vcar-media-caption {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.motion-lab .vcar-progress {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  right: 24px;
+  height: 2px;
+  background: var(--line-soft);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.motion-lab .vcar-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--trace);
+}
+
+/* The de-snapped iteration: no transitions on the track or the media
+   layers -- both are written every frame straight from scroll progress,
+   so the only easing the user ever feels is their own scroll physics.
+   A transition here would mean the element keeps moving after the
+   finger stops: exactly the "hijacked" feel being removed. */
+.motion-lab .vcar-track--free {
+  transition: none;
+}
+
+.motion-lab .vcar-media-layer--free {
+  transition: none;
+}
+
+/* Iteration sub-headings inside the Rig 03 section -- one rig, several
+   builds of the same carousel presented in order. */
+.motion-lab .vcar-iter-head {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--trace);
+  margin: 44px 0 6px;
+}
+
+/* Iteration 1 layout: no pinned media column at all -- the shell is just
+   labels + one wide viewport, and each slide carries its own media panel
+   inline, so the panel scrolls (and snaps) along with the text. This is
+   the "before" that data-carousel-pin-media was invented to fix. */
+.motion-lab .vcar-shell--twocol {
+  grid-template-columns: 170px 1fr;
+}
+
+.motion-lab .vcar-slide--with-media {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.motion-lab .vcar-slide--with-media .vcar-slide-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.motion-lab .vcar-inline-media {
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
+    linear-gradient(160deg, var(--panel-raised), #10141b);
+  background-size: 24px 24px, 24px 24px, cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+@media (max-width: 719px) {
+  .motion-lab .vcar-slide--with-media {
+    grid-template-columns: 1fr;
+  }
+
+  .motion-lab .vcar-inline-media {
+    display: none;
+  }
+
+  .motion-lab .vcar-shell {
+    grid-template-columns: 1fr;
+    height: 360px;
+  }
+
+  .motion-lab .vcar-media-stack {
+    display: none;
+  }
+
+  .motion-lab .vcar-label-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+  }
+}
+
+/* ---------- mechanism diagrams ---------- */
+.motion-lab figure.mech {
+  margin: 28px 0 0;
+  padding: 22px 24px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.motion-lab figure.mech svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.motion-lab figure.mech figcaption {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin-top: 14px;
+  line-height: 1.5;
+  max-width: 68ch;
+}
+
+.motion-lab figure.mech figcaption strong {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* ---------- spec table ---------- */
+.motion-lab .spec-table-wrap {
+  overflow-x: auto;
+}
+
+.motion-lab table.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  min-width: 640px;
+}
+
+.motion-lab .spec-table th,
+.motion-lab .spec-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.motion-lab .spec-table th {
+  color: var(--text-faint);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 10.5px;
+}
+
+.motion-lab .spec-table td {
+  color: var(--text-dim);
+}
+
+.motion-lab .spec-table td.interaction {
+  color: var(--text);
+}
+
+.motion-lab .spec-table td.num {
+  font-variant-numeric: tabular-nums;
+  color: var(--trace);
+}
+
+.motion-lab footer {
+  margin-top: 80px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.motion-lab footer a {
+  color: var(--text-faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.motion-lab footer a:hover {
+  color: var(--trace);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The pill sweep is JS/rAF-driven now, not a CSS animation -- see the
+     matchMedia check in the component, which skips starting the rAF loop
+     entirely and leaves --border-angle at its resting 90deg instead. */
+  .motion-lab .flip-card.is-peeking {
+    animation: none;
+  }
+
+  .motion-lab .flip-card {
+    transition: none;
+  }
+}
+
+.motion-lab button:focus-visible,
+.motion-lab [tabindex]:focus-visible {
+  outline: 2px solid var(--trace);
+  outline-offset: 2px;
+}
