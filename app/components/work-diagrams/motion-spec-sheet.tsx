@@ -2232,7 +2232,7 @@ export const MotionSpecSheet: React.FC = () => (
             fontSize="10.5"
             textAnchor="middle"
           >
-            written directly · transition: none
+            direct · no transition
           </text>
 
           <rect
