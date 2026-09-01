@@ -1,0 +1,535 @@
+/* Murmuration spec sheet (app/routes/work_.diagrams.murmuration.tsx).
+   Ported from the Claude.ai artifact it was authored in.
+
+   Unlike the motion spec sheet, this page keeps the artifact's real light/
+   dark duality (a warm "engineering drawing" palette, its own Ember gradient
+   accent) rather than forcing a single dark world — that duality is part of
+   the source design, not incidental. It still does NOT hook into the site's
+   own theme tokens (--theme_*): this is a standalone deep-dive page with its
+   own identity, matching the pattern already used for the motion spec sheet.
+
+   SCOPING RULE (load-bearing, same incident as before): the artifact declared
+   its palette on bare :root and painted directly onto body. Both are
+   document-scoped, so dropping them in as-is would clobber the site's real
+   global theme variables and break colors on every other route. Every rule
+   here is nested under .murmuration-page. Nothing may ever select bare
+   :root, html, or body. */
+
+.murmuration-page {
+  --indigo: #16255f;
+  --violet: #5c1cb4;
+  --magenta: #c81f63;
+  --orange: #e8642f;
+  --amber: #e8a25a;
+
+  --ground: #f7f7fb;
+  --surface: #ffffff;
+  --sunken: #f0eff7;
+  --ink: #14131c;
+  --muted: #62607a;
+  --faint: #8b89a3;
+  --rule: #e2e1ec;
+  --accent: #c81f63;
+  --accent-soft: #fbe9f0;
+  --shadow:
+    0 1px 2px rgba(20, 19, 28, 0.05), 0 8px 24px rgba(20, 19, 28, 0.05);
+  --canvas-bg: #07060a;
+
+  /* Base .page is position:absolute with top/bottom:0, clamped to one
+     viewport tall (see common-page-themes.css) -- fine for pages that fit,
+     but this content routinely runs longer. Past the fold the box's own
+     background stopped covering. Same override the other diagram pages use. */
+  position: static;
+  min-height: 100vh;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 17px/1.65 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  .murmuration-page {
+    --ground: #0b0a11;
+    --surface: #131220;
+    --sunken: #0e0d17;
+    --ink: #edecf4;
+    --muted: #9c99b4;
+    --faint: #706e8a;
+    --rule: #262437;
+    --accent: #ef5b8d;
+    --accent-soft: #2a1220;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.murmuration-page * {
+  box-sizing: border-box;
+}
+
+.murmuration-page_back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--faint);
+  font: 400 13px "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  padding: 20px 28px 0;
+}
+
+.murmuration-page_back:hover {
+  color: var(--accent);
+}
+
+.murmuration-page .wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 28px 96px;
+}
+
+.murmuration-page .measure {
+  max-width: 64ch;
+}
+
+/* ---------- hero ---------- */
+
+.murmuration-page .hero {
+  position: relative;
+  background: var(--canvas-bg);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.murmuration-page .hero canvas {
+  display: block;
+  width: 100%;
+  height: 58vh;
+  min-height: 340px;
+  max-height: 560px;
+}
+
+.murmuration-page .hero-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(
+    to top,
+    rgba(7, 6, 10, 0.92) 0%,
+    rgba(7, 6, 10, 0.4) 38%,
+    rgba(7, 6, 10, 0) 70%
+  );
+  pointer-events: none;
+}
+
+/* Same column as .wrap, so the headline sits over the title block below it. */
+.murmuration-page .hero-inner {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 28px 46px;
+}
+
+.murmuration-page .hero h1 {
+  margin: 0;
+  font-family: Newsreader, Georgia, serif;
+  font-weight: 300;
+  font-size: clamp(41.6rem, 7vw, 73.6rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #fbf9fc;
+  text-wrap: balance;
+}
+
+.murmuration-page .hero p {
+  margin: 12px 0 0;
+  max-width: 46ch;
+  color: #c8c3d6;
+  font-size: 16.32rem;
+}
+
+.murmuration-page .hero .eyebrow {
+  color: var(--amber);
+}
+
+.murmuration-page .eyebrow {
+  font: 500 11px/1 "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 0 0 14px;
+}
+
+/* ---------- title block: an engineering drawing's, not a header ---------- */
+
+.murmuration-page .titleblock {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  margin: -34px 0 0;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.murmuration-page .tb-cell {
+  padding: 16px 18px;
+  border-right: 1px solid var(--rule);
+}
+
+.murmuration-page .tb-cell:last-child {
+  border-right: 0;
+}
+
+.murmuration-page .tb-key {
+  font: 500 10px/1 "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.murmuration-page .tb-val {
+  margin-top: 7px;
+  font: 400 14.5px/1.35 "IBM Plex Mono", ui-monospace, monospace;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.murmuration-page .tb-val a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.murmuration-page .tb-val a:hover {
+  opacity: 0.75;
+}
+
+/* ---------- sections ---------- */
+
+.murmuration-page section {
+  margin-top: 62px;
+}
+
+.murmuration-page h2 {
+  font-family: Newsreader, Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(25.6rem, 3.4vw, 34.4rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+
+.murmuration-page h3 {
+  font: 600 14px/1.4 "IBM Plex Sans", sans-serif;
+  letter-spacing: 0.01em;
+  margin: 34px 0 8px;
+}
+
+/* The rule is a sliver of the effect's own gradient. */
+.murmuration-page .srule {
+  height: 2px;
+  width: 96px;
+  border: 0;
+  margin: 0 0 22px;
+  background: linear-gradient(
+    90deg,
+    var(--indigo),
+    var(--violet),
+    var(--magenta),
+    var(--orange),
+    var(--amber)
+  );
+}
+
+.murmuration-page p {
+  margin: 0 0 17px;
+}
+
+.murmuration-page a {
+  color: var(--accent);
+}
+
+.murmuration-page strong {
+  font-weight: 600;
+}
+
+.murmuration-page em {
+  font-style: italic;
+}
+
+.murmuration-page .lede {
+  font-size: 18.24rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* ---------- pull quote: the thesis ---------- */
+
+.murmuration-page .thesis {
+  margin: 34px 0;
+  padding: 24px 26px;
+  border-left: 2px solid var(--accent);
+  background: var(--sunken);
+  border-radius: 0 3px 3px 0;
+}
+
+.murmuration-page .thesis p {
+  margin: 0;
+  font-family: Newsreader, Georgia, serif;
+  font-size: 21.12rem;
+  line-height: 1.45;
+}
+
+.murmuration-page .thesis p + p {
+  margin-top: 12px;
+}
+
+/* ---------- numbered sequence: real order, not decoration ---------- */
+
+.murmuration-page ol.attempts {
+  list-style: none;
+  counter-reset: a;
+  margin: 24px 0 0;
+  padding: 0;
+}
+
+.murmuration-page ol.attempts > li {
+  counter-increment: a;
+  position: relative;
+  padding: 0 0 22px 52px;
+  border-left: 1px solid var(--rule);
+  margin-left: 13px;
+}
+
+.murmuration-page ol.attempts > li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.murmuration-page ol.attempts > li::before {
+  content: counter(a);
+  position: absolute;
+  left: -13px;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  font: 500 12px "IBM Plex Mono", monospace;
+  color: var(--muted);
+}
+
+.murmuration-page ol.attempts > li:last-child::before {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.murmuration-page ol.attempts h4 {
+  margin: 2px 0 6px;
+  font: 600 15px/1.4 "IBM Plex Sans", sans-serif;
+}
+
+.murmuration-page ol.attempts p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15.36rem;
+}
+
+.murmuration-page .verdict {
+  display: inline-block;
+  margin-top: 8px;
+  font: 500 10.5px/1 "IBM Plex Mono", monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: 2px;
+  background: var(--sunken);
+  color: var(--muted);
+}
+
+.murmuration-page .verdict.hit {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------- data ---------- */
+
+.murmuration-page .tablewrap {
+  overflow-x: auto;
+  margin: 22px 0;
+}
+
+.murmuration-page table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14.5px;
+}
+
+.murmuration-page th,
+.murmuration-page td {
+  text-align: left;
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.murmuration-page th {
+  font: 500 10.5px/1 "IBM Plex Mono", monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-bottom: 9px;
+}
+
+.murmuration-page td.num {
+  font-family: "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.murmuration-page code {
+  font: 400 0.9em "IBM Plex Mono", ui-monospace, monospace;
+  background: var(--sunken);
+  padding: 0.12em 0.36em;
+  border-radius: 2px;
+}
+
+.murmuration-page pre {
+  margin: 18px 0;
+  padding: 16px 18px;
+  background: var(--sunken);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow-x: auto;
+  font: 400 13.5px/1.6 "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.murmuration-page pre code {
+  background: none;
+  padding: 0;
+}
+
+/* ---------- stat strip ---------- */
+
+.murmuration-page .stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  margin: 26px 0;
+  overflow: hidden;
+}
+
+.murmuration-page .stat {
+  background: var(--surface);
+  padding: 18px;
+}
+
+.murmuration-page .stat-n {
+  font: 300 32rem/1 Newsreader, Georgia, serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.murmuration-page .stat-l {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.murmuration-page ul.plain {
+  margin: 0 0 17px;
+  padding-left: 1.15em;
+}
+
+.murmuration-page ul.plain li {
+  margin-bottom: 9px;
+}
+
+.murmuration-page .note {
+  font-size: 14.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+  padding-top: 18px;
+  margin-top: 34px;
+}
+
+.murmuration-page footer {
+  margin-top: 72px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  font: 400 13px/1.6 "IBM Plex Mono", monospace;
+  color: var(--faint);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+}
+
+.murmuration-page footer a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.murmuration-page footer a:hover {
+  color: var(--accent);
+}
+
+.murmuration-page a:focus-visible,
+.murmuration-page button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.murmuration-page .titlerow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.murmuration-page .live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font: 700 12px/1 "IBM Plex Mono", monospace;
+  text-decoration: none;
+  color: var(--amber);
+}
+
+.murmuration-page .live::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+@media (max-width: 620px) {
+  .murmuration-page {
+    font-size: 16px;
+  }
+  .murmuration-page .wrap {
+    padding: 0 20px 72px;
+  }
+  .murmuration-page .hero-inner {
+    padding: 0 20px 44px;
+  }
+  .murmuration-page ol.attempts > li {
+    padding-left: 40px;
+  }
+}

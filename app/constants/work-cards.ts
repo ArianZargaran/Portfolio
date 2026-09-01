@@ -155,6 +155,12 @@ const SIX_WEEK_REDESIGN: WorkCard = {
   signal: "A six-month redesign, shipped in six weeks.",
   meta: "Freshworks · shipped July 2026",
   link: { href: "https://www.freshworks.com", label: "Visit Freshworks" },
+  references: [
+    {
+      href: "/work/diagrams/murmuration",
+      label: "Deep-dive: rebuilding the homepage's particle effect",
+    },
+  ],
   images: [
     {
       src: "/freshworks-redesign.webp",
