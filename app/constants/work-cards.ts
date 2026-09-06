@@ -1,5 +1,5 @@
 /**
- * Source of the Work page's 12 cards. Cards are titled per use-case (the
+ * Source of the Work page's 13 cards. Cards are titled per use-case (the
  * learning/contribution leads), never per project: the employer or product is
  * metadata inside the expanded view, not the headline. Every block has two
  * lengths: `face` cycles on the collapsed card (headline-sized), `expanded`
@@ -319,6 +319,48 @@ const BRUMA: WorkCard = {
   ],
 };
 
+const FITCOUNTER: WorkCard = {
+  id: "fitcounter",
+  eyebrow: "PRODUCT DESIGN",
+  signal:
+    "Most calorie apps let you earn treats back. I designed one that refuses — on purpose.",
+  meta: "Personal project, design led · live on the App Store",
+  link: { href: "https://fitcounter.com/", label: "Visit FitCounter" },
+  references: [
+    {
+      href: "https://apps.apple.com/es/app/ai-calorie-counter-fitcounter/id6498909414?l=en-GB",
+      label: "See it on the App Store",
+    },
+  ],
+  images: [],
+  blocks: [
+    {
+      kind: "problem",
+      face: "Most calorie apps die at step one: search a food database, guess the portion, give up in a week.",
+      expanded:
+        "FitCounter is a nutrition-tracking app I designed, live on the App Store. Typing a food name into a search box and guessing its portion size is the exact friction that gets calorie trackers deleted within days. The entry point had to stop being a keyboard and start being a camera: snap a photo, let AI recognize the meal and estimate the macros, log it in one tap.",
+    },
+    {
+      kind: "decision",
+      face: "I designed the app to refuse something users would want: earning calories back through exercise.",
+      expanded:
+        "Most competitors let you \"earn\" extra food by logging a workout, which turns a nutrition plan into a bargain you can always renegotiate. FitCounter doesn't allow it, on purpose — the plan stays consistent and science-backed instead of elastic. That's a product stance as much as a design one: I had to design the restriction to feel like support from a coach, not a penalty, which is why it ships alongside Smart Coach guidance rather than as a bare rule.",
+    },
+    {
+      kind: "craft",
+      face: "A macro ring replaced a wall of numbers. NutriScore and NOVA ratings sit right where you're about to add the food.",
+      expanded:
+        "The add-food screen centers a circular kcal ring with protein, fat, and carbs read at a glance instead of four stacked numbers competing for attention. NutriScore and NOVA quality ratings surface in that same screen, so \"is this food actually good for me\" stays visible next to \"how much of it is this,\" not buried in a separate tab nobody opens.",
+    },
+    {
+      kind: "outcome",
+      face: "Shipped, ad-free, and the reviews single out the design, not just the feature list.",
+      expanded:
+        "FitCounter is live on the App Store at 4.8 stars, subscription-funded and ad-free — which also meant designing with no ad slots to route around. One review, translated from Spanish: “Has a spectacular design, very well structured — very accessible and intuitive.” It shipped already localized across 16+ languages, so the screens had to hold up in more than one language from the first draft, not as a retrofit.",
+    },
+  ],
+};
+
 const CHECKOUT_AT_SCALE: WorkCard = {
   id: "checkout-honest-failure",
   eyebrow: "AN HONEST FAILURE",
@@ -543,16 +585,19 @@ const RAG_CHAT: WorkCard = {
 
 /**
  * Row layout mirrors the bento rhythm: wide pairs for the centerpieces,
- * trios for the supporting cards. The closing row pairs the RAG chat with
- * pouk.ai — both are personal, both meta (a live demo and a "look what I
- * build for fun" note), so they read as one closing beat together.
+ * trios for the supporting cards. Bruma pairs with FitCounter — both
+ * personal, both shipped, live products with their own brand identity apart
+ * from ari.soy. The closing row pairs the RAG chat with pouk.ai — both are
+ * personal, both meta (a live demo and a "look what I build for fun" note),
+ * so they read as one closing beat together.
  * The page scrolls; rows are not viewport-locked.
  */
 export const WORK_ROWS: WorkCard[][] = [
   [BRANDKIT, AI_DESIGN_TO_CODE],
   [SIX_WEEK_REDESIGN, MOTION, AI_MODE],
   [QUALITY_ORIGINS, CABIFY_DESIGN_SYSTEM],
-  [BRUMA, CHECKOUT_AT_SCALE, CONTENT_MODELING],
+  [BRUMA, FITCOUNTER],
+  [CHECKOUT_AT_SCALE, CONTENT_MODELING],
   [RAG_CHAT, POUK],
 ];
 
