@@ -1238,3 +1238,71 @@
   color: var(--wd-accent);
   background: var(--wd-accent-soft);
 }
+
+/* ---- Cabify Marshal: status roadmap table, tier flag, swatch ramps ---- */
+
+.work-diagram_rtable-wrap {
+  overflow-x: auto;
+  margin: 12.8rem 0;
+}
+
+.work-diagram_rtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--wd-mono);
+  font-size: 12.48rem;
+  min-width: 420px;
+}
+
+.work-diagram_rtable th,
+.work-diagram_rtable td {
+  text-align: left;
+  padding: 8rem 12.8rem 8rem 0;
+  border-bottom: 1px solid var(--wd-line);
+}
+
+.work-diagram_rtable th {
+  font-size: 10.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wd-ink-faint);
+  font-weight: 500;
+}
+
+.work-diagram_rtable td.work-diagram_done {
+  color: var(--wd-ok);
+}
+
+.work-diagram_rtable td.work-diagram_wip {
+  color: var(--wd-warm);
+}
+
+.work-diagram_rtable td.work-diagram_hold {
+  color: var(--wd-ink-faint);
+}
+
+/* The real product's own gray-circle semantic: "could be changed", not
+   locked -- dashed border reads as permeable rather than a status pill. */
+.work-diagram_badge.work-diagram_tier2 {
+  border-style: dashed;
+  color: var(--wd-ink-faint);
+}
+
+.work-diagram_ramp {
+  margin-bottom: 11.2rem;
+}
+
+.work-diagram_ramp-h {
+  display: flex;
+  align-items: baseline;
+  gap: 8rem;
+  margin-bottom: 6.4rem;
+  font-family: var(--wd-mono);
+  font-size: 11.2rem;
+  color: var(--wd-ink-faint);
+}
+
+.work-diagram_ramp-h b {
+  color: var(--wd-ink);
+  font-size: 12.8rem;
+}

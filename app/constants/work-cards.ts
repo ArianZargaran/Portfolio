@@ -376,25 +376,55 @@ const QUALITY_ORIGINS: WorkCard = {
   ],
 };
 
-const TYPOGRAPHY_DEPTH: WorkCard = {
-  id: "typography-depth",
-  eyebrow: "TYPOGRAPHY DEPTH",
-  signal: "Customizing a typeface down to its vertical metrics.",
-  meta: "Cabify · 2019–2021",
-  link: { href: "https://www.cabify.com", label: "Visit Cabify" },
-  images: [{ src: "/cabify.webp", alt: "Cabify design system preview" }],
+const CABIFY_DESIGN_SYSTEM: WorkCard = {
+  id: "cabify-design-system",
+  eyebrow: "DESIGN SYSTEM LEADERSHIP",
+  signal:
+    "Design owns the intent. Engineering owns the code. I owned the gap between them.",
+  meta: "Cabify · 2019–2021 · led Marshal, the company's design system",
+  link: {
+    href: "https://cab-design-system.vercel.app/?path=/story/design-system-intro--page",
+    label: "Browse Marshal in Storybook",
+  },
+  diagrams: [
+    {
+      href: "/work/diagrams/marshal",
+      label: "Deep-dive: governing Marshal across design and engineering",
+    },
+  ],
+  images: [
+    { src: "/cabify.webp", alt: "Marshal, Cabify's design system, in Storybook" },
+  ],
   blocks: [
     {
-      kind: "craft",
-      face: "We licensed Calibri and made it ours: rounded the a, reduced kerning, tightened the i.",
+      kind: "problem",
+      face: "Every component tweak queued behind one core team. Being correct wasn't the problem — being the only path to correct was.",
       expanded:
-        "At Cabify (multi-market, bilingual, EU-wide) the brand needed a typeface that was ours. We licensed Calibri and customized it: rounded the `a`, reduced the kerning, tightened the `i`. Modifying letterforms is design work most engineers never touch, and it taught me to see type as a system of decisions rather than a file you import.",
+        "Marshal, Cabify's design system, started the way most do: one core team owned every component, so any change — even one a product team could clearly justify — waited in that team's queue. The system was right and slow, which in practice means teams start routing around it instead of through it.",
     },
     {
-      kind: "problem",
-      face: "The customization broke line-height math across products. The bug was in the font's vertical metrics.",
+      kind: "decision",
+      face: "A gray flag, not a lock: Tier 2 let teams promote their own components without waiting on us.",
       expanded:
-        "Then the customized font shipped, and line-heights went subtly wrong across products. The bug wasn't in any stylesheet; it was inside the font file itself, in its vertical metrics, which the customization had disturbed. Debugging typography at the font-metrics level is the kind of deep dive that permanently changes how you read a rendered page. Some of that work is retired now; what it taught me isn't.",
+        "I designed the tier system that fixed it. A Tier 2 flag marks a component as changeable without going through the core Marshal team, so a product team that needed to evolve one could promote it and move, instead of filing a ticket and waiting. I paired that with a Design↔Code status roadmap: one table tracking every component's design state and code state side by side, versioned, so 'is this actually done' had one visible answer instead of two teams' separate assumptions. Governance that unblocks people gets followed; governance that blocks them gets worked around.",
+    },
+    {
+      kind: "craft",
+      face: "We licensed Calibri and made it ours: rounded the a, tightened the i. Then a hidden bug in its vertical metrics broke line-height everywhere.",
+      expanded:
+        "Leading Marshal wasn't only process — I did design work inside it myself. We licensed Calibri and customized it for a bilingual, EU-wide brand: rounded the `a`, reduced the kerning, tightened the `i`. When it shipped, line-heights went subtly wrong across products — not a stylesheet bug, but damage to the font file's own vertical metrics from the customization itself. Debugging typography at the metrics level is the kind of deep dive that permanently changes how you read a rendered page.",
+    },
+    {
+      kind: "outcome",
+      face: "Office hours, an integrations showcase, and a triage queue: how components actually got adopted, not just published.",
+      expanded:
+        "Publishing components isn't the same as teams using them. I ran the adoption side directly: office hours in #t-frontend for teams onboarding to Marshal, a cross-team intake process where I triaged every new component or token request, and the 'Built with Marshal' showcase — real integrations proving the system worked with the libraries teams actually reached for (React Hook Form, React Step Wizard, remote entity tables, SWR), not just in isolation. Marshal shipped as an npm package, SCSS partials, or a CDN-hosted CSS bundle for non-React consumers — three integration paths, because 'just use React' isn't true for every team at that scale.",
+    },
+    {
+      kind: "human",
+      face: "The best design systems fail from either side: design that ships and engineering never adopts, or code that ships and design disowns.",
+      expanded:
+        "Leading Marshal meant being the person both sides trusted, which mostly meant translating: turning a designer's intent into something engineering could version and ship, and turning an engineering constraint into something design could work with instead of around. The part I'm proudest of isn't a component — it's the roadmap and the tier flags, the parts that made 'is this system trustworthy' answerable without asking me directly.",
     },
   ],
 };
@@ -521,7 +551,7 @@ const RAG_CHAT: WorkCard = {
 export const WORK_ROWS: WorkCard[][] = [
   [BRANDKIT, AI_DESIGN_TO_CODE],
   [SIX_WEEK_REDESIGN, MOTION, AI_MODE],
-  [QUALITY_ORIGINS, TYPOGRAPHY_DEPTH],
+  [QUALITY_ORIGINS, CABIFY_DESIGN_SYSTEM],
   [BRUMA, CHECKOUT_AT_SCALE, CONTENT_MODELING],
   [RAG_CHAT, POUK],
 ];
