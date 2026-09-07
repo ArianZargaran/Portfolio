@@ -332,7 +332,12 @@ const FITCOUNTER: WorkCard = {
       label: "See it on the App Store",
     },
   ],
-  images: [],
+  images: [
+    {
+      src: "/fitcounter.webp",
+      alt: "FitCounter 'Coming Soon' brand mark: a tomato-and-leaf icon over bold lettering",
+    },
+  ],
   blocks: [
     {
       kind: "problem",
