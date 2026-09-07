@@ -367,7 +367,12 @@ const EPHEMERAL: WorkCard = {
   signal:
     "Most mood apps open by asking how you feel. Ephemeral opens by asking you to move.",
   meta: "Personal design concept · Figma, unshipped",
-  images: [],
+  images: [
+    {
+      src: "/ephemeral.webp",
+      alt: "Ephemeral logo, a stylized quote mark, with the tagline 'moments in time'",
+    },
+  ],
   blocks: [
     {
       kind: "problem",
