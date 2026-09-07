@@ -619,36 +619,21 @@ const RAG_CHAT: WorkCard = {
 };
 
 /**
- * Row layout mirrors the bento rhythm: wide pairs for the centerpieces,
- * trios for the supporting cards. Priority-ordered, strongest proof first:
- *
- * Row 1 — the two strongest opens: a Webby Honoree (third-party validation)
- *   and a still-in-production system with a hard metric (5x faster
- *   launches).
- * Row 2 — current, senior-level proof: leading AI×design at Freshworks now,
- *   owning a design system's governance end to end, shipping under a real
- *   deadline.
- * Row 3 — craft and judgment depth: motion as an owned discipline, the same
- *   problem modeled two opposite (and both correct) ways.
- * Row 4 — the reflective pair: where the quality bar was set (Apple, 2017),
- *   then the redesign that got cut by the numbers (Walmart, 2018-19) —
- *   origin story and honest failure read better placed together than
- *   scattered, after credibility is already established by rows 1-3.
- * Row 5 — Bruma, FitCounter, and Ephemeral group together: all personal
- *   design work with its own brand identity apart from ari.soy (Bruma and
- *   FitCounter are live; Ephemeral is unshipped concept work, kept honestly
- *   distinct in its own meta line).
- * Row 6 — the closing beat: RAG chat and pouk.ai are both personal, both
- *   meta (a live demo and a "look what I build for fun" note).
- *
+ * Row layout mirrors the bento rhythm: wide pairs, uniformly two per row.
+ * Order below is author-specified (not derived from any scoring here) —
+ * this exact sequence, chunked into pairs in order:
+ * AI Mode, AI × Design, Six-Week Redesign, Motion, Brandkit, Cabify,
+ * FitCounter, Checkout at Scale, Ephemeral, RAG Chat, Content Modeling,
+ * Quality Origins, Bruma, pouk.ai.
  * The page scrolls; rows are not viewport-locked.
  */
 export const WORK_ROWS: WorkCard[][] = [
-  [AI_MODE, BRANDKIT],
-  [AI_DESIGN_TO_CODE, CABIFY_DESIGN_SYSTEM, SIX_WEEK_REDESIGN],
-  [MOTION, CONTENT_MODELING],
-  [QUALITY_ORIGINS, CHECKOUT_AT_SCALE],
-  [BRUMA, FITCOUNTER, EPHEMERAL],
-  [RAG_CHAT, POUK],
+  [AI_MODE, AI_DESIGN_TO_CODE],
+  [SIX_WEEK_REDESIGN, MOTION],
+  [BRANDKIT, CABIFY_DESIGN_SYSTEM],
+  [FITCOUNTER, CHECKOUT_AT_SCALE],
+  [EPHEMERAL, RAG_CHAT],
+  [CONTENT_MODELING, QUALITY_ORIGINS],
+  [BRUMA, POUK],
 ];
 
