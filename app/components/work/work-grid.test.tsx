@@ -23,10 +23,10 @@ const advancePhase = () =>
   });
 
 describe("WorkGrid", () => {
-  it("renders all 14 work cards across 6 rows", () => {
+  it("renders all 14 work cards across 5 rows", () => {
     render(<WorkGrid />);
     expect(screen.getAllByTestId("work-card")).toHaveLength(14);
-    expect(screen.getAllByTestId("work-row")).toHaveLength(6);
+    expect(screen.getAllByTestId("work-row")).toHaveLength(5);
   });
 
   it("expands a card through the vacating phase, then shows its blocks", () => {

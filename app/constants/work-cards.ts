@@ -620,9 +620,9 @@ const RAG_CHAT: WorkCard = {
 
 /**
  * Row layout mirrors the bento rhythm: wide pairs for the centerpieces,
- * trios for the supporting cards (2/3/2/3/2/2). Order below is
- * author-specified (not derived from any scoring here) — this exact
- * sequence, chunked in order:
+ * trios for the supporting cards, one closing quad (2/3/2/3/4). Order
+ * below is author-specified (not derived from any scoring here) — this
+ * exact sequence, chunked in order:
  * AI Mode, AI × Design, Six-Week Redesign, Motion, Brandkit, Cabify,
  * FitCounter, Checkout at Scale, Ephemeral, RAG Chat, Content Modeling,
  * Quality Origins, Bruma, pouk.ai.
@@ -633,7 +633,6 @@ export const WORK_ROWS: WorkCard[][] = [
   [SIX_WEEK_REDESIGN, MOTION, BRANDKIT],
   [CABIFY_DESIGN_SYSTEM, FITCOUNTER],
   [CHECKOUT_AT_SCALE, EPHEMERAL, RAG_CHAT],
-  [CONTENT_MODELING, QUALITY_ORIGINS],
-  [BRUMA, POUK],
+  [CONTENT_MODELING, QUALITY_ORIGINS, BRUMA, POUK],
 ];
 
