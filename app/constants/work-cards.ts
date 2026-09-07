@@ -1,5 +1,5 @@
 /**
- * Source of the Work page's 13 cards. Cards are titled per use-case (the
+ * Source of the Work page's 14 cards. Cards are titled per use-case (the
  * learning/contribution leads), never per project: the employer or product is
  * metadata inside the expanded view, not the headline. Every block has two
  * lengths: `face` cycles on the collapsed card (headline-sized), `expanded`
@@ -361,6 +361,41 @@ const FITCOUNTER: WorkCard = {
   ],
 };
 
+const EPHEMERAL: WorkCard = {
+  id: "ephemeral",
+  eyebrow: "MENTAL HEALTH UX",
+  signal:
+    "Most mood apps open by asking how you feel. Ephemeral opens by asking you to move.",
+  meta: "Personal design concept · Figma, unshipped",
+  images: [],
+  blocks: [
+    {
+      kind: "problem",
+      face: "Most mood apps ask you to log a feeling. Ephemeral's whole pitch is one line: you're one workout away from a good mood.",
+      expanded:
+        "Ephemeral is a mental-health app concept I designed — a full onboarding flow, style guide, and paywall, not shipped. Most apps in this category are diagnostic-first: log your mood, journal an entry, watch a chart. That's passive. The hook I designed around instead treats movement as the lever on mood, not just something to track alongside it — action first, reflection second.",
+    },
+    {
+      kind: "decision",
+      face: "Depression, letting go, missing someone — themes most apps bury in settings, surfaced as the very first tap.",
+      expanded:
+        "Onboarding opens with a personalization screen: tappable pill chips for Mental health, Positive thinking, Self-love, Depression, Letting go, Growth, Sadness, Missing someone, Productivity. Naming genuinely heavy topics like depression and grief in the first ten seconds is a real design risk — it can read as clinical or presumptuous. The earthy palette and rounded, warm pill shapes were the deliberate counterweight: the goal was recognition, not a diagnostic form.",
+    },
+    {
+      kind: "craft",
+      face: "A recurring illustrated character and a themeable home-screen widget carry the brand outside the app itself.",
+      expanded:
+        "A consistent illustrated pair — a person and their corgi — recurs across onboarding screens (walking to a bus stop, carrying a bag), giving a subject that could read as clinical a soft, approachable throughline instead of stock icons. The onboarding also sells a home-screen widget with a photo-theme picker (ocean, forest, watercolor), and a custom pre-permission screen explaining notifications before the OS prompt does — both surfaces most onboarding flows skip designing with the same care as the core screens.",
+    },
+    {
+      kind: "outcome",
+      face: "A 5-day trial laid out as a timeline — today, no commitment, charged in 5 days — instead of fine print.",
+      expanded:
+        "The paywall (8,99€/year, discounted from 17,99€) lays out the free trial as a three-step timeline with icons — Today: start using it; No Commitment: cancel anytime before the trial ends; In 5 days: you're charged, via the App Store — instead of a wall of legal text. It's concept work: a full style guide, a competitive-analysis page, and this onboarding exist in Figma, not on a store shelf, but the thesis — that the app should ask you to move before it asks you to reflect — runs through every screen.",
+    },
+  ],
+};
+
 const CHECKOUT_AT_SCALE: WorkCard = {
   id: "checkout-honest-failure",
   eyebrow: "AN HONEST FAILURE",
@@ -585,18 +620,20 @@ const RAG_CHAT: WorkCard = {
 
 /**
  * Row layout mirrors the bento rhythm: wide pairs for the centerpieces,
- * trios for the supporting cards. Bruma pairs with FitCounter — both
- * personal, both shipped, live products with their own brand identity apart
- * from ari.soy. The closing row pairs the RAG chat with pouk.ai — both are
- * personal, both meta (a live demo and a "look what I build for fun" note),
- * so they read as one closing beat together.
+ * trios for the supporting cards. Bruma, FitCounter, and Ephemeral group
+ * together — all personal design work with its own brand identity apart
+ * from ari.soy (Bruma and FitCounter are live; Ephemeral is unshipped
+ * concept work, kept honestly distinct in its own meta line). The closing
+ * row pairs the RAG chat with pouk.ai — both are personal, both meta (a
+ * live demo and a "look what I build for fun" note), so they read as one
+ * closing beat together.
  * The page scrolls; rows are not viewport-locked.
  */
 export const WORK_ROWS: WorkCard[][] = [
   [BRANDKIT, AI_DESIGN_TO_CODE],
   [SIX_WEEK_REDESIGN, MOTION, AI_MODE],
   [QUALITY_ORIGINS, CABIFY_DESIGN_SYSTEM],
-  [BRUMA, FITCOUNTER],
+  [BRUMA, FITCOUNTER, EPHEMERAL],
   [CHECKOUT_AT_SCALE, CONTENT_MODELING],
   [RAG_CHAT, POUK],
 ];
