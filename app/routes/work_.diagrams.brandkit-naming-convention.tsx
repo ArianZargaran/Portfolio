@@ -4,8 +4,9 @@ import { Link } from "@remix-run/react";
 
 import { NamingConventionDiagram } from "~/components/work-diagrams/naming-convention";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
-import work from "~/stylesheets/work.css";
 import workDiagram from "~/stylesheets/work-diagram.css";
+import work from "~/stylesheets/work.css";
+import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
@@ -14,9 +15,9 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: workDiagram },
 ];
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = mergeMeta(() => [
   { title: "One Name, Three Tools — Arian Zargaran" },
-];
+]);
 
 const NamingConventionRoute = () => (
   <section className="page work work-diagram-page">

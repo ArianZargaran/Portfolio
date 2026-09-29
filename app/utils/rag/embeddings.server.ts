@@ -6,7 +6,7 @@ const VOYAGE_EMBEDDINGS_URL = "https://api.voyageai.com/v1/embeddings";
 const EMBEDDING_MODEL = "voyage-3-lite";
 
 interface VoyageEmbeddingResponse {
-  data: Array<{ embedding: number[]; index: number }>;
+  data: { embedding: number[]; index: number }[];
 }
 
 const embedTexts = async (texts: string[]): Promise<number[][]> => {

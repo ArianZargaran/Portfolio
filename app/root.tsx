@@ -1,5 +1,5 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -20,6 +20,41 @@ import resetStylesheet from "~/stylesheets/reset.css";
 import rootStylesheet from "~/stylesheets/root.css";
 import spacingStylesheet from "~/stylesheets/spacing.css";
 import themesStylesheet from "~/stylesheets/themes.css";
+import { SITE_URL, SOCIAL_IMAGE } from "~/utils/seo";
+
+const SITE_TITLE = "Arian Zargaran | Design Engineer";
+const SITE_DESCRIPTION =
+  "Arian Zargaran is a Design Engineer working across design systems and frontend platform engineering. 2026 Webby Awards Honoree for Best Use of AI.";
+
+/** The single shared source for every page's social/meta tags. Individual
+    routes only ever override `title` (via mergeMeta, see ~/utils/seo) --
+    everything else, including og:url, is computed here once per navigation
+    from `location.pathname`, so nothing is repeated page by page. */
+export const meta: MetaFunction = ({ location }) => {
+  const canonicalUrl = `${SITE_URL}${location.pathname}`;
+
+  return [
+    { title: SITE_TITLE },
+    { name: "author", content: "Arian Zargaran" },
+    { name: "description", content: SITE_DESCRIPTION },
+    {
+      name: "keywords",
+      content:
+        "Design Engineer, Design Systems, Frontend Platform, React, TypeScript, AI-powered products, Webby Awards, Arian Zargaran",
+    },
+    { property: "og:title", content: SITE_TITLE },
+    { property: "og:description", content: SITE_DESCRIPTION },
+    { property: "og:type", content: "website" },
+    { property: "og:url", content: canonicalUrl },
+    { property: "og:image", content: SOCIAL_IMAGE.url },
+    { property: "og:image:width", content: String(SOCIAL_IMAGE.width) },
+    { property: "og:image:height", content: String(SOCIAL_IMAGE.height) },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: SITE_TITLE },
+    { name: "twitter:description", content: SITE_DESCRIPTION },
+    { name: "twitter:image", content: SOCIAL_IMAGE.url },
+  ];
+};
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
@@ -55,30 +90,6 @@ export default function App() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Arian Zargaran | Design Engineer</title>
-        <meta name="author" content="Arian Zargaran" />
-        <meta
-          name="description"
-          content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
-        />
-        <meta
-          name="keywords"
-          content="Front-End Developer, React, TypeScript, Framer Motion, Web Development Portfolio, UI/UX Design, Arian Zargaran"
-        />
-        <meta property="og:title" content="Arian Zargaran | Design Engineer" />
-        <meta
-          property="og:description"
-          content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="/apple-icon-180x180.png" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Arian Zargaran | Design Engineer" />
-        <meta
-          name="twitter:description"
-          content="Arian Zargaran's portfolio showcases innovative Front-End development projects, skills in React, TypeScript, and Framer Motion, and a user-centered design approach."
-        />
-        <meta name="twitter:image" content="/apple-icon-180x180.png" />
         <link
           rel="apple-touch-icon"
           sizes="57x57"

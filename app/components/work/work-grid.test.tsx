@@ -66,11 +66,7 @@ describe("WorkGrid", () => {
        now correctly ignored (see work-grid.tsx), so clicking collapse
        before the card has truly settled open would be a no-op here too,
        same as it would be for a real user. */
-    await waitFor(() =>
-      expect(
-        screen.getByText(/scars behind them/i),
-      ).toBeInTheDocument(),
-    );
+    await screen.findByText(/scars behind them/i);
 
     const button = screen.getByRole("button", {
       name: /collapse an honest failure card/i,

@@ -4,8 +4,9 @@ import { Link } from "@remix-run/react";
 
 import { AskNovaRef } from "~/components/work-diagrams/ask-nova";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
-import work from "~/stylesheets/work.css";
 import workDiagram from "~/stylesheets/work-diagram.css";
+import work from "~/stylesheets/work.css";
+import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
@@ -14,9 +15,9 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: workDiagram },
 ];
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = mergeMeta(() => [
   { title: "Ask Nova — AI Mode Reference — Arian Zargaran" },
-];
+]);
 
 const AskNovaRoute = () => (
   <section className="page work work-diagram-page">

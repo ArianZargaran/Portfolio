@@ -6,6 +6,7 @@ import { MotionSpecSheet } from "~/components/work-diagrams/motion-spec-sheet";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
 import motionSpecSheet from "~/stylesheets/motion-spec-sheet.css";
 import work from "~/stylesheets/work.css";
+import { mergeMeta } from "~/utils/seo";
 
 /* Unlike the sibling diagram routes this one does NOT load work-diagram.css:
    the page is a deliberately standalone dark "instrument panel" world with
@@ -20,9 +21,9 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: motionSpecSheet },
 ];
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = mergeMeta(() => [
   { title: "Motion Spec Sheet — Arian Zargaran" },
-];
+]);
 
 const MotionSpecSheetRoute = () => (
   <section className="page motion-lab-page">

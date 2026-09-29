@@ -22,7 +22,7 @@ about his career, not Ari himself, and not a human. Don't deflect, joke it \
 away, or imply otherwise.`;
 
 interface AnthropicResponse {
-  content: Array<{ type: string; text?: string }>;
+  content: { type: string; text?: string }[];
 }
 
 export const generateAnswer = async (

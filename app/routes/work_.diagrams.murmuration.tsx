@@ -6,6 +6,7 @@ import { Murmuration } from "~/components/work-diagrams/murmuration";
 import commonThemePage from "~/stylesheets/common-page-themes.css";
 import murmuration from "~/stylesheets/murmuration.css";
 import work from "~/stylesheets/work.css";
+import { mergeMeta } from "~/utils/seo";
 
 /* Standalone deep-dive page with its own type identity (Newsreader + IBM
    Plex), same pattern as the motion spec sheet: does not load work-diagram.css
@@ -28,9 +29,9 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = mergeMeta(() => [
   { title: "Murmuration — Arian Zargaran" },
-];
+]);
 
 const MurmurationRoute = () => (
   <section className="page murmuration-page">

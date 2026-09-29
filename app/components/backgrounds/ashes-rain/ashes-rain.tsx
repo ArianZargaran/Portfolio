@@ -11,7 +11,7 @@ import styles from "./ashes-rain.module.css";
  */
 
 /** Ash greys as [r, g, b] — cool tones tuned to the dark navy background. */
-const ASH_TONES: ReadonlyArray<readonly [number, number, number]> = [
+const ASH_TONES: readonly (readonly [number, number, number])[] = [
   [148, 158, 170],
   [122, 132, 146],
   [98, 108, 122],

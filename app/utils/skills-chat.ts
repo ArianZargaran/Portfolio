@@ -28,7 +28,7 @@ const FALLBACK_REPLY =
     input could plausibly hit more than one (e.g. "tools" also containing
     the substring "ui" would be a false positive if design were checked
     first — order matters more than the list itself here). */
-const TOPIC_KEYWORDS: ReadonlyArray<[SkillTopic, string[]]> = [
+const TOPIC_KEYWORDS: readonly [SkillTopic, string[]][] = [
   ["languages", ["language", "typescript", "javascript", " js", " ts"]],
   [
     "frameworks",

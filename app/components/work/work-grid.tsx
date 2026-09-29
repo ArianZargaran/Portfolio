@@ -2,8 +2,9 @@ import classnames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 
 import "./work-grid.css";
-import { WorkCardTile } from "./work-card";
 import { WORK_ROWS } from "~/constants/work-cards";
+
+import { WorkCardTile } from "./work-card";
 
 /* Every card runs its own independent lifecycle — there is no auto-close and
    no card-to-card switching: any number of cards can be open at once, and a
