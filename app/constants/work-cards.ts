@@ -28,6 +28,13 @@ export interface WorkCardBlock {
 
 export interface WorkCard {
   id: string;
+  /** URL slug for this case study's own page (/work/<slug>). Stable by
+      design — once published, a slug does not change (see app/utils/seo.ts
+      and app/routes/work.($slug).tsx). Distinct from `id`: `id` is this
+      file's internal key (also the DOM anchor via data-work-card and the
+      choreography state key in work-grid.tsx); `slug` is the public,
+      readable identifier meant to be pasted into posts, CVs, and emails. */
+  slug: string;
   /** All-caps category label (the tile eyebrow). */
   eyebrow: string;
   /** Default face headline; the hook. Doubles as the first cycled frame. */
@@ -50,6 +57,7 @@ export interface WorkCard {
 
 const BRANDKIT: WorkCard = {
   id: "design-systems-brandkit",
+  slug: "design-systems",
   eyebrow: "DESIGN SYSTEMS",
   signal: "27 themes from one shared base. Launches went 5x faster.",
   meta: "Airtable · 2021–2025 · still in production",
@@ -106,6 +114,7 @@ const BRANDKIT: WorkCard = {
 
 const AI_DESIGN_TO_CODE: WorkCard = {
   id: "ai-design-to-code",
+  slug: "ai-x-design",
   eyebrow: "AI × DESIGN",
   signal: "Put the intelligence in the rules, not the agent.",
   meta: "Freshworks · 2025–present",
@@ -151,6 +160,7 @@ const AI_DESIGN_TO_CODE: WorkCard = {
 
 const SIX_WEEK_REDESIGN: WorkCard = {
   id: "six-week-redesign",
+  slug: "shipping-under-pressure",
   eyebrow: "SHIPPING UNDER PRESSURE",
   signal: "A six-month redesign, shipped in six weeks.",
   meta: "Freshworks · shipped July 2026",
@@ -197,6 +207,7 @@ const SIX_WEEK_REDESIGN: WorkCard = {
 
 const MOTION: WorkCard = {
   id: "motion-micro-interactions",
+  slug: "motion",
   eyebrow: "MOTION & MICRO-INTERACTIONS",
   signal: "Optical correction, applied to motion.",
   meta: "Freshworks · ongoing · I own motion on the team",
@@ -241,6 +252,7 @@ const MOTION: WorkCard = {
 
 const CONTENT_MODELING: WorkCard = {
   id: "content-modeling",
+  slug: "architecture-judgment",
   eyebrow: "ARCHITECTURE JUDGMENT",
   signal: "Same problem, opposite content models. Both right.",
   meta: "Airtable + Freshworks",
@@ -286,6 +298,7 @@ const CONTENT_MODELING: WorkCard = {
 
 const BRUMA: WorkCard = {
   id: "bruma",
+  slug: "end-to-end-product",
   eyebrow: "END-TO-END PRODUCT",
   signal: "An investment tool with zero charting libraries.",
   meta: "Personal · live",
@@ -321,6 +334,7 @@ const BRUMA: WorkCard = {
 
 const FITCOUNTER: WorkCard = {
   id: "fitcounter",
+  slug: "product-design",
   eyebrow: "PRODUCT DESIGN",
   signal:
     "Most calorie apps let you earn treats back. I designed one that refuses — on purpose.",
@@ -368,6 +382,7 @@ const FITCOUNTER: WorkCard = {
 
 const EPHEMERAL: WorkCard = {
   id: "ephemeral",
+  slug: "mental-health-ux",
   eyebrow: "MENTAL HEALTH UX",
   signal:
     "Most mood apps open by asking how you feel. Ephemeral opens by asking you to move.",
@@ -408,6 +423,7 @@ const EPHEMERAL: WorkCard = {
 
 const CHECKOUT_AT_SCALE: WorkCard = {
   id: "checkout-honest-failure",
+  slug: "honest-failure",
   eyebrow: "AN HONEST FAILURE",
   signal: "The redesign the data killed, and what it taught me.",
   meta: "Walmart · 2018–2019",
@@ -443,6 +459,7 @@ const CHECKOUT_AT_SCALE: WorkCard = {
 
 const QUALITY_ORIGINS: WorkCard = {
   id: "quality-origins",
+  slug: "quality-origins",
   eyebrow: "QUALITY ORIGINS",
   signal: "Where my quality bar was set.",
   meta: "Apple · 2017",
@@ -465,6 +482,7 @@ const QUALITY_ORIGINS: WorkCard = {
 
 const CABIFY_DESIGN_SYSTEM: WorkCard = {
   id: "cabify-design-system",
+  slug: "design-system-leadership",
   eyebrow: "DESIGN SYSTEM LEADERSHIP",
   signal:
     "Design owns the intent. Engineering owns the code. I owned the gap between them.",
@@ -518,6 +536,7 @@ const CABIFY_DESIGN_SYSTEM: WorkCard = {
 
 const POUK: WorkCard = {
   id: "pouk-ai",
+  slug: "giving-back",
   eyebrow: "GIVING BACK",
   signal: "Helping friends ship AI, pro bono.",
   meta: "Personal initiative",
@@ -546,6 +565,7 @@ const POUK: WorkCard = {
 
 const AI_MODE: WorkCard = {
   id: "ai-mode-webby",
+  slug: "webby-honoree",
   eyebrow: "WEBBY HONOREE",
   signal: "A two-person team built an AI assistant. The industry noticed.",
   meta: "Freshworks · Webby Awards Honoree, Best Use of AI",
@@ -596,6 +616,7 @@ const AI_MODE: WorkCard = {
 
 const RAG_CHAT: WorkCard = {
   id: "rag-chat",
+  slug: "live-on-this-site",
   eyebrow: "LIVE ON THIS SITE",
   signal: "Ask my portfolio anything. It answers.",
   meta: "ari.soy/skills · Claude SDK",
@@ -646,3 +667,19 @@ export const WORK_ROWS: WorkCard[][] = [
   [CONTENT_MODELING, QUALITY_ORIGINS, BRUMA, POUK],
 ];
 
+
+/** Flat list of every card, derived from WORK_ROWS — the single source both
+    the grid (WORK_ROWS, for layout) and per-slug lookups (this list) read
+    from, so a card's data can never drift between the two. */
+export const ALL_WORK_CARDS: WorkCard[] = WORK_ROWS.flat();
+
+/** slug -> id and id -> slug, built once from ALL_WORK_CARDS. Used by
+    app/routes/work.($slug).tsx to resolve a URL into a card and back —
+    kept as maps (not a find() per lookup) since both directions are on the
+    hot path of every navigation between the index and a case study. */
+export const SLUG_TO_ID: Readonly<Record<string, string>> = Object.fromEntries(
+  ALL_WORK_CARDS.map((card) => [card.slug, card.id]),
+);
+export const ID_TO_SLUG: Readonly<Record<string, string>> = Object.fromEntries(
+  ALL_WORK_CARDS.map((card) => [card.id, card.slug]),
+);

@@ -62,7 +62,32 @@ const SETTLE_DIP_MS = 90;
    and the real event never arrives. */
 const BODY_EXIT_FALLBACK_MS = 900;
 
-export const WorkGrid: React.FC = () => {
+interface WorkGridProps {
+  /** The card id the current URL says should be open, owned by the route
+      (see app/routes/work.($slug).tsx) — WorkGrid stays router-agnostic
+      itself so every existing test can keep rendering `<WorkGrid />` bare.
+      Three states, not two:
+        - omitted (`undefined`): no routing concept in play at all (tests,
+          or any host that doesn't care about URL sync) — the reconciliation
+          effect below is skipped entirely.
+        - `null`: routing IS in play and it explicitly wants nothing open
+          (the bare /work index, or the browser's back button landing
+          there).
+        - a card id: routing wants exactly that card open (a direct visit
+          to /work/<slug>, or forward/back landing on one). */
+  routeOpenId?: string | null;
+  /** Fires whenever the grid's own "focused" open card changes (the same
+      id the existing scroll-into-view effect already tracks as
+      `lastOpened`) — on every change, not just ones the route didn't
+      already know about. The route decides whether that means calling
+      navigate(); WorkGrid doesn't know or care what a URL is. */
+  onOpenIdChange?: (id: string | undefined) => void;
+}
+
+export const WorkGrid: React.FC<WorkGridProps> = ({
+  routeOpenId,
+  onOpenIdChange,
+}) => {
   const [phases, setPhases] = useState<Record<string, Phase>>({});
   /* Set for exactly one short beat when a card enters "settling" — see
      is-settling-dip in work-card.css. A plain window.setTimeout (not the
@@ -205,6 +230,57 @@ export const WorkGrid: React.FC = () => {
     const el = document.querySelector(`[data-work-card="${lastOpened}"]`);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [lastOpened]);
+
+  /* URL -> state: reconciles the grid's open cards against what the route
+     currently says should be open — the browser's back/forward buttons (or
+     a direct visit to /work/<slug>) land here as a `routeOpenId` prop
+     change, not a click, so this can't go through handleToggle. Guarded to
+     a no-op once the two already agree, which is what breaks the loop with
+     the state -> URL effect below (each one's own change satisfies the
+     other's "already in sync" check before it fires). `routeOpenId`
+     omitted entirely (`undefined`, as opposed to explicit `null`) means no
+     host is driving this at all, so the effect stays inert — this is what
+     keeps every router-agnostic use of <WorkGrid /> (all existing tests)
+     unaffected. */
+  useEffect(() => {
+    if (routeOpenId === undefined) return;
+    if (routeOpenId === (lastOpened ?? null)) return;
+    if (routeOpenId === null) {
+      if (lastOpened && phases[lastOpened] === "open") {
+        closeCard(lastOpened, true);
+      }
+      return;
+    }
+    if (phases[routeOpenId] !== "open") {
+      openCard(routeOpenId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeOpenId]);
+
+  /* State -> URL: the mirror direction. Guarded against re-firing on a
+     value it's already reported — not just against `lastOpened` itself
+     being unchanged (that's what the dependency array is for), but against
+     a STALE `lastOpened` closure escaping through an unrelated dep change.
+     `onOpenIdChange` is a caller-supplied callback, and if its identity
+     changes (route wrappers naturally recreate a closure like this one on
+     every navigation, since it captures `location.pathname`), this effect
+     reruns even though `lastOpened`'s actual value hasn't moved yet this
+     render — without the ref check, that stale value gets reported as if
+     it were new. Concretely, this is what broke the browser back button
+     without it: back-navigating away from an open card triggers this
+     component's own route-sync effect to start closing it, but `lastOpened`
+     (derived from `phases`) doesn't drop to undefined until that async
+     state update lands one render later — in the render immediately after
+     the back-navigation, `onOpenIdChange` has already been recreated
+     (location.pathname changed), so this effect re-ran with the still-open
+     card's id and re-navigated forward to it, undoing the back button in
+     the same tick. */
+  const reportedOpenIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (reportedOpenIdRef.current === lastOpened) return;
+    reportedOpenIdRef.current = lastOpened;
+    onOpenIdChange?.(lastOpened);
+  }, [lastOpened, onOpenIdChange]);
 
   const anyActive = Object.keys(phases).length > 0;
 

@@ -163,6 +163,7 @@ describe("WorkGrid", () => {
       <WorkCardTile
         card={{
           id: "placeholder",
+          slug: "placeholder",
           eyebrow: "PLACEHOLDER",
           signal: "Signal",
           meta: "",
@@ -181,5 +182,111 @@ describe("WorkGrid", () => {
       document.querySelector(".work-card_media.is-pending"),
     ).not.toBeNull();
     expect(screen.queryByText(/coming soon/i)).not.toBeInTheDocument();
+  });
+
+  describe("URL sync (routeOpenId / onOpenIdChange)", () => {
+    it("opens the matching card on mount when routeOpenId names one, with no click", () => {
+      vi.useFakeTimers();
+      render(<WorkGrid routeOpenId="design-systems-brandkit" />);
+      advancePhase();
+      expect(
+        screen.getByRole("button", { name: /collapse design systems card/i }),
+      ).toHaveAttribute("aria-expanded", "true");
+      expect(
+        screen.getByText(/still in use past my tenure/i),
+      ).toBeInTheDocument();
+    });
+
+    it("reports the newly-opened card id, then undefined once it's fully closed", async () => {
+      const onOpenIdChange = vi.fn();
+      render(<WorkGrid onOpenIdChange={onOpenIdChange} />);
+      fireEvent.click(
+        screen.getByRole("button", { name: /expand design systems card/i }),
+      );
+      await waitFor(() =>
+        expect(onOpenIdChange).toHaveBeenCalledWith("design-systems-brandkit"),
+      );
+
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: /collapse design systems card/i,
+        }),
+      );
+      await waitFor(() =>
+        expect(onOpenIdChange).toHaveBeenLastCalledWith(undefined),
+      );
+    });
+
+    it("closes the open card when routeOpenId changes to null, as the back button would", async () => {
+      const { rerender } = render(
+        <WorkGrid routeOpenId="checkout-honest-failure" />,
+      );
+      await screen.findByText(/scars behind them/i);
+      expect(
+        screen.getByRole("button", {
+          name: /collapse an honest failure card/i,
+        }),
+      ).toHaveAttribute("aria-expanded", "true");
+
+      rerender(<WorkGrid routeOpenId={null} />);
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", {
+            name: /expand an honest failure card/i,
+          }),
+        ).toHaveAttribute("aria-expanded", "false"),
+      );
+    });
+
+    it("doesn't undo a back-navigation close when onOpenIdChange's identity changes every render", async () => {
+      /* Regression test: a real route wrapper recreates its onOpenIdChange
+         callback on every render (it closes over location.pathname), which
+         used to make the state -> URL effect re-fire with a stale
+         `lastOpened` and re-navigate forward to the card that back just
+         closed — see the ref guard in work-grid.tsx for the full story. A
+         fresh function on every rerender, like the real wrapper, is the
+         point of this test; a memoized mock would not reproduce the bug. */
+      let calls = 0;
+      const onOpenIdChange = vi.fn();
+      const freshCallback = () => {
+        calls += 1;
+        return (id: string | undefined) => onOpenIdChange(id);
+      };
+
+      const { rerender } = render(
+        <WorkGrid
+          routeOpenId="checkout-honest-failure"
+          onOpenIdChange={freshCallback()}
+        />,
+      );
+      await screen.findByText(/scars behind them/i);
+      expect(calls).toBeGreaterThan(0);
+      // Legitimately called once with the open id already, from the initial
+      // open above — only calls from here on are what this test is about.
+      onOpenIdChange.mockClear();
+
+      // The back button: the route now says nothing should be open, with a
+      // brand-new callback instance, exactly like a real navigation.
+      rerender(
+        <WorkGrid routeOpenId={null} onOpenIdChange={freshCallback()} />,
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", {
+            name: /expand an honest failure card/i,
+          }),
+        ).toHaveAttribute("aria-expanded", "false"),
+      );
+
+      // One more render with yet another fresh callback (simulating the
+      // effect flush settling) must not report the closed card as open
+      // again.
+      rerender(
+        <WorkGrid routeOpenId={null} onOpenIdChange={freshCallback()} />,
+      );
+      expect(onOpenIdChange).not.toHaveBeenCalledWith(
+        "checkout-honest-failure",
+      );
+    });
   });
 });
