@@ -207,6 +207,17 @@
   object-position: center 30%;
 }
 
+/* Ask Nova eval's screenshot is a wide two-column composite (an answer box
+   on the left, a "Get started" button on the right) — too wide to fit a
+   card's narrower aspect without losing one side. The collapsed tile favors
+   the left side (the bold "I don't have information..." answer line, the
+   whole point of the bug) over the button; the expanded panel is wide
+   enough to show the full image regardless, so this anchor only matters
+   while collapsed. */
+.work-card[data-work-card="ask-nova-eval"] .work-card_img {
+  object-position: 20% center;
+}
+
 .work-card_img.is-visible {
   opacity: 1;
 }
