@@ -1,0 +1,78 @@
+.scene {
+  background: #1b1622;
+  min-height: 100vh;
+}
+
+.scene_frame {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.scene_hits {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+@media (min-width: 1025px) {
+  .scene_hits--laptop {
+    display: block;
+  }
+}
+@media (min-width: 601px) and (max-width: 1024px) {
+  .scene_hits--tablet {
+    display: block;
+  }
+}
+@media (max-width: 600px) {
+  .scene_hits--mobile {
+    display: block;
+  }
+}
+
+.scene_hit {
+  position: absolute;
+  display: block;
+  border-radius: 6px;
+  outline-offset: 2px;
+}
+
+.scene_hit:hover,
+.scene_hit:focus-visible {
+  box-shadow: 0 0 0 3px #ffd27a;
+  background: rgb(255 210 122 / 12%);
+}
+
+.scene_hit:focus-visible {
+  outline: 3px solid #fff;
+}
+
+/* Label is the accessible name; shown as a tooltip on hover/focus. */
+.scene_hit-label {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translate(-50%, -6px);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #1b1622;
+  color: #fff;
+  font:
+    600 14px/1.4 system-ui,
+    sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scene_hit:hover .scene_hit-label,
+.scene_hit:focus-visible .scene_hit-label {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene_hit-label {
+    transition: opacity 120ms ease-out;
+  }
+}

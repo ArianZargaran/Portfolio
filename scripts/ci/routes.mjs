@@ -7,6 +7,7 @@ export const PAGE_ROUTES = [
   "/contact",
   "/resume",
   "/articles",
+  "/podcast",
   "/case-studies",
   "/case-studies/brandkit",
   "/case-studies/marshal",

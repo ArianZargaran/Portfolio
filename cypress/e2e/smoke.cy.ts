@@ -1,16 +1,23 @@
 describe("smoke tests", () => {
-  it("renders the home page with hero copy and CTAs", () => {
+  it("renders the still-frame scene with a hit area for every route", () => {
     cy.visitAndCheck("/");
     cy.findByRole("heading", { level: 1 }).should(
       "contain.text",
       "Arian Zargaran",
     );
-    cy.findByRole("link", { name: /my work/i })
-      .should("have.attr", "href")
-      .and("include", "/work");
-    cy.findByRole("link", { name: /resume/i })
-      .should("have.attr", "rel")
-      .and("include", "noopener");
+    cy.findByRole("navigation", { name: "Scene" }).within(() => {
+      [
+        ["Work", "/work"],
+        ["Resume", "/resume"],
+        ["Contact", "/contact"],
+        ["About me", "/about"],
+        ["Case studies", "/case-studies"],
+        ["Podcast", "/podcast"],
+        ["Notebook", "/articles"],
+      ].forEach(([name, href]) =>
+        cy.findByRole("link", { name }).should("have.attr", "href", href),
+      );
+    });
   });
 
   it("renders the resume and contact pages from typed data", () => {

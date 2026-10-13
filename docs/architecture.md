@@ -248,3 +248,11 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - `/about` rebuilt on the `RoutePage` shell from typed data (`app/content/about.ts`): bio + the timeline as an ordered list; long stories in native `<details>` (replaces the modal dialog and scroll lock). Bio is a placeholder until Ari writes the poster-face blurb.
 - `/articles` is the static notebook (`app/content/articles.ts`, empty `ARTICLES`), no interactivity at launch per Ari. `/blog` → 301 `/articles`.
 - Deleted the unused `contact.css`. Old about-page pieces (`about.css`, `AshesRain`, `IllustrationsSidebar`, `TimelineEvent`) are now unused; remove in a cleanup pass.
+
+### Milestone D — still-frame scene shell (done)
+- `/` renders `<SceneShell>`: the server-rendered v3.2 still (`priority`, real alt text) plus link hit areas for all 7 routes (`app/scene/hit-areas.ts`). One `<nav aria-label="Scene">` per breakpoint, shown by the same media queries as the `<picture>` sources; boxes are % of the canvas, so they track the image at any width. Multi-rect objects (tablet bookshelf) expose only the first rect to AT and tab order. Lego is stacked after the bookshelf, so it wins the overlap.
+- No JS and no motion: this shell is also the reduced-motion and no-JS scene. Labels appear on hover/focus; the label fade only runs under `prefers-reduced-motion: no-preference`.
+- Minimal `/podcast` page (speakers) links to the SWE feed proxy.
+- **Estimated hit areas (flag):** the Queen poster boxes on tablet and mobile are hand estimates (the layout json has only the old `framed_photo`). They are marked `estimated: ["tablet", "mobile"]` in the data. Replace when design supplies measured boxes.
+- **Placeholder compositions (flag):** the tablet (820×1180) and mobile (390×844) v3.2 stills are rough collages, used as placeholders only. Final paintings come from Design; hit boxes must be re-measured when they land.
+- The old home hero (`home.css`, blurry circles, doodles, noise, social nav) is no longer used by `/`; remove in a cleanup pass.
