@@ -3,7 +3,6 @@ import { data as TIMELINE } from "~/constants/timeline-data-set";
 /** /about content: a short bio plus the 11-chapter timeline (typed data). */
 export const ABOUT = {
   title: "About me",
-  /** TODO(content): Ari's own poster-face bio; this is the resume summary. */
-  bio: "Design Engineer at the intersection of design systems and applied AI. Bilingual (EN/ES), based in Dallas, TX.",
+  bio: "Spanish by birth, Texan by address, design engineer by obsession. I make interfaces that feel considered, and I put the systems behind them to work.",
   timeline: TIMELINE,
 };
