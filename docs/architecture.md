@@ -209,6 +209,15 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - **M5:** perf + a11y + SEO hardening (structured data, meta, sitemap), QA on devices.
 - **M6:** launch readiness review via Atlas; merge/deploy only on Arian's approval.
 
+## 6.1 Launch checklist (must be decided or done before launch)
+
+- [ ] **Decide /skills (301 vs drop).** Today: a temporary 302 to `/resume` while `FEATURE_SKILLS_CHAT` is off (404 until `/resume` exists). Keep the 302 until decided.
+- [ ] Real calendar connected (`SCENE_CALENDAR_ICAL_URL` in Vercel env).
+- [ ] Lighthouse performance/LCP assertions switched from warn to error.
+- [ ] `scripts/ci/a11y-baseline.json` empty.
+- [ ] All Cypress e2e running in CI.
+- [ ] Arian approves the launch through Atlas; only then merge to `main` and deploy.
+
 ## 7. Open questions (for Atlas)
 
 1. ~~Express vs Vercel preset~~: resolved, RR7 + Vercel preset, Express dropped.
