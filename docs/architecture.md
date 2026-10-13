@@ -218,9 +218,9 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 5. Sign-off on the calendar event format (4.3), including `*` wildcards.
 6. ~~Weather provider~~: resolved, Open-Meteo, 15 min.
 7. ~~Travel time zone~~: made configurable (`SCENE_TRAVEL_TIME_ZONE`, default Chicago; sun times follow the zone's place, so no mixing). Atlas to confirm the default.
-8. iCal vs service account: which one will Arian set up? (iCal is the primary design; it needs only the secret address copied into Vercel env.)
+8. ~~iCal vs service account~~: the secret iCal URL is primary (account ari.port.folio.calendar@gmail.com). Waiting for the secret address to be set in Vercel env.
 9. Known a11y debt on current pages (colour contrast on most routes, marshal diagram link/scroll issues) is baselined in `scripts/ci/a11y-baseline.json`; contrast fixes are a Designer call.
 10. Resume PDF: the phone line was redacted in place; it still lists arianzf@gmail.com (decision 3: public contact is hello@ari.soy only) and Airtable "Oct 2023" (should be late Oct 2021). Needs a regenerated PDF from its source; where is the source?
-11. Skills chat is still routed and in nav (removal is a later M1 task, behind a flag).
+11. ~~Skills chat~~: behind `FEATURE_SKILLS_CHAT` (default off). Still open: should `/skills` 301 to `/resume` once /resume exists?
 12. Can `redesign` be pushed for backup / Vercel previews without affecting production?
 13. ~~Poster for /about~~: resolved, the Queen poster opens /about.
