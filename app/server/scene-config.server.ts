@@ -5,7 +5,8 @@
  *   SCENE_CALENDAR_ICAL_URL            primary: secret iCal address
  *   GOOGLE_SA_EMAIL, GOOGLE_SA_PRIVATE_KEY, SCENE_CALENDAR_ID   alternative
  *   SCENE_TIME_ZONE         home zone, default America/Chicago
- *   SCENE_TRAVEL_TIME_ZONE  IANA zone or "event", default America/Chicago
+ *   SCENE_TRAVEL_TIME_ZONE  "event" (default: the event's own zone, fallback
+ *                           America/Chicago) or an IANA zone to pin one
  */
 import { GoogleCalendarProvider } from "./calendar/google.server";
 import { IcalCalendarProvider } from "./calendar/ical.server";
@@ -83,7 +84,7 @@ export function sceneDepsFromEnv(env: Env = process.env): SceneDeps {
     geocode: createGeocoder(),
     config: {
       timeZone: env.SCENE_TIME_ZONE || DEFAULT_TIME_ZONE,
-      travelTimeZone: env.SCENE_TRAVEL_TIME_ZONE || DEFAULT_TIME_ZONE,
+      travelTimeZone: env.SCENE_TRAVEL_TIME_ZONE || "event",
     },
   };
   return deps;

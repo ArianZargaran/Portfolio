@@ -138,7 +138,7 @@ Selection: `SCENE_CALENDAR_PROVIDER` forces one; otherwise the iCal URL wins if 
 ### 4.0.1 Time zones (configurable)
 
 - `SCENE_TIME_ZONE`: home zone for slots, default `America/Chicago`.
-- `SCENE_TRAVEL_TIME_ZONE`: zone used for the slot while travelling (event has a resolvable location). Default `America/Chicago` (the graph rule: time follows Chicago). Set an IANA zone to pin one, or `event` to follow the trip (event TZID / Google `start.timeZone`, else the geocoded place's zone).
+- `SCENE_TRAVEL_TIME_ZONE`: zone used for the slot while travelling (event has a resolvable location). **Default `event`** (decided 2026-10-13): the calendar event's own zone (iCal `TZID` / Google `start.timeZone`), then the geocoded place's zone, falling back to `America/Chicago` if neither is known or valid. Set an IANA zone to pin one zone for every trip. Note: Google stamps every timed event with a zone (the calendar's default, Chicago, unless the event's time zone is changed when creating it), so for the trip's zone to win, Atlas should set the event's time zone to the destination when scheduling travel scenes.
 - Sun times always come from the place whose clock is used (home coordinates when on Chicago time, trip coordinates otherwise), so dawn/dusk never mix zones. Weather always follows the trip location.
 - Invalid zones fall back to Chicago. Tests cover CST/CDT offsets, the 2026-11-01 fall-back and 2027-03-14 spring-forward days, every slot boundary on 2026-10-13, Madrid and Tokyo.
 
@@ -217,7 +217,7 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 4. Sign-off on the /work vs /case-studies split (1.1).
 5. Sign-off on the calendar event format (4.3), including `*` wildcards.
 6. ~~Weather provider~~: resolved, Open-Meteo, 15 min.
-7. ~~Travel time zone~~: made configurable (`SCENE_TRAVEL_TIME_ZONE`, default Chicago; sun times follow the zone's place, so no mixing). Atlas to confirm the default.
+7. ~~Travel time zone~~: default `event` (the trip\'s own zone), fallback America/Chicago; configurable via `SCENE_TRAVEL_TIME_ZONE`.
 8. ~~iCal vs service account~~: the secret iCal URL is primary (account ari.port.folio.calendar@gmail.com). Waiting for the secret address to be set in Vercel env.
 9. Known a11y debt on current pages (colour contrast on most routes, marshal diagram link/scroll issues) is baselined in `scripts/ci/a11y-baseline.json`; contrast fixes are a Designer call.
 10. Resume PDF: the phone line was redacted in place; it still lists arianzf@gmail.com (decision 3: public contact is hello@ari.soy only) and Airtable "Oct 2023" (should be late Oct 2021). Needs a regenerated PDF from its source; where is the source?

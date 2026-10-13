@@ -41,9 +41,9 @@ export interface SceneConfig {
   timeZone: string;
   /**
    * Time zone used for the slot while travelling (event has a location).
-   * An IANA zone (default America/Chicago, so time keeps following Chicago
-   * per the graph), or "event" to use the trip's own zone (event TZID, else
-   * the geocoded place's zone).
+   * Default "event": follow the calendar event's own zone (iCal TZID /
+   * Google start.timeZone), else the geocoded place's zone, else the home
+   * zone (America/Chicago). An IANA zone pins one zone for all trips.
    */
   travelTimeZone: string | "event";
   home: LatLon;
@@ -51,7 +51,7 @@ export interface SceneConfig {
 
 export const defaultSceneConfig = (): SceneConfig => ({
   timeZone: DEFAULT_TIME_ZONE,
-  travelTimeZone: DEFAULT_TIME_ZONE,
+  travelTimeZone: "event",
   home: DALLAS,
 });
 

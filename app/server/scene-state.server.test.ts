@@ -139,14 +139,17 @@ describe("resolveScene", () => {
     ).toMatch(/^home-office\.couch\.reading/);
   });
 
-  it("travel: location overrides Dallas for weather; slot follows Chicago by default", async () => {
+  it("travel: location overrides Dallas for weather; slot can be pinned to Chicago", async () => {
     const cal = new MockCalendarProvider([
       ev("plane.seat.reading.*.*.v1", chi(13, 0), chi(14, 0), {
         location: "Madrid, Spain",
       }),
     ]);
     const weather = vi.fn(async () => "rain" as const);
-    const { d } = deps({ weather }, cal);
+    const { d } = deps(
+      { weather, config: { travelTimeZone: "America/Chicago" } },
+      cal,
+    );
     const now = chi(13, 6); // 06:00 Chicago = 13:00 Madrid
     const s = await resolveScene(now, d);
     expect(weather).toHaveBeenCalledWith({ lat: 40.4168, lon: -3.7038 });
@@ -155,7 +158,52 @@ describe("resolveScene", () => {
     expect(s.time).toBe("night");
   });
 
-  it("travel time zone is configurable: 'event' uses the trip's zone", async () => {
+  it("travel time zone defaults to the event's own zone (TZID wins)", async () => {
+    const cal = new MockCalendarProvider([
+      ev("plane.seat.reading.*.*.v1", chi(13, 0), chi(14, 0), {
+        location: "40.4168,-3.7038",
+        timeZone: "Europe/Madrid",
+      }),
+    ]);
+    const { d } = deps({}, cal); // no config: default
+    const s = await resolveScene(chi(13, 6), d); // 13:00 in Madrid
+    expect(s.time).toBe("noon");
+  });
+
+  it("default 'event' mode falls back to the geocoded place's zone", async () => {
+    const cal = new MockCalendarProvider([
+      ev("plane.seat.reading.*.*.v1", chi(13, 0), chi(14, 0), {
+        location: "Madrid",
+      }),
+    ]);
+    const { d } = deps({}, cal);
+    const s = await resolveScene(chi(13, 6), d); // 13:00 in Madrid
+    expect(s.time).toBe("noon");
+  });
+
+  it("default 'event' mode falls back to America/Chicago when no zone is known", async () => {
+    const cal = new MockCalendarProvider([
+      ev("plane.seat.reading.*.*.v1", chi(13, 0), chi(14, 0), {
+        location: "40.4168,-3.7038", // coordinates only, no TZID
+      }),
+    ]);
+    const { d } = deps({}, cal);
+    expect((await resolveScene(chi(13, 6), d)).time).toBe("night"); // 06:00 CDT
+    expect((await resolveScene(chi(13, 12), d)).time).toBe("noon");
+  });
+
+  it("an invalid event zone falls back to Chicago", async () => {
+    const cal = new MockCalendarProvider([
+      ev("plane.seat.reading.*.*.v1", chi(13, 0), chi(14, 0), {
+        location: "40.4168,-3.7038",
+        timeZone: "Mars/Olympus",
+      }),
+    ]);
+    const { d } = deps({}, cal);
+    expect((await resolveScene(chi(13, 12), d)).time).toBe("noon");
+  });
+
+  it("'event' can also be set explicitly", async () => {
     const cal = new MockCalendarProvider([
       ev("plane.seat.reading.*.*.v1", chi(13, 0), chi(14, 0), {
         location: "Madrid",
