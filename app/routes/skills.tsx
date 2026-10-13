@@ -15,12 +15,7 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: skills },
 ];
 
-const QUICK_REPLIES = [
-  "Languages",
-  "Frameworks",
-  "Design",
-  "Tools",
-] as const;
+const QUICK_REPLIES = ["Languages", "Frameworks", "Design", "Tools"] as const;
 
 /** How long the typing indicator holds before the reply lands, ms. */
 const REPLY_DELAY = 900;
@@ -119,9 +114,7 @@ const SkillsPage = () => {
         )
         .catch(() => getSkillReply(text));
 
-      Promise.all([fetchReply, minDelay]).then(([reply]) =>
-        appendReply(reply),
-      );
+      Promise.all([fetchReply, minDelay]).then(([reply]) => appendReply(reply));
     },
     [appendReply],
   );

@@ -31,8 +31,7 @@
   --rule: #e2e1ec;
   --accent: #c81f63;
   --accent-soft: #fbe9f0;
-  --shadow:
-    0 1px 2px rgba(20, 19, 28, 0.05), 0 8px 24px rgba(20, 19, 28, 0.05);
+  --shadow: 0 1px 2px rgba(20, 19, 28, 0.05), 0 8px 24px rgba(20, 19, 28, 0.05);
   --canvas-bg: #07060a;
 
   /* Base .page is position:absolute with top/bottom:0, clamped to one
@@ -43,7 +42,11 @@
   min-height: 100vh;
   background: var(--ground);
   color: var(--ink);
-  font: 400 17px/1.65 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font:
+    400 17px/1.65 "IBM Plex Sans",
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -71,7 +74,10 @@
   align-items: center;
   gap: 6px;
   color: var(--faint);
-  font: 400 13px "IBM Plex Mono", ui-monospace, monospace;
+  font:
+    400 13px "IBM Plex Mono",
+    ui-monospace,
+    monospace;
   letter-spacing: 0.02em;
   text-decoration: none;
   padding: 20px 28px 0;
@@ -154,7 +160,10 @@
 }
 
 .murmuration-page .eyebrow {
-  font: 500 11px/1 "IBM Plex Mono", ui-monospace, monospace;
+  font:
+    500 11px/1 "IBM Plex Mono",
+    ui-monospace,
+    monospace;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--faint);
@@ -186,7 +195,10 @@
 }
 
 .murmuration-page .tb-key {
-  font: 500 10px/1 "IBM Plex Mono", ui-monospace, monospace;
+  font:
+    500 10px/1 "IBM Plex Mono",
+    ui-monospace,
+    monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--faint);
@@ -194,7 +206,10 @@
 
 .murmuration-page .tb-val {
   margin-top: 7px;
-  font: 400 14.5px/1.35 "IBM Plex Mono", ui-monospace, monospace;
+  font:
+    400 14.5px/1.35 "IBM Plex Mono",
+    ui-monospace,
+    monospace;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -226,7 +241,9 @@
 }
 
 .murmuration-page h3 {
-  font: 600 14px/1.4 "IBM Plex Sans", sans-serif;
+  font:
+    600 14px/1.4 "IBM Plex Sans",
+    sans-serif;
   letter-spacing: 0.01em;
   margin: 34px 0 8px;
 }
@@ -324,7 +341,9 @@
   place-items: center;
   background: var(--surface);
   border: 1px solid var(--rule);
-  font: 500 12px "IBM Plex Mono", monospace;
+  font:
+    500 12px "IBM Plex Mono",
+    monospace;
   color: var(--muted);
 }
 
@@ -336,7 +355,9 @@
 
 .murmuration-page ol.attempts h4 {
   margin: 2px 0 6px;
-  font: 600 15px/1.4 "IBM Plex Sans", sans-serif;
+  font:
+    600 15px/1.4 "IBM Plex Sans",
+    sans-serif;
 }
 
 .murmuration-page ol.attempts p {
@@ -348,7 +369,9 @@
 .murmuration-page .verdict {
   display: inline-block;
   margin-top: 8px;
-  font: 500 10.5px/1 "IBM Plex Mono", monospace;
+  font:
+    500 10.5px/1 "IBM Plex Mono",
+    monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 5px 8px;
@@ -384,7 +407,9 @@
 }
 
 .murmuration-page th {
-  font: 500 10.5px/1 "IBM Plex Mono", monospace;
+  font:
+    500 10.5px/1 "IBM Plex Mono",
+    monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--faint);
@@ -398,7 +423,10 @@
 }
 
 .murmuration-page code {
-  font: 400 0.9em "IBM Plex Mono", ui-monospace, monospace;
+  font:
+    400 0.9em "IBM Plex Mono",
+    ui-monospace,
+    monospace;
   background: var(--sunken);
   padding: 0.12em 0.36em;
   border-radius: 2px;
@@ -411,7 +439,10 @@
   border: 1px solid var(--rule);
   border-radius: 3px;
   overflow-x: auto;
-  font: 400 13.5px/1.6 "IBM Plex Mono", ui-monospace, monospace;
+  font:
+    400 13.5px/1.6 "IBM Plex Mono",
+    ui-monospace,
+    monospace;
 }
 
 .murmuration-page pre code {
@@ -438,7 +469,10 @@
 }
 
 .murmuration-page .stat-n {
-  font: 300 32rem/1 Newsreader, Georgia, serif;
+  font:
+    300 32rem/1 Newsreader,
+    Georgia,
+    serif;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
@@ -471,7 +505,9 @@
   margin-top: 72px;
   padding-top: 24px;
   border-top: 1px solid var(--rule);
-  font: 400 13px/1.6 "IBM Plex Mono", monospace;
+  font:
+    400 13px/1.6 "IBM Plex Mono",
+    monospace;
   color: var(--faint);
   display: flex;
   flex-wrap: wrap;
@@ -506,7 +542,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  font: 700 12px/1 "IBM Plex Mono", monospace;
+  font:
+    700 12px/1 "IBM Plex Mono",
+    monospace;
   text-decoration: none;
   color: var(--amber);
 }

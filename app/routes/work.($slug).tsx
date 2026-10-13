@@ -1,5 +1,12 @@
 import { useCallback } from "react";
-import { LinksFunction, MetaFunction , Link, useLocation, useNavigate, useParams } from "react-router";
+import {
+  LinksFunction,
+  MetaFunction,
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 
 import { GridWarp } from "~/components/backgrounds/grid-warp/grid-warp";
 import { Isotype } from "~/components/icons/isotype/isotype";

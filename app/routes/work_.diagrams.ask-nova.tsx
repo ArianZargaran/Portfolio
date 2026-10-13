@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { AskNovaRef } from "~/components/work-diagrams/ask-nova";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

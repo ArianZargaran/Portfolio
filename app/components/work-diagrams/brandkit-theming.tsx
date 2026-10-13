@@ -6,8 +6,8 @@ export const BrandkitThemingDiagram: React.FC = () => (
     <h1>Semantic theming</h1>
     <p className="work-diagram_thesis">
       A dynamic brand meant <b>27 color themes</b> to maintain. Instead of
-      building 27, I found the three axes underneath them — and the fact
-      that <b>almost nothing actually changes between themes.</b>
+      building 27, I found the three axes underneath them — and the fact that{" "}
+      <b>almost nothing actually changes between themes.</b>
     </p>
 
     <div className="work-diagram_card">
@@ -58,9 +58,7 @@ export const BrandkitThemingDiagram: React.FC = () => (
         <div className="work-diagram_axis">
           <div className="work-diagram_axis-h">
             <span className="work-diagram_n">Prominence</span>
-            <span className="work-diagram_k">
-              3 options · coined the term
-            </span>
+            <span className="work-diagram_k">3 options · coined the term</span>
           </div>
           <div className="work-diagram_prom">
             <span style={{ background: "color-mix(in srgb,#2d7ff9 45%,#888)" }}>
@@ -86,9 +84,9 @@ export const BrandkitThemingDiagram: React.FC = () => (
       </div>
       <h2>Most tokens are shared. Only the delta varies.</h2>
       <p className="work-diagram_sub">
-        The combinatorial explosion was mostly an illusion — the
-        overwhelming majority of tokens are identical across every theme.
-        Only a handful actually change.
+        The combinatorial explosion was mostly an illusion — the overwhelming
+        majority of tokens are identical across every theme. Only a handful
+        actually change.
       </p>
       <div className="work-diagram_cols">
         <div className="work-diagram_col">
@@ -140,9 +138,9 @@ export const BrandkitThemingDiagram: React.FC = () => (
       </div>
       <h2>CSS-class namespaces that override only the delta</h2>
       <p className="work-diagram_sub">
-        A shared base on <code>:root</code>. All three params — <b>color ·
-        prominence · mode</b> — compound into a <em>single</em> utility
-        class carrying only the delta. Components read tokens via{" "}
+        A shared base on <code>:root</code>. All three params —{" "}
+        <b>color · prominence · mode</b> — compound into a <em>single</em>{" "}
+        utility class carrying only the delta. Components read tokens via{" "}
         <code>var()</code>, so they&apos;re <b>theme-agnostic</b> — the
         namespace above supplies the values.
       </p>

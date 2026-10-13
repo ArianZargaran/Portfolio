@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { ArchitectureDataFlowDiagram } from "~/components/work-diagrams/architecture-data-flow";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

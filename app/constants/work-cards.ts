@@ -239,7 +239,7 @@ const MOTION: WorkCard = {
       kind: "decision",
       face: "The flip card follows which side you click. Nobody asked for that.",
       expanded:
-        "A flip card that always flips the same way is fine. Mine flips *away from your cursor*: click the left side and it swings from the left. It's the kind of decision no spec asks for and every user feels. A teammate put it better than I could: \"the small details that feel premium.\"",
+        'A flip card that always flips the same way is fine. Mine flips *away from your cursor*: click the left side and it swings from the left. It\'s the kind of decision no spec asks for and every user feels. A teammate put it better than I could: "the small details that feel premium."',
     },
     {
       kind: "human",
@@ -303,7 +303,12 @@ const BRUMA: WorkCard = {
   signal: "An investment tool with zero charting libraries.",
   meta: "Personal · live",
   link: { href: "https://bruma-website.vercel.app/", label: "Visit Bruma" },
-  images: [{ src: "/bruma-coast.webp", alt: "Coastal property view, Bruma's target market" }],
+  images: [
+    {
+      src: "/bruma-coast.webp",
+      alt: "Coastal property view, Bruma's target market",
+    },
+  ],
   blocks: [
     {
       kind: "problem",
@@ -325,7 +330,7 @@ const BRUMA: WorkCard = {
     },
     {
       kind: "outcome",
-      face: "A serif \"Luxury Coastal Rentals\" brand that looks nothing like this site. That's the point.",
+      face: 'A serif "Luxury Coastal Rentals" brand that looks nothing like this site. That\'s the point.',
       expanded:
         "Bruma has its own elegant brand (serif type, luxury coastal rentals language, a gated investor portal) that shares nothing visually with ari.soy. Range is part of the craft: the design system serves the product's audience, not the designer's habits. Live and linkable.",
     },
@@ -369,7 +374,7 @@ const FITCOUNTER: WorkCard = {
       kind: "craft",
       face: "A macro ring replaced a wall of numbers. NutriScore and NOVA ratings sit right where you're about to add the food.",
       expanded:
-        "The add-food screen centers a circular kcal ring with protein, fat, and carbs read at a glance instead of four stacked numbers competing for attention. NutriScore and NOVA quality ratings surface in that same screen, so \"is this food actually good for me\" stays visible next to \"how much of it is this,\" not buried in a separate tab nobody opens.",
+        'The add-food screen centers a circular kcal ring with protein, fat, and carbs read at a glance instead of four stacked numbers competing for attention. NutriScore and NOVA quality ratings surface in that same screen, so "is this food actually good for me" stays visible next to "how much of it is this," not buried in a separate tab nobody opens.',
     },
     {
       kind: "outcome",
@@ -452,7 +457,7 @@ const CHECKOUT_AT_SCALE: WorkCard = {
       kind: "human",
       face: "Feature-flag the radical changes. Let data beat conviction. Say no earlier.",
       expanded:
-        "Three lessons with scars behind them. Roll out radical UI changes progressively behind flags, so data can kill a piece instead of the whole. When the data and your conviction disagree, the data wins, especially when you badly want it not to. And \"no\" is a scoping tool, not a failure. Every system I've built since has been shaped by that scrapped checkout.",
+        'Three lessons with scars behind them. Roll out radical UI changes progressively behind flags, so data can kill a piece instead of the whole. When the data and your conviction disagree, the data wins, especially when you badly want it not to. And "no" is a scoping tool, not a failure. Every system I\'ve built since has been shaped by that scrapped checkout.',
     },
   ],
 };
@@ -498,7 +503,10 @@ const CABIFY_DESIGN_SYSTEM: WorkCard = {
     },
   ],
   images: [
-    { src: "/cabify.webp", alt: "Marshal, Cabify's design system, in Storybook" },
+    {
+      src: "/cabify.webp",
+      alt: "Marshal, Cabify's design system, in Storybook",
+    },
   ],
   blocks: [
     {
@@ -608,7 +616,7 @@ const ASK_NOVA_EVAL: WorkCard = {
       kind: "outcome",
       face: "65% pass, and four real bugs. One I would never have caught by hand.",
       expanded:
-        "The worst one: the confidence gate read the top rerank score, which measures how close the topic is, not whether there is an answer. So \"I don't have that information\" shipped with a Get started button under it. The others: a pricing filter that sent \"plan the first week\" to sales, Nova misstating how long it takes to start working, and a 404 summary that quoted a price.",
+        'The worst one: the confidence gate read the top rerank score, which measures how close the topic is, not whether there is an answer. So "I don\'t have that information" shipped with a Get started button under it. The others: a pricing filter that sent "plan the first week" to sales, Nova misstating how long it takes to start working, and a 404 summary that quoted a price.',
     },
     {
       kind: "human",
@@ -688,7 +696,7 @@ const RAG_CHAT: WorkCard = {
       kind: "craft",
       face: "A RAG chat over my real career, built with the Claude SDK, running right here.",
       expanded:
-        "The Skills page hosts an \"ask me anything about Arian\" chat: retrieval-augmented generation over a knowledge base of my actual career, built with the Claude SDK, embedded with Voyage, live on this site. Rate-limited, with a static fallback so it degrades gracefully instead of breaking.",
+        'The Skills page hosts an "ask me anything about Arian" chat: retrieval-augmented generation over a knowledge base of my actual career, built with the Claude SDK, embedded with Voyage, live on this site. Rate-limited, with a static fallback so it degrades gracefully instead of breaking.',
     },
     {
       kind: "decision",
@@ -722,7 +730,6 @@ export const WORK_ROWS: WorkCard[][] = [
   [CHECKOUT_AT_SCALE, EPHEMERAL, RAG_CHAT],
   [CONTENT_MODELING, QUALITY_ORIGINS, BRUMA, POUK],
 ];
-
 
 /** Flat list of every card, derived from WORK_ROWS — the single source both
     the grid (WORK_ROWS, for layout) and per-slug lookups (this list) read

@@ -5,10 +5,10 @@ export const AiDesignToCodeDiagram: React.FC = () => (
     <p className="work-diagram_eyebrow">Freshworks · AI-first design system</p>
     <h1>Structure over agents</h1>
     <p className="work-diagram_thesis">
-      Design→code has a <b>right answer</b>, so it shouldn&apos;t be
-      improvised. The intelligence goes in the <b>rules and structure</b>,
-      not the agent. Structured Figma + written rules + MCP tools →
-      components built <b>in one shot.</b>
+      Design→code has a <b>right answer</b>, so it shouldn&apos;t be improvised.
+      The intelligence goes in the <b>rules and structure</b>, not the agent.
+      Structured Figma + written rules + MCP tools → components built{" "}
+      <b>in one shot.</b>
     </p>
 
     <div className="work-diagram_flow">
@@ -59,9 +59,8 @@ export const AiDesignToCodeDiagram: React.FC = () => (
           <h2>Written rules, not a free agent</h2>
           <p>
             <b>agents.md</b> — the AI-first foundation, co-authored with the
-            codebase&apos;s original founders. Plus <b>Cursor rules</b> I
-            wrote, specific to the design system. This is the deterministic
-            core.
+            codebase&apos;s original founders. Plus <b>Cursor rules</b> I wrote,
+            specific to the design system. This is the deterministic core.
           </p>
         </div>
       </div>
@@ -100,11 +99,10 @@ export const AiDesignToCodeDiagram: React.FC = () => (
           <span className="work-diagram_k">Outcome</span>
           <h2>One shot</h2>
           <p>
-            Components generate correctly in a single pass —{" "}
-            <b>because</b> the context is structured and the rules are
-            written. It generalizes: a{" "}
-            <b>token update is just an instruction</b>. All
-            version-controlled, starting in Figma.
+            Components generate correctly in a single pass — <b>because</b> the
+            context is structured and the rules are written. It generalizes: a{" "}
+            <b>token update is just an instruction</b>. All version-controlled,
+            starting in Figma.
           </p>
           <span className="work-diagram_oneshot">✓ built in one shot</span>
         </div>

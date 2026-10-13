@@ -30,7 +30,7 @@ describe("MainMenuNavItem", () => {
 
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Work");
     expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
-      "Selected projects"
+      "Selected projects",
     );
   });
 
@@ -45,7 +45,7 @@ describe("MainMenuNavItem", () => {
 
     expect(screen.getByRole("link")).toHaveAttribute(
       "data-state",
-      JSON.stringify({ isMenuNavigation: true })
+      JSON.stringify({ isMenuNavigation: true }),
     );
   });
 

@@ -1,4 +1,4 @@
-import { LinksFunction , Link } from "react-router";
+import { LinksFunction, Link } from "react-router";
 
 import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
 import { Doodles } from "~/components/backgrounds/doodles/doodles";

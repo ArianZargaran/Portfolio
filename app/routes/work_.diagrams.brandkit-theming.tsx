@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { BrandkitThemingDiagram } from "~/components/work-diagrams/brandkit-theming";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

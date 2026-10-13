@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { MarshalRef } from "~/components/work-diagrams/marshal";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

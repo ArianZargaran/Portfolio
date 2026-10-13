@@ -47,7 +47,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   );
 
   if (!withinRateLimit || !hasApiKeys) {
-    return Response.json({ reply: getSkillReply(truncated), source: "fallback" });
+    return Response.json({
+      reply: getSkillReply(truncated),
+      source: "fallback",
+    });
   }
 
   try {
@@ -57,6 +60,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("RAG pipeline failed, falling back to static reply:", error);
-    return Response.json({ reply: getSkillReply(truncated), source: "fallback" });
+    return Response.json({
+      reply: getSkillReply(truncated),
+      source: "fallback",
+    });
   }
 };

@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { AiDesignToCodeDiagram } from "~/components/work-diagrams/ai-design-to-code";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

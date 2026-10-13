@@ -120,11 +120,11 @@ const projectChunks: KnowledgeChunk[] = [
 const philosophyChunks: KnowledgeChunk[] = [
   {
     id: "philosophy-design-engineer",
-    text: "What \"design engineer\" means to him: someone who refuses to hand off at the wireframe. He takes taste — typography, motion, color, spacing — and expresses it directly in production code, so nothing gets lost in translation between a designer's intent and what actually ships. He can sit in Figma arguing about optical alignment, then open the editor and implement the exact easing curve that makes a transition feel right. That double-fluency between design and front-end engineering is the whole job.",
+    text: 'What "design engineer" means to him: someone who refuses to hand off at the wireframe. He takes taste — typography, motion, color, spacing — and expresses it directly in production code, so nothing gets lost in translation between a designer\'s intent and what actually ships. He can sit in Figma arguing about optical alignment, then open the editor and implement the exact easing curve that makes a transition feel right. That double-fluency between design and front-end engineering is the whole job.',
   },
   {
     id: "philosophy-design-taste",
-    text: "His design taste: drawn to calm, confident interfaces over loud, over-colored maximalism. He sees a dichotomy in the field right now — big-type, expressive-asset maximalism on one side, the AI-era aesthetic of minimalism on the other — and sits on the minimalist side, but with meaningful care for the user: the right feedback, small touches of surprise, never sterile. His one-line definition of premium: \"premium means taking care of the small details\" — the details nobody notices consciously are exactly the ones that make something feel expensive and considered.",
+    text: 'His design taste: drawn to calm, confident interfaces over loud, over-colored maximalism. He sees a dichotomy in the field right now — big-type, expressive-asset maximalism on one side, the AI-era aesthetic of minimalism on the other — and sits on the minimalist side, but with meaningful care for the user: the right feedback, small touches of surprise, never sterile. His one-line definition of premium: "premium means taking care of the small details" — the details nobody notices consciously are exactly the ones that make something feel expensive and considered.',
   },
   {
     id: "philosophy-through-line",
@@ -155,7 +155,7 @@ const brandkitDeepDiveChunks: KnowledgeChunk[] = [
   },
   {
     id: "brandkit-architecture-hinge",
-    text: "Brandkit's architecture: atomic design is the spine — quarks/tokens, atoms, molecules, organisms, templates, pages — the same vocabulary shared across Figma, Contentful, and code, with Templates as the hinge between them. A URL maps to a Contentful Page entry (a Template type) by its slug; at build time Next.js fetches that entry via static site generation, so marketing pages are static and fast by construction. The page makes all its backend calls at the top, then each organism section is wrapped by a higher-order component that massages the data and hands it to pure, \"dummy\" design-system components — the container/presentational split, where templates and HOCs stay smart and the design system stays dumb and reusable.",
+    text: 'Brandkit\'s architecture: atomic design is the spine — quarks/tokens, atoms, molecules, organisms, templates, pages — the same vocabulary shared across Figma, Contentful, and code, with Templates as the hinge between them. A URL maps to a Contentful Page entry (a Template type) by its slug; at build time Next.js fetches that entry via static site generation, so marketing pages are static and fast by construction. The page makes all its backend calls at the top, then each organism section is wrapped by a higher-order component that massages the data and hands it to pure, "dummy" design-system components — the container/presentational split, where templates and HOCs stay smart and the design system stays dumb and reusable.',
   },
   {
     id: "brandkit-migration-honesty",
@@ -166,7 +166,7 @@ const brandkitDeepDiveChunks: KnowledgeChunk[] = [
 const craftChunks: KnowledgeChunk[] = [
   {
     id: "craft-ai-design-to-code",
-    text: "On AI design-to-code, at Freshworks: the intelligence belongs in the rules, not in the agent. Given a well-structured design system — clear tokens, a naming framework, atomic components — a model can assemble UI reliably because the constraints do the reasoning; the determinism lives in the system, the model just navigates it. A good design system is the best possible context for AI: it turns \"generate a page\" from an open-ended creative gamble into a bounded assembly problem. That's context engineering applied to front-end work.",
+    text: 'On AI design-to-code, at Freshworks: the intelligence belongs in the rules, not in the agent. Given a well-structured design system — clear tokens, a naming framework, atomic components — a model can assemble UI reliably because the constraints do the reasoning; the determinism lives in the system, the model just navigates it. A good design system is the best possible context for AI: it turns "generate a page" from an open-ended creative gamble into a bounded assembly problem. That\'s context engineering applied to front-end work.',
   },
   {
     id: "craft-motion-pill-rotation",
@@ -206,7 +206,7 @@ const askNovaEvalChunks: KnowledgeChunk[] = [
   },
   {
     id: "ask-nova-eval-results",
-    text: "Ask Nova eval results: 65% pass (48/74) on the baseline run. Groundedness scored 79%, and when he read every failure by hand, 2 of the 11 groundedness failures turned out to be the judge's own mistakes — documented in the README rather than hidden. The eval surfaced four real bugs: (1) the confidence gate read the top rerank score, which measures topic closeness, not whether the docs actually answer the question, so \"I don't have that information\" shipped with a \"Get started\" button underneath it; (2) the pricing regex misrouted legitimate questions, like \"plan the first week\" and \"payment operations team,\" to sales; (3) Nova said it starts learning \"as soon as ticket data accumulates\" when the docs actually specify 30 days of history; (4) the 404 page's canned summary quoted a price it shouldn't have.",
+    text: 'Ask Nova eval results: 65% pass (48/74) on the baseline run. Groundedness scored 79%, and when he read every failure by hand, 2 of the 11 groundedness failures turned out to be the judge\'s own mistakes — documented in the README rather than hidden. The eval surfaced four real bugs: (1) the confidence gate read the top rerank score, which measures topic closeness, not whether the docs actually answer the question, so "I don\'t have that information" shipped with a "Get started" button underneath it; (2) the pricing regex misrouted legitimate questions, like "plan the first week" and "payment operations team," to sales; (3) Nova said it starts learning "as soon as ticket data accumulates" when the docs actually specify 30 days of history; (4) the 404 page\'s canned summary quoted a price it shouldn\'t have.',
   },
 ];
 

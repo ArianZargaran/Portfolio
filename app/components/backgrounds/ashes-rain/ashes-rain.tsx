@@ -173,10 +173,7 @@ export const AshesRain: React.FC = () => {
           target.fill();
         }
 
-        target.globalAlpha = Math.min(
-          1,
-          BASE_ALPHA * flicker + warm * 0.45,
-        );
+        target.globalAlpha = Math.min(1, BASE_ALPHA * flicker + warm * 0.45);
         target.fillStyle = `rgb(${cr}, ${cg}, ${cb})`;
         target.fill(flake.shape);
         target.restore();
@@ -195,9 +192,7 @@ export const AshesRain: React.FC = () => {
         // rather than a metronome sway.
         flake.x +=
           Math.sin(time * flake.wanderFreq + flake.phase) * flake.drift +
-          Math.sin(time * flake.wanderFreq2 + flake.phase2) *
-            flake.drift *
-            0.4;
+          Math.sin(time * flake.wanderFreq2 + flake.phase2) * flake.drift * 0.4;
         flake.y += flake.fall;
         flake.rot += flake.rotSpeed;
 

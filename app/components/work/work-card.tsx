@@ -44,7 +44,10 @@ export const WorkCardTile: React.FC<WorkCardProps> = ({
      kind is null for the Signal (no tag shown on the default face). */
   const frames = [
     { kind: null as string | null, text: card.signal },
-    ...card.blocks.map((b) => ({ kind: b.kind as string | null, text: b.face })),
+    ...card.blocks.map((b) => ({
+      kind: b.kind as string | null,
+      text: b.face,
+    })),
   ];
   const [frameIdx, setFrameIdx] = useState(0);
   const [isHovered, setIsHovered] = useState(false);

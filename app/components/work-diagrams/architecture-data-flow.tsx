@@ -17,16 +17,14 @@ export const ArchitectureDataFlowDiagram: React.FC = () => (
       </div>
       <h2>Templates are the hinge</h2>
       <p className="work-diagram_sub">
-        The same six layers organize the design files, the content models,
-        and the codebase. Templates sit at the center of all three.
+        The same six layers organize the design files, the content models, and
+        the codebase. Templates sit at the center of all three.
       </p>
       <div className="work-diagram_stack">
         <div className="work-diagram_layer">
           <span className="work-diagram_lv">page</span>
           <span className="work-diagram_nm">Page</span>
-          <span className="work-diagram_ds">
-            a URL · one Contentful entry
-          </span>
+          <span className="work-diagram_ds">a URL · one Contentful entry</span>
         </div>
         <div className="work-diagram_layer work-diagram_hinge">
           <span className="work-diagram_lv">template</span>
@@ -55,9 +53,7 @@ export const ArchitectureDataFlowDiagram: React.FC = () => (
         <div className="work-diagram_layer work-diagram_quark">
           <span className="work-diagram_lv">quark</span>
           <span className="work-diagram_nm">Quarks / tokens</span>
-          <span className="work-diagram_ds">
-            ← semantic theming lives here
-          </span>
+          <span className="work-diagram_ds">← semantic theming lives here</span>
         </div>
       </div>
       <div className="work-diagram_tools">
@@ -98,8 +94,8 @@ export const ArchitectureDataFlowDiagram: React.FC = () => (
         <span className="work-diagram_tag">SSG</span>
       </h2>
       <p className="work-diagram_sub">
-        One fetch at the top. Containers inject data. Presentational
-        components stay dumb.
+        One fetch at the top. Containers inject data. Presentational components
+        stay dumb.
       </p>
       <div className="work-diagram_flow">
         <div className="work-diagram_fstep">
@@ -128,8 +124,8 @@ export const ArchitectureDataFlowDiagram: React.FC = () => (
               <span className="work-diagram_tag">SSG</span>
             </div>
             <div className="work-diagram_fd">
-              The page template makes <b>all</b> the backend calls at the
-              top level. Static output → fast marketing pages.
+              The page template makes <b>all</b> the backend calls at the top
+              level. Static output → fast marketing pages.
             </div>
           </div>
         </div>
@@ -143,8 +139,8 @@ export const ArchitectureDataFlowDiagram: React.FC = () => (
               Each organism is wrapped by a Higher-Order Component
             </div>
             <div className="work-diagram_fd">
-              The HOC massages the top-level data and hands each section
-              exactly what it needs — the container layer.
+              The HOC massages the top-level data and hands each section exactly
+              what it needs — the container layer.
             </div>
           </div>
         </div>
@@ -155,9 +151,9 @@ export const ArchitectureDataFlowDiagram: React.FC = () => (
           <div className="work-diagram_fbody">
             <div className="work-diagram_ft">Dummy DS components render</div>
             <div className="work-diagram_fd">
-              Organisms → molecules → atoms, all <b>pure and
-              presentational</b>, straight from the design system. They
-              render tokens via <code>var()</code> — theme-agnostic.
+              Organisms → molecules → atoms, all <b>pure and presentational</b>,
+              straight from the design system. They render tokens via{" "}
+              <code>var()</code> — theme-agnostic.
             </div>
           </div>
         </div>

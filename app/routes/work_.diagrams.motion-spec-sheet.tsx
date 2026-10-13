@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { MotionSpecSheet } from "~/components/work-diagrams/motion-spec-sheet";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

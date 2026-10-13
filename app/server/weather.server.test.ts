@@ -34,7 +34,11 @@ describe("weather client", () => {
   it("queries Open-Meteo for Dallas by default and caches for 15 minutes", async () => {
     let t = 0;
     const fetchImpl = vi.fn().mockImplementation(async () => ok(3));
-    const c = createWeatherClient({ fetchImpl, now: () => t, log: () => undefined });
+    const c = createWeatherClient({
+      fetchImpl,
+      now: () => t,
+      log: () => undefined,
+    });
     expect(await c.get()).toBe("cloudy");
     expect(fetchImpl.mock.calls[0][0]).toContain(`latitude=${DALLAS.lat}`);
     t = WEATHER_TTL_MS - 1;
@@ -67,7 +71,11 @@ describe("weather client", () => {
       .fn()
       .mockResolvedValueOnce(ok(61))
       .mockResolvedValueOnce(new Response("", { status: 503 }));
-    const c = createWeatherClient({ fetchImpl, now: () => t, log: () => undefined });
+    const c = createWeatherClient({
+      fetchImpl,
+      now: () => t,
+      log: () => undefined,
+    });
     expect(await c.get()).toBe("rain");
     t = WEATHER_TTL_MS + 1;
     expect(await c.get()).toBe("rain");

@@ -12,7 +12,11 @@
       "type": "string",
       "pattern": "^(home-office|office|car|plane)\\.(desk|window|bed|couch|kitchen|seat|dock|balcony)\\.(coding|designing|reading|listening|resting|eating|commuting|thinking)\\.(dawn|morning|noon|afternoon|dusk|night|\\*)\\.(clear|cloudy|rain|storm|snow|fog|\\*)\\.v[0-9]+(\\.[0-9]+)?$"
     },
-    "start": { "type": "string", "format": "date-time", "description": "RFC 3339 with offset (Google 'dateTime'). All-day events are ignored." },
+    "start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 with offset (Google 'dateTime'). All-day events are ignored."
+    },
     "end": { "type": "string", "format": "date-time" },
     "location": {
       "description": "Optional travel override for weather (and time zone of the sky, see open question). Either 'lat,lon' or a place name geocoded server-side. Empty = Dallas.",
@@ -25,7 +29,10 @@
         "private": {
           "type": "object",
           "properties": {
-            "ticket": { "type": "string", "description": "Team ticket id (Atlas). Never sent to the client." }
+            "ticket": {
+              "type": "string",
+              "description": "Team ticket id (Atlas). Never sent to the client."
+            }
           }
         }
       }

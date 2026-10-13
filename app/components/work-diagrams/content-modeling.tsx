@@ -10,17 +10,14 @@ export const ContentModelingDiagram: React.FC = () => (
       Same problem — a marketing site on <b>Next.js, SSG + ISR</b>. Both
       diverged on one question: should a content model mirror the{" "}
       <b>component</b>, or the <b>entity</b>? Underneath it sits the real
-      tradeoff — <b>flexibility vs consistency</b>, and who owns the
-      creativity.
+      tradeoff — <b>flexibility vs consistency</b>, and who owns the creativity.
     </p>
 
     <div className="work-diagram_spectrum">
       <div className="work-diagram_bar">
         <span className="work-diagram_pinlbl work-diagram_a">Airtable</span>
         <span className="work-diagram_pin work-diagram_a" />
-        <span className="work-diagram_pinlbl work-diagram_b">
-          Freshworks
-        </span>
+        <span className="work-diagram_pinlbl work-diagram_b">Freshworks</span>
         <span className="work-diagram_pin work-diagram_b" />
       </div>
       <div className="work-diagram_ends">
@@ -60,9 +57,7 @@ export const ContentModelingDiagram: React.FC = () => (
           <b>The producer</b> — art-directs every element of the page.
         </div>
         <div className="work-diagram_pills">
-          <span className="work-diagram_pill work-diagram_good">
-            flexible
-          </span>
+          <span className="work-diagram_pill work-diagram_good">flexible</span>
           <span className="work-diagram_pill work-diagram_good">
             producer autonomy
           </span>
@@ -102,8 +97,8 @@ export const ContentModelingDiagram: React.FC = () => (
         </div>
         <div className="work-diagram_who">
           <span className="work-diagram_k">Creativity lands on</span>
-          <b>The designer</b> — decides the mapping; creativity within a
-          known data contract.
+          <b>The designer</b> — decides the mapping; creativity within a known
+          data contract.
         </div>
         <div className="work-diagram_pills">
           <span className="work-diagram_pill work-diagram_good">
@@ -128,8 +123,8 @@ export const ContentModelingDiagram: React.FC = () => (
     <div className="work-diagram_verdict">
       <h3>The judgment — no universal winner</h3>
       <p>
-        <b>Rigidity is a feature:</b> Freshworks&apos; structure is
-        governance made structural — it makes the wrong thing impossible.
+        <b>Rigidity is a feature:</b> Freshworks&apos; structure is governance
+        made structural — it makes the wrong thing impossible.
       </p>
       <p>
         <b>Flexibility has a hidden cost:</b> it&apos;s the source of the
@@ -143,9 +138,8 @@ export const ContentModelingDiagram: React.FC = () => (
       </p>
       <div className="work-diagram_hybrid">
         <b>The mature answer is a hybrid</b> — entity model as the source of
-        truth, plus a <em>controlled</em> set of art-directable slots where
-        a page earns being special. Structure by default, flexibility on
-        purpose.
+        truth, plus a <em>controlled</em> set of art-directable slots where a
+        page earns being special. Structure by default, flexibility on purpose.
       </div>
     </div>
 

@@ -145,12 +145,12 @@ export const MarshalRef: React.FC = () => (
     </p>
     <h1>Governing Marshal across design and engineering</h1>
     <p className="work-diagram_thesis">
-      Marshal is Cabify&apos;s design system: React components distributed as
-      an npm package, SCSS partials, or a CDN-hosted CSS bundle, documented
-      live in Storybook. I led it from 2019 to 2021 &mdash; not by building
-      every component, but by owning the governance and adoption that kept{" "}
-      <b>design intent</b> and <b>shipped code</b> answerable to the same
-      source of truth.
+      Marshal is Cabify&apos;s design system: React components distributed as an
+      npm package, SCSS partials, or a CDN-hosted CSS bundle, documented live in
+      Storybook. I led it from 2019 to 2021 &mdash; not by building every
+      component, but by owning the governance and adoption that kept{" "}
+      <b>design intent</b> and <b>shipped code</b> answerable to the same source
+      of truth.
     </p>
 
     <div className="work-diagram_card">
@@ -160,15 +160,15 @@ export const MarshalRef: React.FC = () => (
         <div className="work-diagram_p">
           <div className="work-diagram_h">~30 components</div>
           <div className="work-diagram_d">
-            forms, navigation, feedback, layout — versioned individually,
-            some tracing back to 0.2.0
+            forms, navigation, feedback, layout — versioned individually, some
+            tracing back to 0.2.0
           </div>
         </div>
         <div className="work-diagram_p">
           <div className="work-diagram_h">10 color ramps</div>
           <div className="work-diagram_d">
-            neutral plus 9 hues, each 6&ndash;12 steps deep, semantically
-            named (N, G, M, R, B, O, LB, P, Y)
+            neutral plus 9 hues, each 6&ndash;12 steps deep, semantically named
+            (N, G, M, R, B, O, LB, P, Y)
           </div>
         </div>
         <div className="work-diagram_p">
@@ -181,8 +181,8 @@ export const MarshalRef: React.FC = () => (
         <div className="work-diagram_p">
           <div className="work-diagram_h">1 shared roadmap</div>
           <div className="work-diagram_d">
-            design status and code status tracked per component, on one
-            table, not two teams&apos; separate assumptions
+            design status and code status tracked per component, on one table,
+            not two teams&apos; separate assumptions
           </div>
         </div>
       </div>
@@ -194,10 +194,10 @@ export const MarshalRef: React.FC = () => (
       <p>
         Marshal started the way most design systems do: one core team owned
         every component, so any change &mdash; even one a product team could
-        clearly justify &mdash; waited in that team&apos;s queue. The system
-        was right and slow, which in practice means teams start routing
-        around it instead of through it. A design system that only the core
-        team can move doesn&apos;t scale past a handful of consumers.
+        clearly justify &mdash; waited in that team&apos;s queue. The system was
+        right and slow, which in practice means teams start routing around it
+        instead of through it. A design system that only the core team can move
+        doesn&apos;t scale past a handful of consumers.
       </p>
     </div>
 
@@ -206,18 +206,16 @@ export const MarshalRef: React.FC = () => (
       <h2>A gray flag, not a lock</h2>
       <p>
         I designed the tier system that fixed it.{" "}
-        <span className="work-diagram_badge work-diagram_tier2">
-          Tier 2 ⚪
-        </span>{" "}
-        marks a component as changeable without going through the core
-        Marshal team &mdash; so a product team that needed to evolve one
-        could promote it and move, instead of filing a ticket and waiting.
-        Everything still gets tracked, just not gated.
+        <span className="work-diagram_badge work-diagram_tier2">Tier 2 ⚪</span>{" "}
+        marks a component as changeable without going through the core Marshal
+        team &mdash; so a product team that needed to evolve one could promote
+        it and move, instead of filing a ticket and waiting. Everything still
+        gets tracked, just not gated.
       </p>
       <p>
-        I paired that with a Design↔Code status roadmap: one table, one
-        answer, versioned. A real slice of it, read live from Marshal&apos;s
-        own status page:
+        I paired that with a Design↔Code status roadmap: one table, one answer,
+        versioned. A real slice of it, read live from Marshal&apos;s own status
+        page:
       </p>
       <div className="work-diagram_rtable-wrap">
         <table className="work-diagram_rtable">
@@ -240,9 +238,9 @@ export const MarshalRef: React.FC = () => (
         </table>
       </div>
       <p>
-        Governance that unblocks people gets followed; governance that
-        blocks them gets worked around. That table is why &quot;is this
-        actually done&quot; had one visible answer instead of a Slack thread.
+        Governance that unblocks people gets followed; governance that blocks
+        them gets worked around. That table is why &quot;is this actually
+        done&quot; had one visible answer instead of a Slack thread.
       </p>
     </div>
 
@@ -250,13 +248,13 @@ export const MarshalRef: React.FC = () => (
       <span className="work-diagram_step">Hands-on design work</span>
       <h2>Not only process</h2>
       <p>
-        We licensed Calibri and customized it for a bilingual, EU-wide
-        brand: rounded the <code>a</code>, reduced the kerning, tightened
-        the <code>i</code>. When it shipped, line-heights went subtly wrong
-        across products &mdash; not a stylesheet bug, but damage to the font
+        We licensed Calibri and customized it for a bilingual, EU-wide brand:
+        rounded the <code>a</code>, reduced the kerning, tightened the{" "}
+        <code>i</code>. When it shipped, line-heights went subtly wrong across
+        products &mdash; not a stylesheet bug, but damage to the font
         file&apos;s own vertical metrics from the customization itself.
-        Debugging typography at the metrics level is the kind of deep dive
-        that permanently changes how you read a rendered page.
+        Debugging typography at the metrics level is the kind of deep dive that
+        permanently changes how you read a rendered page.
       </p>
     </div>
 
@@ -264,12 +262,11 @@ export const MarshalRef: React.FC = () => (
       <span className="work-diagram_step">Driving adoption</span>
       <h2>Publishing isn&apos;t adoption</h2>
       <p>
-        I ran that side directly: office hours in <code>#t-frontend</code>{" "}
-        for teams onboarding to Marshal, and a cross-team intake process
-        where I triaged every new component or token request myself. The
-        &quot;Built with Marshal&quot; showcase proved the system worked
-        with the libraries teams actually reached for, not just in
-        isolation:
+        I ran that side directly: office hours in <code>#t-frontend</code> for
+        teams onboarding to Marshal, and a cross-team intake process where I
+        triaged every new component or token request myself. The &quot;Built
+        with Marshal&quot; showcase proved the system worked with the libraries
+        teams actually reached for, not just in isolation:
       </p>
       <div className="work-diagram_badges">
         {INTEGRATIONS.map((i) => (
@@ -308,18 +305,17 @@ export const MarshalRef: React.FC = () => (
 
     <div className="work-diagram_philosophy">
       <p className="work-diagram_q">
-        &quot;Design owns the intent. Engineering owns the code. I owned the
-        gap between them.&quot;
+        &quot;Design owns the intent. Engineering owns the code. I owned the gap
+        between them.&quot;
       </p>
       <p>
-        The best design systems fail from either side: design that ships
-        and engineering never adopts, or code that ships and design
-        disowns. Leading Marshal meant translating constantly &mdash;
-        turning a designer&apos;s intent into something engineering could
-        version and ship, and turning an engineering constraint into
-        something design could work with instead of around. The part
-        worth keeping isn&apos;t a component; it&apos;s the roadmap and the
-        tier flags, the parts that made &quot;is this system
+        The best design systems fail from either side: design that ships and
+        engineering never adopts, or code that ships and design disowns. Leading
+        Marshal meant translating constantly &mdash; turning a designer&apos;s
+        intent into something engineering could version and ship, and turning an
+        engineering constraint into something design could work with instead of
+        around. The part worth keeping isn&apos;t a component; it&apos;s the
+        roadmap and the tier flags, the parts that made &quot;is this system
         trustworthy&quot; answerable without asking me directly.
       </p>
     </div>

@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import { renderInlineMarkdown } from "./inline-markdown";
 
-const renderText = (text: string) => render(<p>{renderInlineMarkdown(text)}</p>);
+const renderText = (text: string) =>
+  render(<p>{renderInlineMarkdown(text)}</p>);
 
 describe("renderInlineMarkdown", () => {
   it("returns plain text untouched", () => {

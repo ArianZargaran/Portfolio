@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import { LinksFunction , Link } from "react-router";
+import { LinksFunction, Link } from "react-router";
 
 import { AshesRain } from "~/components/backgrounds/ashes-rain/ashes-rain";
 import { Isotype } from "~/components/icons/isotype/isotype";

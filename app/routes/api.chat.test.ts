@@ -125,8 +125,8 @@ describe("api.chat action", () => {
         request: post("What languages do you know best?", "1.2.3.4"),
         params: {},
         context: {},
-      url: new URL("http://localhost/api/chat"),
-      pattern: "/api/chat",
+        url: new URL("http://localhost/api/chat"),
+        pattern: "/api/chat",
       });
       lastData = (await response.json()) as { reply: string; source: string };
     }

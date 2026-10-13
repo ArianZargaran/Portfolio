@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { ContentModelingDiagram } from "~/components/work-diagrams/content-modeling";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

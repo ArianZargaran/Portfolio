@@ -91,7 +91,8 @@ describe("MainMenuNav", () => {
 
     expect(screen.getByRole("list")).toBeInTheDocument();
     expect(screen.getByTestId("menu-toggle")).toHaveAttribute(
-      "data-open", "true"
+      "data-open",
+      "true",
     );
   });
 

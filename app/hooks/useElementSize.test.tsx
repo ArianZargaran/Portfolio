@@ -76,8 +76,14 @@ describe("useElementSize", () => {
     render(<HtmlProbe onReady={onReady} />);
     const div = screen.getByTestId("probe") as HTMLElement;
 
-    Object.defineProperty(div, "clientWidth", { value: 320, configurable: true });
-    Object.defineProperty(div, "clientHeight", { value: 180, configurable: true });
+    Object.defineProperty(div, "clientWidth", {
+      value: 320,
+      configurable: true,
+    });
+    Object.defineProperty(div, "clientHeight", {
+      value: 180,
+      configurable: true,
+    });
 
     act(() => {
       observers[0].trigger();

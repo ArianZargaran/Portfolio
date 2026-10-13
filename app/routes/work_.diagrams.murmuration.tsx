@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { Murmuration } from "~/components/work-diagrams/murmuration";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

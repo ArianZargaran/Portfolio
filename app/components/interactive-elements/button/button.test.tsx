@@ -25,7 +25,7 @@ describe("Button", () => {
         download="file.pdf"
       >
         Download
-      </Button>
+      </Button>,
     );
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("target", "_blank");
@@ -48,7 +48,8 @@ describe("Button", () => {
   it("forwards aria-label via rest props to the button element", () => {
     render(<Button aria-label="close dialog">X</Button>);
     expect(screen.getByRole("button")).toHaveAttribute(
-      "aria-label", "close dialog"
+      "aria-label",
+      "close dialog",
     );
   });
 

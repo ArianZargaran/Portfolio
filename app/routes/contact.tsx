@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { LinksFunction , Link } from "react-router";
+import { LinksFunction, Link } from "react-router";
 
 import { Check } from "~/components/icons/check";
 import { Copy } from "~/components/icons/copy";
@@ -80,8 +80,8 @@ const ContactPage = () => {
           animate={fadeUp.animate(0.15)}
         >
           I&apos;m always open to collaborating, a quick chat, or just sharing a
-          quick hello. The fastest way to reach me is by email — anything else below
-          works too.
+          quick hello. The fastest way to reach me is by email — anything else
+          below works too.
         </motion.p>
 
         <motion.div

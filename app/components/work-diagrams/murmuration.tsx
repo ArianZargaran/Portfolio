@@ -173,11 +173,7 @@ const MurmurationField: React.FC = () => {
         const dx = (x * 0.7756 + y * 0.6312) * ns;
         const dy = (-x * 0.6312 + y * 0.7756) * ns;
         const n1 = (noise2(ax + t, ay, 0) + noise2(dx - t, dy, 7)) * 0.707;
-        const n2 = noise2(
-          x * ns * 2.7 - t * 1.9,
-          y * ns * 2.7 + t * 0.7,
-          101,
-        );
+        const n2 = noise2(x * ns * 2.7 - t * 1.9, y * ns * 2.7 + t * 0.7, 101);
         const wob = (n1 + n2 * 0.45) / 1.45;
 
         const lifeT = age[i] / life[i];
@@ -306,8 +302,8 @@ export const Murmuration: React.FC = () => (
           <p className="eyebrow">Clean-room rebuild</p>
           <h1>Murmuration</h1>
           <p>
-            Tens of thousands of particles advected along a dictated path, on
-            a 2D canvas. A tuning studio that exports the code it is running.
+            Tens of thousands of particles advected along a dictated path, on a
+            2D canvas. A tuning studio that exports the code it is running.
           </p>
         </div>
       </div>
@@ -371,10 +367,9 @@ export const Murmuration: React.FC = () => (
           <p>
             This is a clean-room rebuild from the technique, not a port.
             Advecting particles along a vector field is public knowledge going
-            back decades; the implementation is new, written from the
-            algorithm rather than from the original source. The rebuild
-            became a published package and a tuning studio that exports
-            working code.
+            back decades; the implementation is new, written from the algorithm
+            rather than from the original source. The rebuild became a published
+            package and a tuning studio that exports working code.
           </p>
         </div>
       </section>
@@ -385,26 +380,25 @@ export const Murmuration: React.FC = () => (
         <hr className="srule" />
         <div className="thesis">
           <p>
-            A real murmuration is <em>emergent</em>. Every starling runs
-            local rules &mdash; separation, alignment, cohesion &mdash; and no
-            one dictates the global shape.
+            A real murmuration is <em>emergent</em>. Every starling runs local
+            rules &mdash; separation, alignment, cohesion &mdash; and no one
+            dictates the global shape.
           </p>
           <p>Here the trajectory is dictated and the particles obey.</p>
         </div>
         <div className="measure">
           <p>
-            The name is only about how it looks. There are no neighbour
-            lookups anywhere in the package, and there never will be &mdash;
-            that constraint is written into the source header so nobody
-            mistakes the two later. Calling it emergent would be claiming a
-            harder problem than the one actually solved.
+            The name is only about how it looks. There are no neighbour lookups
+            anywhere in the package, and there never will be &mdash; that
+            constraint is written into the source header so nobody mistakes the
+            two later. Calling it emergent would be claiming a harder problem
+            than the one actually solved.
           </p>
           <p>
-            What produces the look instead: a noise field sampled per
-            particle and turned into an <strong>angle</strong>, never
-            straight into a velocity. That single choice is what keeps
-            neighbouring particles travelling together rather than each
-            shimmering on its own.
+            What produces the look instead: a noise field sampled per particle
+            and turned into an <strong>angle</strong>, never straight into a
+            velocity. That single choice is what keeps neighbouring particles
+            travelling together rather than each shimmering on its own.
           </p>
         </div>
       </section>
@@ -415,9 +409,9 @@ export const Murmuration: React.FC = () => (
         <hr className="srule" />
         <div className="measure">
           <p>
-            Four details do most of the work, and each one is a rule about
-            how particles differ from one another rather than an effect
-            layered on top.
+            Four details do most of the work, and each one is a rule about how
+            particles differ from one another rather than an effect layered on
+            top.
           </p>
         </div>
         <div className="tablewrap">
@@ -434,8 +428,8 @@ export const Murmuration: React.FC = () => (
                   <strong>Noise becomes an angle</strong>
                 </td>
                 <td>
-                  Sampled per particle position, added to the dictated
-                  heading. Coherent motion instead of jitter.
+                  Sampled per particle position, added to the dictated heading.
+                  Coherent motion instead of jitter.
                 </td>
               </tr>
               <tr>
@@ -463,9 +457,9 @@ export const Murmuration: React.FC = () => (
                   <strong>Some particles leak</strong>
                 </td>
                 <td>
-                  A minority peel progressively out of the flow. That
-                  controlled failure is what stops the whole thing reading as
-                  one solid ribbon.
+                  A minority peel progressively out of the flow. That controlled
+                  failure is what stops the whole thing reading as one solid
+                  ribbon.
                 </td>
               </tr>
             </tbody>
@@ -473,11 +467,11 @@ export const Murmuration: React.FC = () => (
         </div>
         <div className="measure">
           <p>
-            Lifespans are jittered so respawns never pulse in unison. The
-            field itself reorganises as fast as particles cross it &mdash;
-            without that, they collapse onto its attracting streamlines and
-            the density bakes into fixed lanes. More on that below; it took
-            five attempts to see.
+            Lifespans are jittered so respawns never pulse in unison. The field
+            itself reorganises as fast as particles cross it &mdash; without
+            that, they collapse onto its attracting streamlines and the density
+            bakes into fixed lanes. More on that below; it took five attempts to
+            see.
           </p>
         </div>
       </section>
@@ -488,12 +482,11 @@ export const Murmuration: React.FC = () => (
         <hr className="srule" />
         <div className="measure">
           <p>
-            Counterintuitive at this particle count, so here is the
-            reasoning. The tool exists so other people can take the code. A
-            designer who copies four hundred lines of WebGL boilerplate
-            &mdash; context, shaders, buffers, FBO ping-pong &mdash; cannot
-            edit any of it. One who copies readable canvas can change it that
-            afternoon.
+            Counterintuitive at this particle count, so here is the reasoning.
+            The tool exists so other people can take the code. A designer who
+            copies four hundred lines of WebGL boilerplate &mdash; context,
+            shaders, buffers, FBO ping-pong &mdash; cannot edit any of it. One
+            who copies readable canvas can change it that afternoon.
           </p>
           <p>
             <strong>
@@ -501,22 +494,23 @@ export const Murmuration: React.FC = () => (
               job.
             </strong>{" "}
             WebGL was reserved for the case where canvas genuinely could not
-            hold 60fps at a particle count that looked right. It never came
-            up.
+            hold 60fps at a particle count that looked right. It never came up.
           </p>
           <p>
             The performance comes from batching instead. Particles are
-            counting-sorted into colour &times; width &times; depth buckets,
-            and each bucket is stroked as a single path &mdash; a few hundred
-            draw calls per frame instead of a hundred thousand. That one
-            technique is why the numbers below are possible on a 2D canvas.
+            counting-sorted into colour &times; width &times; depth buckets, and
+            each bucket is stroked as a single path &mdash; a few hundred draw
+            calls per frame instead of a hundred thousand. That one technique is
+            why the numbers below are possible on a 2D canvas.
           </p>
         </div>
 
         <div className="stats">
           <div className="stat">
             <div className="stat-n">120k</div>
-            <div className="stat-l">particles at 60fps, measured in-browser</div>
+            <div className="stat-l">
+              particles at 60fps, measured in-browser
+            </div>
           </div>
           <div className="stat">
             <div className="stat-n">13 kB</div>
@@ -536,11 +530,11 @@ export const Murmuration: React.FC = () => (
         <div className="measure">
           <p>
             The simulation imports nothing and touches nothing but a canvas.
-            React is a twenty-line wrapper at the bottom of the same file,
-            below a banner comment marking the boundary. That separation is
-            the architectural argument of the piece: the part worth keeping
-            is the part with no framework in it, and a reader can see exactly
-            where the framework starts.
+            React is a twenty-line wrapper at the bottom of the same file, below
+            a banner comment marking the boundary. That separation is the
+            architectural argument of the piece: the part worth keeping is the
+            part with no framework in it, and a reader can see exactly where the
+            framework starts.
           </p>
         </div>
       </section>
@@ -552,9 +546,9 @@ export const Murmuration: React.FC = () => (
         <div className="measure">
           <p>
             At high particle counts the field developed regular structure
-            &mdash; vertical stripes, then lanes and voids that sat still
-            while everything moved. Each diagnosis below was plausible,
-            produced a real fix, and did not solve it.
+            &mdash; vertical stripes, then lanes and voids that sat still while
+            everything moved. Each diagnosis below was plausible, produced a
+            real fix, and did not solve it.
           </p>
         </div>
 
@@ -563,9 +557,9 @@ export const Murmuration: React.FC = () => (
             <h4>Axis-aligned noise lattice</h4>
             <p>
               Gradient noise is exactly zero at every lattice point and its
-              features align to the sampling axes. Both octaves sampled the
-              same un-rotated grid, so the lattice lines sat vertical on
-              screen. Rotating each octave fixed the orientation.
+              features align to the sampling axes. Both octaves sampled the same
+              un-rotated grid, so the lattice lines sat vertical on screen.
+              Rotating each octave fixed the orientation.
             </p>
             <span className="verdict">Real, but secondary</span>
           </li>
@@ -582,10 +576,10 @@ export const Murmuration: React.FC = () => (
           <li>
             <h4>Drift that does not scale</h4>
             <p>
-              Convergence happens faster the faster particles travel, so a
-              fixed drift rate fails as soon as speed rises. Made it a ratio
-              of the rate particles cross the field. Correct, and still set
-              roughly seven times too low.
+              Convergence happens faster the faster particles travel, so a fixed
+              drift rate fails as soon as speed rises. Made it a ratio of the
+              rate particles cross the field. Correct, and still set roughly
+              seven times too low.
             </p>
             <span className="verdict">Correct principle, under-set</span>
           </li>
@@ -607,8 +601,8 @@ export const Murmuration: React.FC = () => (
               its own overlaps <em>once</em> &mdash; so a dense bucket
               saturates. Particles near a bucket boundary split across two
               less-saturated buckets and composited brighter than the ones
-              mid-bucket, drawing stripes at exactly the bucket spacing.
-              Fixed by spreading each position across several buckets.
+              mid-bucket, drawing stripes at exactly the bucket spacing. Fixed
+              by spreading each position across several buckets.
             </p>
             <span className="verdict hit">The one that was it</span>
           </li>
@@ -621,9 +615,9 @@ export const Murmuration: React.FC = () => (
         <hr className="srule" />
         <div className="measure">
           <p>
-            The reason it took five attempts was not the difficulty of the
-            bug. It was that every way of looking at it was broken, and each
-            failure produced confident, wrong evidence.
+            The reason it took five attempts was not the difficulty of the bug.
+            It was that every way of looking at it was broken, and each failure
+            produced confident, wrong evidence.
           </p>
           <ul className="plain">
             <li>
@@ -634,33 +628,32 @@ export const Murmuration: React.FC = () => (
             </li>
             <li>
               Driving it on a timer instead hit the hidden-page throttle:
-              measured at 0.20 simulated seconds per real second, so
-              &ldquo;ten seconds of settling&rdquo; was half a second.
+              measured at 0.20 simulated seconds per real second, so &ldquo;ten
+              seconds of settling&rdquo; was half a second.
             </li>
             <li>
-              An autocorrelation written to measure the stripe spacing
-              returned 446&nbsp;px for four wildly different inputs. That was
-              ringing in my own filter, not signal.
+              An autocorrelation written to measure the stripe spacing returned
+              446&nbsp;px for four wildly different inputs. That was ringing in
+              my own filter, not signal.
             </li>
             <li>
-              A stationarity check returned a correlation of exactly 1.0
-              &mdash; because out-of-band cells were padded with zeros and
-              the zeros dominated.
+              A stationarity check returned a correlation of exactly 1.0 &mdash;
+              because out-of-band cells were padded with zeros and the zeros
+              dominated.
             </li>
           </ul>
           <p>
-            The fix was to stop trusting the browser: a headless renderer
-            that runs the real engine against a stub canvas, rasterises the
-            strokes, and writes a PNG. Deterministic, exact simulated time,
-            seconds per iteration. It reproduced the bug on the first run.
+            The fix was to stop trusting the browser: a headless renderer that
+            runs the real engine against a stub canvas, rasterises the strokes,
+            and writes a PNG. Deterministic, exact simulated time, seconds per
+            iteration. It reproduced the bug on the first run.
           </p>
           <p>
             <strong>
               A number that stays the same across four different inputs is a
               broken instrument, not a finding.
             </strong>{" "}
-            That is the transferable lesson, and it cost more than the bug
-            did.
+            That is the transferable lesson, and it cost more than the bug did.
           </p>
         </div>
       </section>
@@ -674,24 +667,24 @@ export const Murmuration: React.FC = () => (
         <div className="measure">
           <p>
             The simulation clamps its timestep so a backgrounded tab does not
-            teleport every particle on return. The fps readout was computed
-            from that clamped value &mdash; so it could never report below
-            30. At a true 10fps it read 32. The one instrument meant to tell
-            you when you had pushed the particle count too far reported
-            healthy while the page ran at a third of that.
+            teleport every particle on return. The fps readout was computed from
+            that clamped value &mdash; so it could never report below 30. At a
+            true 10fps it read 32. The one instrument meant to tell you when you
+            had pushed the particle count too far reported healthy while the
+            page ran at a third of that.
           </p>
           <p>
             Measured from the true elapsed time now, with the clamp kept only
-            for the simulation. There is a test that drives the field at 10,
-            15 and 24fps and asserts what the meter says.
+            for the simulation. There is a test that drives the field at 10, 15
+            and 24fps and asserts what the meter says.
           </p>
         </div>
 
         <h3>An object compared by identity</h3>
         <div className="measure">
           <p>
-            The palette was compared with <code>!==</code>. Both the README
-            and the copy-code button hand users an inline{" "}
+            The palette was compared with <code>!==</code>. Both the README and
+            the copy-code button hand users an inline{" "}
             <code>palette={"{{ ... }}"}</code> &mdash; a new object on every
             render. So the component rebuilt its 48-entry colour table and
             retriggered its transition fade every single frame.
@@ -700,8 +693,8 @@ export const Murmuration: React.FC = () => (
             Measured: mean fade alpha <strong>0.0106</strong> with a stable
             reference against <strong>0.2341</strong> with an equal-but-new
             object. Twenty-two times stronger. In practice{" "}
-            <code>trail={"{0.9}"}</code> rendered like <code>0.35</code> and
-            the user would have no idea why.
+            <code>trail={"{0.9}"}</code> rendered like <code>0.35</code> and the
+            user would have no idea why.
           </p>
         </div>
 
@@ -711,14 +704,14 @@ export const Murmuration: React.FC = () => (
             Version 0.0.1 shipped without exporting <code>Vec3</code> &mdash;
             the element type of the public <code>path</code> prop. Consumers
             were asked for a value they had no way to declare. Every check
-            inside the repository passed, because there the type resolves
-            from source; it only failed across the package boundary.
+            inside the repository passed, because there the type resolves from
+            source; it only failed across the package boundary.
           </p>
           <p>
-            Caught by installing the published package from the registry into
-            a clean project, which is now a scripted check that runs before
-            every publish. 0.0.1 is deprecated on npm with a note saying the
-            runtime is identical and the defect is types only.
+            Caught by installing the published package from the registry into a
+            clean project, which is now a scripted check that runs before every
+            publish. 0.0.1 is deprecated on npm with a note saying the runtime
+            is identical and the defect is types only.
           </p>
         </div>
       </section>
@@ -729,10 +722,10 @@ export const Murmuration: React.FC = () => (
         <hr className="srule" />
         <div className="measure">
           <p>
-            The brief was unusually strict: five controls, no gallery, no
-            saved state, and an explicit instruction to push back if any of
-            those were requested mid-flight. Most of it moved anyway &mdash;
-            deliberately, and after the objection was made and heard.
+            The brief was unusually strict: five controls, no gallery, no saved
+            state, and an explicit instruction to push back if any of those were
+            requested mid-flight. Most of it moved anyway &mdash; deliberately,
+            and after the objection was made and heard.
           </p>
         </div>
         <div className="tablewrap">
@@ -749,19 +742,19 @@ export const Murmuration: React.FC = () => (
                 <td className="num">5 controls</td>
                 <td className="num">21</td>
                 <td>
-                  Each addition argued on its merits. Turbulence and
-                  dispersal earned it; the rest followed once the panel was
-                  grouped and collapsible.
+                  Each addition argued on its merits. Turbulence and dispersal
+                  earned it; the rest followed once the panel was grouped and
+                  collapsible.
                 </td>
               </tr>
               <tr>
                 <td>No gallery</td>
                 <td>Gallery</td>
                 <td>
-                  Objection raised, alternative proposed and taken (tunings
-                  as URLs), then the gallery requested again explicitly and
-                  built &mdash; with entries sanitised on read so a renamed
-                  parameter cannot corrupt them.
+                  Objection raised, alternative proposed and taken (tunings as
+                  URLs), then the gallery requested again explicitly and built
+                  &mdash; with entries sanitised on read so a renamed parameter
+                  cannot corrupt them.
                 </td>
               </tr>
               <tr>
@@ -769,8 +762,8 @@ export const Murmuration: React.FC = () => (
                 <td>An import and a tag</td>
                 <td>
                   Three revisions: standalone HTML, then a single-file React
-                  component, then just the call site once the component
-                  became a published package.
+                  component, then just the call site once the component became a
+                  published package.
                 </td>
               </tr>
               <tr>
@@ -788,8 +781,8 @@ export const Murmuration: React.FC = () => (
         <div className="measure">
           <p>
             The version that survived is better than the brief, which is the
-            point of writing constraints down and then arguing with them in
-            the open rather than drifting past them quietly.
+            point of writing constraints down and then arguing with them in the
+            open rather than drifting past them quietly.
           </p>
         </div>
       </section>
@@ -800,10 +793,10 @@ export const Murmuration: React.FC = () => (
         <hr className="srule" />
         <div className="measure">
           <p>
-            The trajectory started as a sine wave with three constants. It
-            ended as a path you draw: a list of <code>[x, y, z]</code> points
-            inside a box you size, authored through three orthographic views
-            the way a part is drawn.
+            The trajectory started as a sine wave with three constants. It ended
+            as a path you draw: a list of <code>[x, y, z]</code> points inside a
+            box you size, authored through three orthographic views the way a
+            part is drawn.
           </p>
           <p>
             A particle stopped being a position and became{" "}
@@ -815,14 +808,14 @@ export const Murmuration: React.FC = () => (
           </p>
           <ul className="plain">
             <li>
-              <strong>Arc-length resampling.</strong> Sampling a spline by
-              its raw parameter makes particles race through tight bends and
-              crawl along straight runs. The table is resampled at even
-              distance so speed means speed.
+              <strong>Arc-length resampling.</strong> Sampling a spline by its
+              raw parameter makes particles race through tight bends and crawl
+              along straight runs. The table is resampled at even distance so
+              speed means speed.
             </li>
             <li>
-              <strong>Parallel-transport frames.</strong> Each sample carries
-              a normal carried forward from the previous one rather than
+              <strong>Parallel-transport frames.</strong> Each sample carries a
+              normal carried forward from the previous one rather than
               recomputed &mdash; otherwise the tube spins as the path turns.
             </li>
             <li>
@@ -864,9 +857,9 @@ export const Murmuration: React.FC = () => (
                   <strong>The package</strong>
                 </td>
                 <td>
-                  <code>react-murmuration</code> on npm. One file,
-                  ~13&nbsp;kB, no runtime dependencies, React 18 or 19 as a
-                  peer. ESM and CJS with type declarations.
+                  <code>react-murmuration</code> on npm. One file, ~13&nbsp;kB,
+                  no runtime dependencies, React 18 or 19 as a peer. ESM and CJS
+                  with type declarations.
                 </td>
               </tr>
               <tr>
@@ -875,8 +868,8 @@ export const Murmuration: React.FC = () => (
                 </td>
                 <td>
                   Three routes &mdash; tune, docs, gallery. A three-view path
-                  editor, a live code panel, and a frame-rate readout that
-                  tells the truth.
+                  editor, a live code panel, and a frame-rate readout that tells
+                  the truth.
                 </td>
               </tr>
               <tr>
@@ -884,10 +877,10 @@ export const Murmuration: React.FC = () => (
                   <strong>Tunings as links</strong>
                 </td>
                 <td>
-                  Every parameter change writes to the URL, so a composition
-                  is a link you can bookmark or send. Nothing is trusted on
-                  the way back in: values are clamped, junk ignored, unknown
-                  keys dropped.
+                  Every parameter change writes to the URL, so a composition is
+                  a link you can bookmark or send. Nothing is trusted on the way
+                  back in: values are clamped, junk ignored, unknown keys
+                  dropped.
                 </td>
               </tr>
               <tr>
@@ -895,9 +888,8 @@ export const Murmuration: React.FC = () => (
                   <strong>Generated docs</strong>
                 </td>
                 <td>
-                  The docs panel and the README props tables are generated
-                  from one control spec, so neither can fall behind the
-                  component.
+                  The docs panel and the README props tables are generated from
+                  one control spec, so neither can fall behind the component.
                 </td>
               </tr>
               <tr>
@@ -906,8 +898,8 @@ export const Murmuration: React.FC = () => (
                 </td>
                 <td>
                   21 of them, on <code>node:test</code> with no added
-                  dependencies, plus a check that typechecks a consumer
-                  against the packed tarball before publishing.
+                  dependencies, plus a check that typechecks a consumer against
+                  the packed tarball before publishing.
                 </td>
               </tr>
             </tbody>
@@ -915,9 +907,9 @@ export const Murmuration: React.FC = () => (
         </div>
         <div className="measure">
           <p className="note">
-            Both test suites were verified by reintroducing the bugs they
-            were written for and watching them fail. A test that has never
-            failed is a guess.
+            Both test suites were verified by reintroducing the bugs they were
+            written for and watching them fail. A test that has never failed is
+            a guess.
           </p>
         </div>
       </section>

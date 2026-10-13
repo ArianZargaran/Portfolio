@@ -411,7 +411,11 @@ const SnappedCarousel: React.FC<SnappedCarouselProps> = ({
         className={`vcar-shell${inline ? " vcar-shell--twocol" : ""}`}
         ref={shellRef}
       >
-        <div className="vcar-label-nav" role="tablist" aria-label={navAriaLabel}>
+        <div
+          className="vcar-label-nav"
+          role="tablist"
+          aria-label={navAriaLabel}
+        >
           {slides.map((slide, index) => (
             <button
               key={slide.title}
@@ -443,7 +447,9 @@ const SnappedCarousel: React.FC<SnappedCarouselProps> = ({
                     <p>{slide.body}</p>
                   </div>
                   <div className="vcar-inline-media">
-                    <span className="vcar-media-index">{media[index].index}</span>
+                    <span className="vcar-media-index">
+                      {media[index].index}
+                    </span>
                     <span className="vcar-media-caption">
                       {media[index].caption}
                     </span>
@@ -560,7 +566,11 @@ const FreeCarousel: React.FC<{
   return (
     <div className="vcar-runway" ref={runwayRef}>
       <div className="vcar-shell" ref={shellRef}>
-        <div className="vcar-label-nav" role="tablist" aria-label={navAriaLabel}>
+        <div
+          className="vcar-label-nav"
+          role="tablist"
+          aria-label={navAriaLabel}
+        >
           {slides.map((slide, index) => (
             <button
               key={slide.title}
@@ -693,7 +703,9 @@ const ITERATION_3_MEDIA: MediaPanel[] = [
 export const MotionSpecSheet: React.FC = () => (
   <div className="motion-lab">
     <div className="plate">
-      <div className="plate_id">Spec Sheet — Motion &amp; Micro-interactions</div>
+      <div className="plate_id">
+        Spec Sheet — Motion &amp; Micro-interactions
+      </div>
       <div className="plate_status">
         3 rigs active <span>●</span>
       </div>
@@ -703,8 +715,8 @@ export const MotionSpecSheet: React.FC = () => (
     <p className="dek">
       Everything below runs on the same rule that governs the real code: an
       animation has to tell the visitor something, or it gets cut. Click, wait
-      for the peek, and reload the rigs — each one is a live reproduction of
-      the actual CSS driving it, not a mockup.
+      for the peek, and reload the rigs — each one is a live reproduction of the
+      actual CSS driving it, not a mockup.
     </p>
     <p className="byline">
       <strong>Source:</strong> ari.soy · Work · Motion &amp; Micro-interactions
@@ -720,9 +732,9 @@ export const MotionSpecSheet: React.FC = () => (
       <p>
         A flip card that always rotates the same way is fine. This one flips{" "}
         <em>away from the cursor</em>: click the left half and the left side
-        swings back while the right side comes forward; click the right half
-        and it&apos;s reversed. The pivot never moves — only which side
-        advances responds to where you clicked.
+        swings back while the right side comes forward; click the right half and
+        it&apos;s reversed. The pivot never moves — only which side advances
+        responds to where you clicked.
       </p>
       <p>
         It also introduces itself. On load, it plays a short peek — the same
@@ -745,11 +757,11 @@ export const MotionSpecSheet: React.FC = () => (
         <dl>
           <dt>The spec</dt>
           <dd>
-            There wasn&apos;t one. No design ticket asked for a
-            direction-aware flip — a flip card that always rotates the same
-            way, regardless of where someone interacted with it, would have
-            shipped and nobody would have filed a bug. This was added on top of
-            the spec, not to satisfy it.
+            There wasn&apos;t one. No design ticket asked for a direction-aware
+            flip — a flip card that always rotates the same way, regardless of
+            where someone interacted with it, would have shipped and nobody
+            would have filed a bug. This was added on top of the spec, not to
+            satisfy it.
           </dd>
 
           <dt>The issue</dt>
@@ -779,11 +791,11 @@ export const MotionSpecSheet: React.FC = () => (
           <dt>The system</dt>
           <dd>
             It lives inside a shared <code>fw-carousel</code> component that
-            Testimonials on freshworks.com also runs on — the same card,
-            several swappable directives. Checked the live DOM: that section
-            currently ships <code>fw-carousel--motion-shift</code> (the
-            sliding-window directive) on top of a <code>fw-card</code>{" "}
-            primitive built entirely from <code>data-card-*</code> props and{" "}
+            Testimonials on freshworks.com also runs on — the same card, several
+            swappable directives. Checked the live DOM: that section currently
+            ships <code>fw-carousel--motion-shift</code> (the sliding-window
+            directive) on top of a <code>fw-card</code> primitive built entirely
+            from <code>data-card-*</code> props and{" "}
             <code>--scalable-card-*</code> tokens. The flip directive is a
             sibling of <code>motion-shift</code> in that same system, added
             later once designers wanted it as a second, more expressive read on
@@ -819,7 +831,14 @@ export const MotionSpecSheet: React.FC = () => (
           strokeWidth="1"
           strokeDasharray="2,4"
         />
-        <line x1="40" y1="10" x2="40" y2="120" stroke="#262b34" strokeWidth="1" />
+        <line
+          x1="40"
+          y1="10"
+          x2="40"
+          y2="120"
+          stroke="#262b34"
+          strokeWidth="1"
+        />
         <line
           x1="40"
           y1="120"
@@ -1257,26 +1276,26 @@ export const MotionSpecSheet: React.FC = () => (
         <dl>
           <dt>The geometry</dt>
           <dd>
-            The pill is a stadium: two straight edges plus two full
-            semicircular caps. Walking its perimeter by arc length{" "}
-            <code>s</code> from the rightmost point, clockwise, covers five
-            segments in order — right-cap quarter, bottom straight, left-cap
-            semicircle, top straight, right-cap quarter — closing exactly one
-            lap. For this pill&apos;s 168×46 box that&apos;s 388.51px around,
-            and <code>capsulePerimeterLength(w,h) = 2*(long-short) +
-            pi*short</code> gets there without walking anything.
+            The pill is a stadium: two straight edges plus two full semicircular
+            caps. Walking its perimeter by arc length <code>s</code> from the
+            rightmost point, clockwise, covers five segments in order —
+            right-cap quarter, bottom straight, left-cap semicircle, top
+            straight, right-cap quarter — closing exactly one lap. For this
+            pill&apos;s 168×46 box that&apos;s 388.51px around, and{" "}
+            <code>capsulePerimeterLength(w,h) = 2*(long-short) + pi*short</code>{" "}
+            gets there without walking anything.
           </dd>
 
           <dt>The table</dt>
           <dd>
-            512 points, evenly spaced by arc length (production uses 1024),
-            each converted to a CSS conic angle via <code>atan2(x, -y)</code> —
-            conic 0° is up, not right, so the arguments swap and negate versus
-            the usual <code>atan2(y, x)</code>. Consecutive samples get
-            unwrapped (no 359°→1° jumps), then the whole table is rescaled so
-            it spans exactly 360° end to end — insurance against the numeric
-            drift that would otherwise leave the loop not quite closing. The
-            result is arc-length progress in, conic angle out.
+            512 points, evenly spaced by arc length (production uses 1024), each
+            converted to a CSS conic angle via <code>atan2(x, -y)</code> — conic
+            0° is up, not right, so the arguments swap and negate versus the
+            usual <code>atan2(y, x)</code>. Consecutive samples get unwrapped
+            (no 359°→1° jumps), then the whole table is rescaled so it spans
+            exactly 360° end to end — insurance against the numeric drift that
+            would otherwise leave the loop not quite closing. The result is
+            arc-length progress in, conic angle out.
           </dd>
 
           <dt>The driver</dt>
@@ -1284,10 +1303,10 @@ export const MotionSpecSheet: React.FC = () => (
             No CSS <code>@keyframes</code> at all.{" "}
             <code>requestAnimationFrame</code> turns elapsed time into a 0–1
             progress value, looks it up in the table, and writes the angle
-            straight to <code>style.setProperty(&apos;--border-angle&apos;,
-            ...)</code> on the pill itself every frame — a plain, unregistered
-            custom property inherited by <code>::before</code>, not driven
-            through it.
+            straight to{" "}
+            <code>style.setProperty(&apos;--border-angle&apos;, ...)</code> on
+            the pill itself every frame — a plain, unregistered custom property
+            inherited by <code>::before</code>, not driven through it.
           </dd>
 
           <dt>The duration</dt>
@@ -1304,14 +1323,14 @@ export const MotionSpecSheet: React.FC = () => (
 
       <p className="hint">
         No highlight band to balloon or shrink here — the gradient is a plain
-        two-stop sweep, comet-style: the crisp opaque edge rides at the front
-        of the rotation and the fade to the accent&apos;s own transparent
-        trails behind it, so the leading edge is the only crisp landmark. The
-        only variable under test is the angle-vs-time mapping driving{" "}
-        <code>--border-angle</code>; both pills share one JS loop, one
-        duration, and one color. The real component sweeps once on mount and
-        once per hover, then rests; this demo loops continuously so the two are
-        easier to compare side by side.
+        two-stop sweep, comet-style: the crisp opaque edge rides at the front of
+        the rotation and the fade to the accent&apos;s own transparent trails
+        behind it, so the leading edge is the only crisp landmark. The only
+        variable under test is the angle-vs-time mapping driving{" "}
+        <code>--border-angle</code>; both pills share one JS loop, one duration,
+        and one color. The real component sweeps once on mount and once per
+        hover, then rests; this demo loops continuously so the two are easier to
+        compare side by side.
       </p>
 
       <svg
@@ -1321,7 +1340,14 @@ export const MotionSpecSheet: React.FC = () => (
         role="img"
         aria-label="Angle over time: naive rotation is a straight diagonal line; the capsule lookup table eases through slow and fast segments"
       >
-        <line x1="40" y1="10" x2="40" y2="110" stroke="#262b34" strokeWidth="1" />
+        <line
+          x1="40"
+          y1="10"
+          x2="40"
+          y2="110"
+          stroke="#262b34"
+          strokeWidth="1"
+        />
         <line
           x1="40"
           y1="110"
@@ -1786,15 +1812,16 @@ export const MotionSpecSheet: React.FC = () => (
           </text>
         </svg>
         <figcaption>
-          <strong>The eye measures distance; a conic gradient measures
-          degrees.</strong>{" "}
+          <strong>
+            The eye measures distance; a conic gradient measures degrees.
+          </strong>{" "}
           On a stadium shape those disagree, so the highlight appears to
           accelerate along the flat sides and stall at the caps. There is no
           closed-form correction for a capsule — so the component samples its
           own perimeter into a table (distance in, angle out) and a{" "}
           <code>requestAnimationFrame</code> loop feeds the CSS variable frame
-          by frame. Lap duration scales with perimeter, so perceived speed —
-          not elapsed time — is the constant.
+          by frame. Lap duration scales with perimeter, so perceived speed — not
+          elapsed time — is the constant.
         </figcaption>
       </figure>
     </section>
@@ -1856,25 +1883,25 @@ export const MotionSpecSheet: React.FC = () => (
             This variant went through several full revisions in days, not weeks
             — free-scroll versus pinned, autoplay versus scrub, media inline
             versus lifted — because the loop itself changed: AI-assisted
-            development made each round cheap enough to actually build and
-            feel, instead of debating mockups. The quality bar rose with the
-            speed, not against it — every discarded round left behind a
-            measured reason (scroll-jacking felt hostile, autoplay outran
-            readers, inline media janked), and the constraints that survived
-            are the strict ones: compositor-only animation, scroll position as
-            the single source of truth, no timers.
+            development made each round cheap enough to actually build and feel,
+            instead of debating mockups. The quality bar rose with the speed,
+            not against it — every discarded round left behind a measured reason
+            (scroll-jacking felt hostile, autoplay outran readers, inline media
+            janked), and the constraints that survived are the strict ones:
+            compositor-only animation, scroll position as the single source of
+            truth, no timers.
           </dd>
 
           <dt>The caveat</dt>
           <dd>
             Still open, worth stating: the production carousel sizes its slides
-            against the <em>viewport height</em> so only one slide can render
-            at a time — that&apos;s what makes the transition clean. On tall or
+            against the <em>viewport height</em> so only one slide can render at
+            a time — that&apos;s what makes the transition clean. On tall or
             portrait screens the trade shows: the slide&apos;s actual content
-            doesn&apos;t grow with the viewport, so the extra height surfaces
-            as undesired whitespace above and below it. Sizing against content
-            instead would fix the whitespace but re-open the
-            one-slide-at-a-time guarantee. Iteration four&apos;s problem.
+            doesn&apos;t grow with the viewport, so the extra height surfaces as
+            undesired whitespace above and below it. Sizing against content
+            instead would fix the whitespace but re-open the one-slide-at-a-time
+            guarantee. Iteration four&apos;s problem.
           </dd>
         </dl>
       </div>
@@ -1883,8 +1910,8 @@ export const MotionSpecSheet: React.FC = () => (
       <p>
         The starting point. Snapped scrub, same labels, same runway — but no
         pinned media column: each slide carries its own media panel inline, so
-        every snap hauls a full-height panel through the viewport along with
-        the text. It works, but the heaviest element on screen is also the one
+        every snap hauls a full-height panel through the viewport along with the
+        text. It works, but the heaviest element on screen is also the one
         moving the most — each step repaints half the shell, and the section
         reads busier than the content deserves. The next iteration&apos;s whole
         reason to exist is lifting that panel out of the track.
@@ -1906,8 +1933,8 @@ export const MotionSpecSheet: React.FC = () => (
         The fix for the traveling panel:{" "}
         <code>data-carousel-pin-media=&quot;true&quot;</code>. The media column
         is lifted off the track into its own stacked layer that never scrolls —
-        it cross-fades in place while only the lightweight text keeps riding
-        the track.
+        it cross-fades in place while only the lightweight text keeps riding the
+        track.
       </p>
       <SnappedCarousel
         slides={ITERATION_2_SLIDES}
@@ -1916,21 +1943,20 @@ export const MotionSpecSheet: React.FC = () => (
         navAriaLabel="Carousel slides"
       />
       <p className="hint">
-        The runway above is 260vh tall on purpose — the empty scroll distance
-        IS the interaction. Slide copy is placeholder; the directives, the pin,
-        the scrub mapping, and the 0.32s cross-fade are the parts reproduced
-        from the live section. One thing this iteration still has: the{" "}
-        <em>snap</em>. Crossing a slide boundary fires a 0.32s transition that
-        keeps moving after your scroll stops — the next iteration, right below,
-        removed it.
+        The runway above is 260vh tall on purpose — the empty scroll distance IS
+        the interaction. Slide copy is placeholder; the directives, the pin, the
+        scrub mapping, and the 0.32s cross-fade are the parts reproduced from
+        the live section. One thing this iteration still has: the <em>snap</em>.
+        Crossing a slide boundary fires a 0.32s transition that keeps moving
+        after your scroll stops — the next iteration, right below, removed it.
       </p>
 
       <h3 className="vcar-iter-head">Iteration 3 — snap removed</h3>
       <p>
         Same section, next revision. The version above quantizes scroll into an
-        index and lets a 0.32s transition carry the track between slides —
-        which means the page keeps moving for a beat after your finger stops,
-        and that reads as hijacked scroll. Here the quantization is gone: the
+        index and lets a 0.32s transition carry the track between slides — which
+        means the page keeps moving for a beat after your finger stops, and that
+        reads as hijacked scroll. Here the quantization is gone: the
         track&apos;s position and the media cross-fade are recomputed from
         scroll progress on every frame, continuously. Scroll up and you
         immediately see the previous slide arriving; scroll down, the next. The
@@ -1960,10 +1986,10 @@ export const MotionSpecSheet: React.FC = () => (
             <code>translateY(-progress × 300%)</code>, each media layer&apos;s
             opacity is its distance from the current fractional position, and
             the transitions are removed outright (<code>transition: none</code>
-            ). A transition would re-introduce exactly the trailing motion
-            being removed. Labels still highlight by nearest slide, and
-            clicking one still jumps — but the jump is a plain page scroll, so
-            even that stays in the scroll axis&apos;s own vocabulary.
+            ). A transition would re-introduce exactly the trailing motion being
+            removed. Labels still highlight by nearest slide, and clicking one
+            still jumps — but the jump is a plain page scroll, so even that
+            stays in the scroll axis&apos;s own vocabulary.
           </dd>
         </dl>
       </div>
@@ -1975,8 +2001,8 @@ export const MotionSpecSheet: React.FC = () => (
       />
       <p className="hint">
         Same 260vh runway, same sticky pin, same labels — only the mapping
-        changed. Rig 03 goes scroll → index → transition; this one goes scroll
-        → position, with nothing in between to add its own timing.
+        changed. Rig 03 goes scroll → index → transition; this one goes scroll →
+        position, with nothing in between to add its own timing.
       </p>
 
       <figure className="mech">
@@ -2344,8 +2370,8 @@ export const MotionSpecSheet: React.FC = () => (
               <td className="num">1.4s peek / 600ms flip</td>
               <td>ease-in-out / cubic-bezier(.3,.1,.2,1)</td>
               <td>
-                Announces the affordance unprompted, then answers whichever
-                side you click.
+                Announces the affordance unprompted, then answers whichever side
+                you click.
               </td>
             </tr>
             <tr>
@@ -2360,9 +2386,7 @@ export const MotionSpecSheet: React.FC = () => (
               </td>
             </tr>
             <tr>
-              <td className="interaction">
-                Carousel v1 — media on the track
-              </td>
+              <td className="interaction">Carousel v1 — media on the track</td>
               <td>scroll position + label click</td>
               <td>transform: translateY (whole slide, media included)</td>
               <td className="num">0.32s snap</td>

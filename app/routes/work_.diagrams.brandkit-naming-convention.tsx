@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction , Link } from "react-router";
+import { LinksFunction, MetaFunction, Link } from "react-router";
 
 import { NamingConventionDiagram } from "~/components/work-diagrams/naming-convention";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";

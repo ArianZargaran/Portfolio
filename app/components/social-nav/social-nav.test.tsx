@@ -26,7 +26,7 @@ describe("SocialNav", () => {
     render(<SocialNav />);
     const links = screen.getAllByRole("link");
     const externalLinks = links.filter((l) =>
-      l.getAttribute("href")?.startsWith("https://")
+      l.getAttribute("href")?.startsWith("https://"),
     );
     expect(externalLinks).toHaveLength(3);
     for (const link of externalLinks) {
@@ -47,7 +47,7 @@ describe("SocialNav", () => {
     render(<SocialNav />);
     const links = screen.getAllByRole("link");
     const mailtoLink = links.find((l) =>
-      l.getAttribute("href")?.startsWith("mailto:")
+      l.getAttribute("href")?.startsWith("mailto:"),
     );
     expect(mailtoLink).toBeDefined();
     expect(mailtoLink!).not.toHaveAttribute("target");

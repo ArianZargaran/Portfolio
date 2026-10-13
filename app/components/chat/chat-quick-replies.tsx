@@ -9,7 +9,11 @@ export const ChatQuickReplies: React.FC<ChatQuickRepliesProps> = ({
   options,
   onSelect,
 }) => (
-  <div className="chat-quick-replies" role="group" aria-label="Suggested replies">
+  <div
+    className="chat-quick-replies"
+    role="group"
+    aria-label="Suggested replies"
+  >
     {options.map((option) => (
       <button
         key={option}

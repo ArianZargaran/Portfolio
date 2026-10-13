@@ -5,10 +5,11 @@ export const NamingConventionDiagram: React.FC = () => (
     <p className="work-diagram_eyebrow">Airtable · Brandkit design system</p>
     <h1>One name, three tools</h1>
     <p className="work-diagram_thesis">
-      A single naming convention wired <b>Figma, Contentful, and the
-      codebase</b> together. More than a shared language, it became a{" "}
-      <b>framework that shifted how everyone thought</b> — design, content,
-      and engineering all reasoned the same way, no matter their domain.
+      A single naming convention wired{" "}
+      <b>Figma, Contentful, and the codebase</b> together. More than a shared
+      language, it became a <b>framework that shifted how everyone thought</b> —
+      design, content, and engineering all reasoned the same way, no matter
+      their domain.
     </p>
 
     <div className="work-diagram_spine">
@@ -17,8 +18,8 @@ export const NamingConventionDiagram: React.FC = () => (
       </div>
       <span className="work-diagram_name">hero-media-centered</span>
       <div className="work-diagram_note">
-        A variant of the <b>Hero</b> organism. The <em>same string</em> is
-        the source of truth in all three tools.
+        A variant of the <b>Hero</b> organism. The <em>same string</em> is the
+        source of truth in all three tools.
       </div>
     </div>
 
@@ -55,22 +56,19 @@ export const NamingConventionDiagram: React.FC = () => (
           <span className="work-diagram_dot" />
           <span className="work-diagram_t">Contentful</span>
         </div>
-        <div className="work-diagram_role">
-          Producers — the content model
-        </div>
+        <div className="work-diagram_role">Producers — the content model</div>
         <div className="work-diagram_mini">
           <span className="work-diagram_k">Hero</span> content model
           <br />
-          &nbsp;&nbsp;<span className="work-diagram_muted">field</span>{" "}
-          variant:
+          &nbsp;&nbsp;<span className="work-diagram_muted">field</span> variant:
           <br />
           &nbsp;&nbsp;&nbsp;&nbsp;
           <span className="work-diagram_hl">
             &quot;hero-media-centered&quot;
           </span>
           <br />
-          &nbsp;&nbsp;<span className="work-diagram_muted">field</span>{" "}
-          heading, media…
+          &nbsp;&nbsp;<span className="work-diagram_muted">field</span> heading,
+          media…
         </div>
         <span className="work-diagram_atomic">Editorial governance</span>
       </div>
@@ -100,9 +98,9 @@ export const NamingConventionDiagram: React.FC = () => (
     <div className="work-diagram_payoff">
       <h2>What one shared framework unlocked</h2>
       <p className="work-diagram_sub">
-        When Figma, Contentful, and code all say the same name, it stops
-        being a naming rule and becomes a shared mindset — everyone,
-        regardless of domain, reasons about the site the same way.
+        When Figma, Contentful, and code all say the same name, it stops being a
+        naming rule and becomes a shared mindset — everyone, regardless of
+        domain, reasons about the site the same way.
       </p>
       <div className="work-diagram_grid4">
         <div className="work-diagram_p">
@@ -114,8 +112,7 @@ export const NamingConventionDiagram: React.FC = () => (
         <div className="work-diagram_p">
           <div className="work-diagram_h">One vocabulary</div>
           <div className="work-diagram_d">
-            Design, content, and eng discuss the exact same thing, the same
-            way.
+            Design, content, and eng discuss the exact same thing, the same way.
           </div>
         </div>
         <div className="work-diagram_p">
@@ -127,8 +124,7 @@ export const NamingConventionDiagram: React.FC = () => (
         <div className="work-diagram_p">
           <div className="work-diagram_h">Producers self-serve</div>
           <div className="work-diagram_d">
-            Pick a variant in Contentful → the right component renders. No
-            dev.
+            Pick a variant in Contentful → the right component renders. No dev.
           </div>
         </div>
         <div className="work-diagram_p">
