@@ -1,0 +1,102 @@
+# Runtime quality gates against a local production build of the app:
+# CSP, axe accessibility per route, Lighthouse CI and bundle-size budgets.
+# Nothing here deploys or talks to production.
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main, redesign]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PORT: 3000
+  BASE_URL: http://localhost:3000
+
+jobs:
+  build:
+    name: Build + bundle budgets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build (with Vite manifest for the bundle report)
+        run: npm run build
+        env:
+          BUNDLE_REPORT: "1"
+      - name: Bundle size budgets
+        run: node scripts/ci/check-bundle.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build
+          include-hidden-files: true
+          retention-days: 3
+
+  browser-checks:
+    name: CSP + axe
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build
+      - name: Start preview
+        run: |
+          npm start > preview.log 2>&1 &
+          npx --no-install wait-on "$BASE_URL/healthcheck" --timeout 60000
+      - name: CSP check
+        run: node scripts/ci/check-csp.mjs
+      - name: Accessibility (axe, per route, desktop + mobile)
+        run: node scripts/ci/a11y.mjs
+      - name: Preview log
+        if: failure()
+        run: cat preview.log
+
+  lighthouse:
+    name: Lighthouse CI
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build
+      - name: Start preview
+        run: |
+          npm start > preview.log 2>&1 &
+          npx --no-install wait-on "$BASE_URL/healthcheck" --timeout 60000
+      - name: Lighthouse CI
+        run: npx @lhci/cli@0.15.1 autorun
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          include-hidden-files: true
+          retention-days: 14

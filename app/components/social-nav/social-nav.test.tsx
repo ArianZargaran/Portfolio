@@ -54,6 +54,13 @@ describe("SocialNav", () => {
     expect(mailtoLink!).not.toHaveAttribute("rel");
   });
 
+  it("gives every icon link an accessible name", () => {
+    render(<SocialNav />);
+    for (const name of [/github/i, /linkedin/i, /on x/i, /hello@ari\.soy/i]) {
+      expect(screen.getByRole("link", { name })).toBeInTheDocument();
+    }
+  });
+
   it("merges a custom className with the base social-nav class on the nav element", () => {
     render(<SocialNav className="my-class" />);
     const nav = screen.getByRole("navigation");

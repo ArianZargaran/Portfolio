@@ -11,12 +11,15 @@ import "./social-nav.css";
 
 const LOGOS: {
   id: string;
+  /** Accessible name; the link content is an icon only. */
+  label: string;
   component: React.FC;
   href: string;
   props: IconProps;
 }[] = [
   {
     id: "x",
+    label: "Arian on X",
     component: X,
     href: "https://x.com/arianfront",
     props: {
@@ -26,6 +29,7 @@ const LOGOS: {
   },
   {
     id: "github",
+    label: "Arian on GitHub",
     component: Github,
     href: "https://github.com/arianzargaran",
     props: {
@@ -35,6 +39,7 @@ const LOGOS: {
   },
   {
     id: "linkedin",
+    label: "Arian on LinkedIn",
     component: Linkedin,
     href: "https://www.linkedin.com/in/arianzf/",
     props: {
@@ -44,6 +49,7 @@ const LOGOS: {
   },
   {
     id: "email",
+    label: "Email hello@ari.soy",
     component: Email,
     href: "mailto:hello@ari.soy",
     props: {
@@ -68,6 +74,7 @@ export const SocialNav: React.FC<SocialNavProps> = ({ className }) => {
               <a
                 className="social-nav-link"
                 href={logo.href}
+                aria-label={logo.label}
                 {...(isExternal && { target: "_blank", rel: "noreferrer" })}
               >
                 <logo.component className="social-nav-logo" {...logo.props} />

@@ -97,7 +97,7 @@ const AboutMePage = () => {
     <section className="page about about-page">
       <AshesRain />
       <header className="page-header">
-        <Link className="media-container-link" to="/">
+        <Link className="media-container-link" to="/" aria-label="Home">
           <h1 className="media-container-heading">
             <Isotype width={48} height="auto" />
           </h1>

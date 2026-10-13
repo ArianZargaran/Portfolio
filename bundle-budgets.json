@@ -1,0 +1,7 @@
+{
+  "$comment": "gzip kB. Baseline 2026-10-13: initial 132.3, total JS 204.2, CSS 19.6, largest chunk 44.4. ~10-20% headroom. three.js (M4) must load as a lazy chunk; raise totalJsKb/maxChunkKb deliberately then, never initialJsKb.",
+  "initialJsKb": 150,
+  "totalJsKb": 240,
+  "totalCssKb": 25,
+  "maxChunkKb": 55
+}

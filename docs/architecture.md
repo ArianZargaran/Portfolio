@@ -99,27 +99,54 @@ interface TimelineChapter { /* existing timeline-data-set.ts */ }
 - Migrations: Airtable start = last week of Oct 2021 (resume PDF, card, timeline); remove phone everywhere (site, PDF, structured data, meta); keep Cabify wording.
 - A unit test asserts no phone-number pattern appears in content, meta or the PDF text.
 
-## 4. Calendar + weather backend
-
-`app/server/scene-state.server.ts`, exposed via `api.scene-state.ts` and the `_scene` loader.
+## 4. Calendar + weather backend (implemented against mocks, M2)
 
 ```
-resolveScene(now) ->
-  slot = chicagoSlot(now)                      // Intl / Temporal-polyfill, America/Chicago, DST-safe
-  event = calendar.currentEvent(now)           // try, timeout 1.5 s
-  id = parseSceneId(event?.summary) ?? defaultSceneFor(slot.time)
-  weather = weatherFor(event?.location ?? DALLAS)  // try, timeout 1 s; on fail keep id's weather or default
-  return validate(id with weather) ?? defaultSceneFor(slot.time)
--> { sceneId, time, weather, expiresAt }       // nothing else leaves the server
+GET /api/scene-state            app/routes/api.scene-state.ts
+  -> resolveScene(now, deps)    app/server/scene-state.server.ts   (never throws)
+       calendar.eventsAt(now)   CalendarProvider (ical | google | mock | none)
+       pick: valid scene IDs only, latest start wins
+       geocode(event.location)  "lat,lon" or Open-Meteo geocoding (24 h cache)
+       slot = timeSlot(now, zone, sun at lat/lon)        app/server/time.server.ts
+       weather(lat/lon) if needed (Open-Meteo, 15 min)  app/server/weather.server.ts
+  <- { sceneId, time, weather, source, expiresAt }       whitelist, nothing else
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=600
 ```
 
-- **Calendar:** Google Calendar API, service account with read-only access to the one calendar shared by `ari.port.folio.calendar@gmail.com` (account still being created). Read only `summary`/`start`/`end`/`location`; never pass title text, description, attendees or the address to the client. Env: `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `SCENE_CALENDAR_ID` (names only; values in Vercel env).
-- **Event format:** event summary (or a fixed field) = scene ID; location = travel override. Proposal to Atlas.
-- **Weather:** Open-Meteo, 15 min refresh (decided; see 4.4). WMO code mapping: 0-1 clear; 2-3 cloudy; 45,48 fog; 51-67,80-82 rain; 71-77,85-86 snow; 95-99 storm.
-- **Time slots:** see 4.1 (draft).
-- **Cache:** in-memory + `Cache-Control: s-maxage=60, stale-while-revalidate=600` on the resource route; calendar cache 60 s, weather 15 min. Failures logged server-side (structured, no PII), never shown.
-- **Fallback:** empty slot / unparseable ID / unknown vocab / outage -> time-of-day default scene. Weather-only failure -> event scene with its own (or default) weather. Default scene table pending graph (open question).
-- Bookings: plain link to Arian's personal calendar booking page; never read.
+Wiring from env: `app/server/scene-config.server.ts`. The `_scene` layout loader (M4) calls the same `resolveScene`.
+
+### 4.0 Calendar access (read-only): two options
+
+Both are behind one interface, `CalendarProvider` (`app/server/calendar/types.ts`): `eventsAt(now) -> CalendarEvent[]` with only `summary, start, end, location?, timeZone?`; all-day and cancelled events excluded; recurrences expanded; outage throws `CalendarUnavailableError` (the resolver turns that into the default scene). **`app/server/calendar/contract.test.ts` runs the same suite against all three implementations** (mock, iCal with a generated Google-style feed, Google API with a faked token and events endpoint): whitelisted fields only, overlap, start inclusive / end exclusive, all-day and cancelled excluded, daily recurrence with COUNT, recurrence across the DST change, empty calendar, outage.
+
+|                                         | **Primary: secret iCal URL**                                                                                                  | **Alternative: Google service account**                                                                                                         |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code                                    | `calendar/ical.server.ts`                                                                                                     | `calendar/google.server.ts`                                                                                                                     |
+| Env                                     | `SCENE_CALENDAR_ICAL_URL` (one var)                                                                                           | `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `SCENE_CALENDAR_ID`                                                                                 |
+| Setup (Arian, in the dedicated account) | Google Calendar > scene calendar > Settings > Integrate calendar > copy **Secret address in iCal format**                     | Create a GCP project + service account + JSON key; share the scene calendar with the SA email as **See all event details**; enable Calendar API |
+| Read-only how                           | The feed is read-only by nature                                                                                               | Scope `calendar.events.readonly`; share permission is read-only                                                                                 |
+| Data fetched                            | Whole feed (all events, incl. descriptions) on our server, then reduced to the whitelist                                      | Only `items(summary,location,status,start,end)` via `fields=`, single instances (`singleEvents=true`) for a 1 s window                          |
+| Freshness                               | Google refreshes the secret feed itself, typically within minutes (not instant); we cache 60 s                                | Live; token cached ~1 h                                                                                                                         |
+| Recurrence                              | Our parser: DAILY/WEEKLY (INTERVAL, COUNT, UNTIL, BYDAY), EXDATE, RECURRENCE-ID overrides; other FREQs are skipped and logged | Expanded by Google                                                                                                                              |
+| Secret handling                         | The URL is the credential: https only, never logged (errors are generic), rotate with "Reset" in Google                       | Private key in Vercel env (`\n`-escaped PEM); rotate keys in GCP                                                                                |
+| Trade-off                               | Simplest, no GCP project; feed size grows with history; slight lag                                                            | More setup; minimal data transfer; exact                                                                                                        |
+
+Selection: `SCENE_CALENDAR_PROVIDER` forces one; otherwise the iCal URL wins if set, then the service account, else `none` (always the default scene). A misconfiguration logs and falls back to `none`; the site never breaks. `mock` serves a fixed v3.2 scene for local dev.
+
+### 4.0.1 Time zones (configurable)
+
+- `SCENE_TIME_ZONE`: home zone for slots, default `America/Chicago`.
+- `SCENE_TRAVEL_TIME_ZONE`: zone used for the slot while travelling (event has a resolvable location). Default `America/Chicago` (the graph rule: time follows Chicago). Set an IANA zone to pin one, or `event` to follow the trip (event TZID / Google `start.timeZone`, else the geocoded place's zone).
+- Sun times always come from the place whose clock is used (home coordinates when on Chicago time, trip coordinates otherwise), so dawn/dusk never mix zones. Weather always follows the trip location.
+- Invalid zones fall back to Chicago. Tests cover CST/CDT offsets, the 2026-11-01 fall-back and 2027-03-14 spring-forward days, every slot boundary on 2026-10-13, Madrid and Tokyo.
+
+### 4.0.2 Rules
+
+- Event title must be a valid scene ID (vocabulary-checked); anything else is ignored and logged. `*` time/weather resolve live; explicit values are kept (Atlas directed them) and skip the weather call.
+- Empty slot / invalid IDs / calendar outage -> default scene for the slot (4.2). Weather outage alone -> the event scene with `clear`.
+- Output whitelist enforced by a test (no title text, location, ticket, account address).
+- Caches: calendar feed 60 s, weather 15 min per location (stale-if-error, deduped), geocoding 24 h, CDN 60 s + SWR 10 min. On Vercel the memory caches are per instance; the CDN header does the heavy lifting.
+- Bookings: plain link to Arian's booking page; his personal calendar is never read.
 
 ### 4.1 DRAFT: time-of-day slots (America/Chicago, DST-safe)
 
@@ -173,8 +200,9 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 
 - **M0 (done):** this doc; `redesign` branch.
 - **M1 (no art dependency):** content models + migrations (Airtable date, phone removal, chat flag), route skeleton under `_scene` with placeholder still, redirect table, tests.
-- **M2 (done, local):** RR7 + Vite + Vercel preset, Express removed, CSP on, phone removed + test, /about, Open-Meteo weather, CI workflow. **Next in M2:** scene-state backend with mocked calendar/weather, then real calendar once the Google account exists; docs for env vars.
-- **M3:** CI full pipeline + Lighthouse + a11y gates.
+- **M2 (done, local):** RR7 + Vite + Vercel preset, Express removed, CSP on, phone removed + test, /about, Open-Meteo weather, CI workflow.
+- **M2b (done, local):** scene-state backend behind `CalendarProvider` (secret iCal primary, Google service account alternative, mock) with a contract test; configurable travel time zone; `/api/scene-state`; env docs in `.env.example`. **Remaining:** connect the real calendar once the dedicated Google account exists.
+- **M3 (workflows written, local):** CodeQL, Dependabot, dependency audit, CSP check, axe per route, Lighthouse CI, bundle budgets, uptime + link check (`docs/ci.md`). **Remaining:** Cypress e2e in CI; turn Lighthouse perf gates from warn to error at M5; shrink the a11y baseline.
 - **M4 (after Motion handoff):** SceneMount, per-breakpoint loading, hit areas, dolly/deep link/back behaviour, reduced motion.
 - **M5:** perf + a11y + SEO hardening (structured data, meta, sitemap), QA on devices.
 - **M6:** launch readiness review via Atlas; merge/deploy only on Arian's approval.
@@ -187,8 +215,10 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 4. Sign-off on the /work vs /case-studies split (1.1).
 5. Sign-off on the calendar event format (4.3), including `*` wildcards.
 6. ~~Weather provider~~: resolved, Open-Meteo, 15 min.
-7. Travel: should the _time_ slot follow the travel location's local time, or always Chicago? (Graph says time follows Chicago; sun times for dawn/dusk would then mix zones.)
-8. Resume PDF: the phone line was redacted in place; it still lists arianzf@gmail.com (decision 3: public contact is hello@ari.soy only) and Airtable "Oct 2023" (should be late Oct 2021). Needs a regenerated PDF from its source; where is the source?
-9. Skills chat is still routed and in nav (removal is a later M1 task, behind a flag).
-10. Can `redesign` be pushed for backup / Vercel previews without affecting production?
-11. ~~Poster for /about~~: resolved, the Queen poster opens /about.
+7. ~~Travel time zone~~: made configurable (`SCENE_TRAVEL_TIME_ZONE`, default Chicago; sun times follow the zone's place, so no mixing). Atlas to confirm the default.
+8. iCal vs service account: which one will Arian set up? (iCal is the primary design; it needs only the secret address copied into Vercel env.)
+9. Known a11y debt on current pages (colour contrast on most routes, marshal diagram link/scroll issues) is baselined in `scripts/ci/a11y-baseline.json`; contrast fixes are a Designer call.
+10. Resume PDF: the phone line was redacted in place; it still lists arianzf@gmail.com (decision 3: public contact is hello@ari.soy only) and Airtable "Oct 2023" (should be late Oct 2021). Needs a regenerated PDF from its source; where is the source?
+11. Skills chat is still routed and in nav (removal is a later M1 task, behind a flag).
+12. Can `redesign` be pushed for backup / Vercel previews without affecting production?
+13. ~~Poster for /about~~: resolved, the Queen poster opens /about.
