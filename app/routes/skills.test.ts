@@ -16,12 +16,12 @@ describe("/skills loader", () => {
     else process.env.FEATURE_SKILLS_CHAT = ORIGINAL;
   });
 
-  // When app/routes/resume.tsx lands this test fails on purpose: switch it to
-  // expect the 302 (and update the Cypress smoke test).
-  it("/resume is not built yet, so the paused route is a 404 today", () => {
-    expect(RESUME_ROUTE_EXISTS).toBe(false);
+  it("/resume exists, so the paused route is a temporary 302 to /resume", () => {
+    expect(RESUME_ROUTE_EXISTS).toBe(true);
     delete process.env.FEATURE_SKILLS_CHAT;
-    expect(thrownBy(() => loader()).status).toBe(404);
+    const res = thrownBy(() => loader());
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/resume");
   });
 
   it("renders when FEATURE_SKILLS_CHAT=1", () => {

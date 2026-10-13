@@ -233,3 +233,8 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 11. ~~Skills chat~~: behind `FEATURE_SKILLS_CHAT` (default off); `/skills` 302s to `/resume` once that route exists (404 until then). Switch to 301, or remove, after launch?
 12. Can `redesign` be pushed for backup / Vercel previews without affecting production?
 13. ~~Poster for /about~~: resolved, the Queen poster opens /about.
+
+### Milestone A — /resume and /contact foundations (done)
+- `/resume` and `/contact` render from typed data (`app/content/resume.ts`, `app/content/contact.ts`); web email is hello@ari.soy (PDF keeps arianzf@gmail.com).
+- Shared `RoutePage` shell: decorative v3.2 still (`SceneStill`, `app/scene/still.ts`) as scene placeholder, then a labelled `<main>` with one h1.
+- `/skills` now 302s to `/resume` (auto via `RESUME_ROUTE_EXISTS`); unit + Cypress tests updated.

@@ -1,134 +1,78 @@
-import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { LinksFunction, Link } from "react-router";
+import type { LinksFunction, MetaFunction } from "react-router";
+import { Link, useLoaderData } from "react-router";
 
-import { Check } from "~/components/icons/check";
-import { Copy } from "~/components/icons/copy";
-import { Download } from "~/components/icons/download";
-import { Isotype } from "~/components/icons/isotype/isotype";
-import Button from "~/components/interactive-elements/button/button";
-import { SocialNav } from "~/components/social-nav/social-nav";
-import commonThemePage from "~/stylesheets/common-page-themes.css?url";
-import contactStyles from "~/stylesheets/contact.css?url";
+import { RoutePage } from "~/components/route-page/route-page";
+import { CONTACT } from "~/content/contact";
+import routePage from "~/stylesheets/route-page.css?url";
+import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: commonThemePage },
-  { rel: "stylesheet", href: contactStyles },
+  { rel: "stylesheet", href: routePage },
 ];
 
-const EMAIL = "hello@ari.soy";
+export const meta: MetaFunction = mergeMeta(() => [
+  { title: "Contact — Arian Zargaran" },
+  { name: "description", content: `Write to Arian at ${CONTACT.email}.` },
+]);
 
-const fadeUp = {
-  initial: { opacity: 0, y: -20 },
-  animate: (delay: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, delay },
-  }),
-};
+export const loader = () => ({ contact: CONTACT });
 
-const ContactPage = () => {
+export default function ContactPage() {
+  const { contact } = useLoaderData<typeof loader>();
   const [copied, setCopied] = useState(false);
-  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => void (timer.current && clearTimeout(timer.current)),
+    [],
+  );
 
-  useEffect(() => {
-    return () => {
-      if (resetTimer.current) clearTimeout(resetTimer.current);
-    };
-  }, []);
-
-  const handleCopy = async () => {
+  const copy = async () => {
     try {
-      await navigator.clipboard.writeText(EMAIL);
+      await navigator.clipboard.writeText(contact.email);
+      setCopied(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 2000);
     } catch {
-      const ta = document.createElement("textarea");
-      ta.value = EMAIL;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "absolute";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
+      // Clipboard blocked: the address is visible and selectable anyway.
     }
-    setCopied(true);
-    if (resetTimer.current) clearTimeout(resetTimer.current);
-    resetTimer.current = setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <section className="page contact contact-page">
-      <header className="contact-header">
-        <Link className="contact-header-link" to="/">
-          <Isotype width={48} height="auto" />
-          <h1>Contact</h1>
-        </Link>
-      </header>
-
-      <div className="contact-content">
-        <motion.h2
-          className="contact-headline"
-          initial={fadeUp.initial}
-          animate={fadeUp.animate(0)}
-        >
-          Let&apos;s build <strong>something</strong> together.
-        </motion.h2>
-
-        <motion.p
-          className="contact-subhead"
-          initial={fadeUp.initial}
-          animate={fadeUp.animate(0.15)}
-        >
-          I&apos;m always open to collaborating, a quick chat, or just sharing a
-          quick hello. The fastest way to reach me is by email — anything else
-          below works too.
-        </motion.p>
-
-        <motion.div
-          className="contact-ctas"
-          initial={fadeUp.initial}
-          animate={fadeUp.animate(0.3)}
-        >
-          <Button href={`mailto:${EMAIL}`}>Email me</Button>
-          <Button
-            variant="secondary"
-            href="/arian-zargaran-resume.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            download="/arian-zargaran-resume.pdf"
+    <RoutePage id="contact" title="Contact">
+      <p className="route-page_lede">{contact.headline}</p>
+      <p>{contact.intro}</p>
+      <address>
+        <p className="route-page_actions">
+          <a
+            className="route-page_button route-page_button--primary"
+            href={`mailto:${contact.email}`}
           >
-            Resume <Download height={16} width={16} />
-          </Button>
-        </motion.div>
-
-        <motion.div
-          className="contact-email-row"
-          initial={fadeUp.initial}
-          animate={fadeUp.animate(0.45)}
-        >
-          <span className="contact-email-prefix">or write to me at</span>
-          <a className="contact-email-address" href={`mailto:${EMAIL}`}>
-            {EMAIL}
+            Email {contact.email}
           </a>
-          <button
-            type="button"
-            className="contact-email-copy"
-            onClick={handleCopy}
-            aria-label={copied ? "Email address copied" : "Copy email address"}
-          >
-            {copied ? (
-              <Check height={16} width={16} />
-            ) : (
-              <Copy height={16} width={16} />
-            )}
-            <span aria-hidden="true">{copied ? "Copied" : "Copy"}</span>
+          <button type="button" className="route-page_button" onClick={copy}>
+            {copied ? "Copied" : "Copy address"}
           </button>
-        </motion.div>
-
-        <SocialNav className="contact-social" />
-      </div>
-    </section>
+          <span role="status" aria-live="polite" className="visually-hidden">
+            {copied ? "Email address copied to the clipboard" : ""}
+          </span>
+        </p>
+        <p className="route-page_meta">{contact.location}</p>
+      </address>
+      <h2 id="contact-elsewhere">Elsewhere</h2>
+      <ul aria-labelledby="contact-elsewhere">
+        {contact.socials.map((s) => (
+          <li key={s.id}>
+            <a href={s.href} rel="noreferrer" target="_blank">
+              {s.label}
+              <span className="visually-hidden"> (opens in a new tab)</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p>
+        Prefer the long version? See the <Link to="/resume">resume</Link>.
+      </p>
+    </RoutePage>
   );
-};
-
-export default ContactPage;
+}

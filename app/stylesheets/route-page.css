@@ -1,0 +1,152 @@
+/* Shared layout for scene routes (/resume, /contact, /about, /articles, ...).
+   Palette tuned for WCAG AA on the warm dusk scene. */
+:root {
+  --rp-bg: #fbf6ef;
+  --rp-ink: #1f1a17;
+  --rp-muted: #574c44; /* 7.6:1 on --rp-bg */
+  --rp-accent: #8a3b12; /* 7.0:1 on --rp-bg */
+  --rp-rule: #e4d7c7;
+  --rp-focus: #1c48b0;
+}
+
+.route-page {
+  background: var(--rp-bg);
+  color: var(--rp-ink);
+  min-height: 100vh;
+  font-family: "Work Sans", system-ui, sans-serif;
+  line-height: 1.55;
+}
+
+.route-page a {
+  color: var(--rp-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.route-page a:focus-visible,
+.route-page button:focus-visible {
+  outline: 3px solid var(--rp-focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.route-page_scene {
+  position: relative;
+  overflow: hidden;
+  max-height: 42vh;
+  background: #2a1d17;
+}
+
+.route-page_content {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+}
+
+.route-page_back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.route-page h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  margin: 0 0 1rem;
+}
+
+.route-page h2 {
+  font-size: 1.375rem;
+  margin: 2.5rem 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rp-rule);
+}
+
+.route-page h3 {
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.route-page_lede {
+  font-size: 1.125rem;
+  color: var(--rp-muted);
+}
+
+.route-page_meta {
+  color: var(--rp-muted);
+  font-size: 0.95rem;
+}
+
+.route-page_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.route-page_list ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.route-page_tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.route-page_tags li {
+  border: 1px solid var(--rp-rule);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.route-page_actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.route-page_button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--rp-accent);
+  background: transparent;
+  color: var(--rp-accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.route-page_button--primary {
+  background: var(--rp-accent);
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Still placeholder sizing per breakpoint composition. */
+.scene-still_picture,
+.scene-still_img {
+  display: block;
+  width: 100%;
+  height: auto;
+}

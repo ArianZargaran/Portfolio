@@ -81,6 +81,7 @@ const themeClassForPathname = (pathname: string): string => {
   if (pathname === "/skills") return "skills";
   if (pathname === "/blog") return "blog";
   if (pathname === "/contact") return "contact";
+  if (pathname === "/resume") return "contact";
   return "home";
 };
 

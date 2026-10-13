@@ -13,6 +13,18 @@ describe("smoke tests", () => {
       .and("include", "noopener");
   });
 
+  it("renders the resume and contact pages from typed data", () => {
+    cy.visitAndCheck("/resume");
+    cy.findByRole("heading", { level: 1, name: "Resume" }).should("exist");
+    cy.findByRole("link", { name: /download the resume/i }).should("exist");
+    cy.visitAndCheck("/contact");
+    cy.findByRole("link", { name: "Email hello@ari.soy" }).should(
+      "have.attr",
+      "href",
+      "mailto:hello@ari.soy",
+    );
+  });
+
   it("renders the about page", () => {
     cy.visitAndCheck("/about");
     // The headline is position: fixed under the timeline; assert presence,
@@ -33,9 +45,12 @@ describe("smoke tests", () => {
   });
 
   it("hides the paused skills chat (feature flag off by default)", () => {
-    cy.request({ url: "/skills", failOnStatusCode: false })
-      .its("status")
-      .should("eq", 404);
+    // /resume exists, so /skills is a temporary 302 there (launch checklist:
+    // decide 301 vs drop).
+    cy.request({ url: "/skills", followRedirect: false }).then((res) => {
+      expect(res.status).to.eq(302);
+      expect(res.redirectedToUrl).to.match(/\/resume$/);
+    });
     cy.request({
       url: "/api/chat",
       method: "POST",
