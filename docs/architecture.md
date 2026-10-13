@@ -56,8 +56,8 @@ app/routes/
 - **Route map is data**, keyed by base, generated from `routes.map` in the graph:
   `ROUTE_MAP: Record<Base, Partial<Record<RouteId, ObjectId>>>`. Unknown object for a base (car/plane/office resume) = route still works, content opens as a panel without a dolly.
 - **Deep link:** loader returns `{ sceneId, routeId, objectId }`; SSR renders the still _already zoomed_ (pre-cropped still per object and breakpoint, or CSS transform of the rest still, decided with the Motion handoff). On hydrate the camera starts at the dolly end pose. Back = history pop -> dolly out.
-- **Redirects (proposal, 301):** `/about-me -> /about` (done in M2), `/blog -> /articles`, `/projects -> /work`, `/skills -> /resume` (chat paused), `/work/diagrams/<x> -> /case-studies/<case>#<x>` (see 1.1), `/work/<slug>` stays. Implemented in a single `redirects.ts` table, tested.
-- Skills chat (done): gated by `FEATURE_SKILLS_CHAT` (`app/features.ts`, default **off**). The root loader exposes only the boolean flags; `menuOptionsFor()` drops the Skills nav entry; the `/skills` loader and the `/api/chat` loader/action return 404 when off (no sign the endpoint exists, no API spend). Tests: flag parsing, nav filtering, `/skills` 404/200, `/api/chat` 404; Cypress smoke asserts both 404s. Code kept, not deleted.
+- **Redirects (proposal, 301):** `/about-me -> /about` (done in M2), `/blog -> /articles`, `/projects -> /work`, `/skills -> /resume` (temporary 302 while the chat is paused; done, conditional on /resume), `/work/diagrams/<x> -> /case-studies/<case>#<x>` (see 1.1), `/work/<slug>` stays. Implemented in a single `redirects.ts` table, tested.
+- Skills chat (done): gated by `FEATURE_SKILLS_CHAT` (`app/features.ts`, default **off**). The root loader exposes only the boolean flags; `menuOptionsFor()` drops the Skills nav entry; the `/skills` loader and the `/api/chat` loader/action return 404 when off (no sign the endpoint exists, no API spend). `/skills` gets a **temporary 302 to `/resume`** while the flag is off, active automatically once `app/routes/resume.tsx` exists (build-time `import.meta.glob` check); until then it stays a 404. A unit test is set to fail when /resume lands, as a reminder to flip the Cypress smoke test. Tests: flag parsing, nav filtering, `/skills` 404/200, `/api/chat` 404; Cypress smoke asserts both 404s. Code kept, not deleted.
 
 ### 1.1 DRAFT: /work vs /case-studies split
 
@@ -221,6 +221,6 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 8. ~~iCal vs service account~~: the secret iCal URL is primary (account ari.port.folio.calendar@gmail.com). Waiting for the secret address to be set in Vercel env.
 9. Known a11y debt on current pages (colour contrast on most routes, marshal diagram link/scroll issues) is baselined in `scripts/ci/a11y-baseline.json`; contrast fixes are a Designer call.
 10. Resume PDF: the phone line was redacted in place; it still lists arianzf@gmail.com (decision 3: public contact is hello@ari.soy only) and Airtable "Oct 2023" (should be late Oct 2021). Needs a regenerated PDF from its source; where is the source?
-11. ~~Skills chat~~: behind `FEATURE_SKILLS_CHAT` (default off). Still open: should `/skills` 301 to `/resume` once /resume exists?
+11. ~~Skills chat~~: behind `FEATURE_SKILLS_CHAT` (default off); `/skills` 302s to `/resume` once that route exists (404 until then). Switch to 301, or remove, after launch?
 12. Can `redesign` be pushed for backup / Vercel previews without affecting production?
 13. ~~Poster for /about~~: resolved, the Queen poster opens /about.

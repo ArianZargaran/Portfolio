@@ -1,4 +1,13 @@
-import { loader } from "./skills";
+import { loader, pausedSkillsResponse, RESUME_ROUTE_EXISTS } from "./skills";
+
+const thrownBy = (fn: () => unknown): Response => {
+  try {
+    fn();
+  } catch (e) {
+    return e as Response;
+  }
+  throw new Error("expected the loader to throw a Response");
+};
 
 describe("/skills loader", () => {
   const ORIGINAL = process.env.FEATURE_SKILLS_CHAT;
@@ -7,20 +16,28 @@ describe("/skills loader", () => {
     else process.env.FEATURE_SKILLS_CHAT = ORIGINAL;
   });
 
-  it("404s by default (flag off)", () => {
+  // When app/routes/resume.tsx lands this test fails on purpose: switch it to
+  // expect the 302 (and update the Cypress smoke test).
+  it("/resume is not built yet, so the paused route is a 404 today", () => {
+    expect(RESUME_ROUTE_EXISTS).toBe(false);
     delete process.env.FEATURE_SKILLS_CHAT;
-    let thrown: unknown;
-    try {
-      loader();
-    } catch (e) {
-      thrown = e;
-    }
-    expect(thrown).toBeInstanceOf(Response);
-    expect((thrown as Response).status).toBe(404);
+    expect(thrownBy(() => loader()).status).toBe(404);
   });
 
   it("renders when FEATURE_SKILLS_CHAT=1", () => {
     process.env.FEATURE_SKILLS_CHAT = "1";
     expect(loader()).toBeNull();
+  });
+});
+
+describe("pausedSkillsResponse", () => {
+  it("is a temporary 302 to /resume once /resume exists", () => {
+    const res = pausedSkillsResponse(true);
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/resume");
+  });
+
+  it("is a 404 while /resume does not exist", () => {
+    expect(pausedSkillsResponse(false).status).toBe(404);
   });
 });

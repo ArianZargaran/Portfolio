@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { LinksFunction } from "react-router";
+import { LinksFunction, redirect } from "react-router";
 
 import { ChatDateDivider } from "~/components/chat/chat-date-divider";
 import { ChatHeader } from "~/components/chat/chat-header";
@@ -11,9 +11,23 @@ import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import skills from "~/stylesheets/skills.css?url";
 import { getSkillReply, QUICK_REPLY_QUESTIONS } from "~/utils/skills-chat";
 
-/** Paused for launch: 404 unless FEATURE_SKILLS_CHAT is on. */
+/** True once a /resume route file exists (resolved at build time by Vite). */
+export const RESUME_ROUTE_EXISTS =
+  Object.keys(import.meta.glob("./resume.tsx")).length > 0;
+
+/**
+ * What /skills does while the chat is paused: a TEMPORARY 302 to /resume once
+ * that route exists (bookmarks land somewhere useful, and 302 keeps search
+ * engines from treating it as permanent), otherwise a 404.
+ */
+export function pausedSkillsResponse(resumeExists: boolean): Response {
+  return resumeExists ? redirect("/resume", 302) : featureNotFound();
+}
+
+/** Paused for launch: unless FEATURE_SKILLS_CHAT is on, 302 to /resume (when built) or 404. */
 export const loader = () => {
-  if (!readFeatures().skillsChat) throw featureNotFound();
+  if (!readFeatures().skillsChat)
+    throw pausedSkillsResponse(RESUME_ROUTE_EXISTS);
   return null;
 };
 
