@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import classnames from "classnames";
 import React from "react";
+import { Link } from "react-router";
 
 import styles from "./main-menu-nav-item.module.css";
 

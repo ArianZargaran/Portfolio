@@ -1,5 +1,5 @@
 /**
- * Source of timeline events for the about-me route. Append an entry to extend
+ * Source of timeline events for the /about route. Append an entry to extend
  * the timeline; the page simply gets taller and the horizontal illustrations
  * track pans proportionally over the new total scroll height. Illustration
  * opacity is purely positional — each illustration peaks at full opacity when

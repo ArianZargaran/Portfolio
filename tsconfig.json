@@ -1,9 +1,10 @@
 {
-  "exclude": ["./cypress", "./cypress.config.ts"],
-  "include": ["remix.env.d.ts", "styles.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "build", "./cypress", "./cypress.config.ts"],
+  "include": [".react-router/types/**/*", "styles.d.ts", "**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2020"],
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "vite/client", "node"],
+    "rootDirs": [".", "./.react-router/types"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",

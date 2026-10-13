@@ -1,25 +1,24 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import type { LinksFunction, MetaFunction } from "react-router";
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLocation,
-} from "@remix-run/react";
+} from "react-router";
 
 import MainMenuNav from "~/components/main-menu-nav/main-menu-nav";
 import { MAIN_MENU_OPTIONS } from "~/constants/main-menu-options";
-import borderStylesheet from "~/stylesheets/border.css";
-import colorsStylesheet from "~/stylesheets/colors.css";
-import elevationStylesheet from "~/stylesheets/elevation.css";
-import fontsStylesheet from "~/stylesheets/fonts.css";
-import resetStylesheet from "~/stylesheets/reset.css";
-import rootStylesheet from "~/stylesheets/root.css";
-import spacingStylesheet from "~/stylesheets/spacing.css";
-import themesStylesheet from "~/stylesheets/themes.css";
+import { useNonce } from "~/nonce";
+import borderStylesheet from "~/stylesheets/border.css?url";
+import colorsStylesheet from "~/stylesheets/colors.css?url";
+import elevationStylesheet from "~/stylesheets/elevation.css?url";
+import fontsStylesheet from "~/stylesheets/fonts.css?url";
+import resetStylesheet from "~/stylesheets/reset.css?url";
+import rootStylesheet from "~/stylesheets/root.css?url";
+import spacingStylesheet from "~/stylesheets/spacing.css?url";
+import themesStylesheet from "~/stylesheets/themes.css?url";
 import { SITE_URL, SOCIAL_IMAGE } from "~/utils/seo";
 
 const SITE_TITLE = "Arian Zargaran | Design Engineer";
@@ -57,7 +56,6 @@ export const meta: MetaFunction = ({ location }) => {
 };
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: resetStylesheet },
   { rel: "stylesheet", href: fontsStylesheet },
   { rel: "stylesheet", href: colorsStylesheet },
@@ -73,7 +71,7 @@ export const links: LinksFunction = () => [
     of a hardcoded theme leaking through mid-transition. `startsWith` on
     /work covers nested routes like /work/diagrams/*. */
 const themeClassForPathname = (pathname: string): string => {
-  if (pathname === "/about-me") return "about";
+  if (pathname === "/about") return "about";
   if (pathname.startsWith("/work")) return "work";
   if (pathname === "/skills") return "skills";
   if (pathname === "/blog") return "blog";
@@ -83,6 +81,7 @@ const themeClassForPathname = (pathname: string): string => {
 
 export default function App() {
   const location = useLocation();
+  const nonce = useNonce();
   const bodyThemeClass = themeClassForPathname(location.pathname);
 
   return (
@@ -170,9 +169,8 @@ export default function App() {
       <body className={`body ${bodyThemeClass}`}>
         <MainMenuNav options={MAIN_MENU_OPTIONS} />
         <Outlet />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
       </body>
     </html>
   );

@@ -1,11 +1,9 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction, MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { LinksFunction, MetaFunction , Link } from "react-router";
 
 import { MotionSpecSheet } from "~/components/work-diagrams/motion-spec-sheet";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import motionSpecSheet from "~/stylesheets/motion-spec-sheet.css";
-import work from "~/stylesheets/work.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import motionSpecSheet from "~/stylesheets/motion-spec-sheet.css?url";
+import work from "~/stylesheets/work.css?url";
 import { mergeMeta } from "~/utils/seo";
 
 /* Unlike the sibling diagram routes this one does NOT load work-diagram.css:
@@ -15,7 +13,6 @@ import { mergeMeta } from "~/utils/seo";
    that stylesheet is scoped under .motion-lab-page / .motion-lab so nothing
    leaks onto other routes. */
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: work },
   { rel: "stylesheet", href: motionSpecSheet },

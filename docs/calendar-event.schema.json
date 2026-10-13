@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ari.soy/schemas/scene-calendar-event.v1.json",
+  "title": "Scene calendar event (DRAFT v1)",
+  "description": "Normalised view of one Google Calendar event on the private scene calendar. Only the server reads this; the client only ever receives the resolved sceneId.",
+  "type": "object",
+  "required": ["summary", "start", "end"],
+  "additionalProperties": true,
+  "properties": {
+    "summary": {
+      "description": "Exactly one scene ID, nothing else. <base>.<spot>.<activity>.<time>.<weather>.v<n>. <time> and <weather> may be '*' to mean 'resolve live' (Chicago slot / real weather).",
+      "type": "string",
+      "pattern": "^(home-office|office|car|plane)\\.(desk|window|bed|couch|kitchen|seat|dock|balcony)\\.(coding|designing|reading|listening|resting|eating|commuting|thinking)\\.(dawn|morning|noon|afternoon|dusk|night|\\*)\\.(clear|cloudy|rain|storm|snow|fog|\\*)\\.v[0-9]+(\\.[0-9]+)?$"
+    },
+    "start": { "type": "string", "format": "date-time", "description": "RFC 3339 with offset (Google 'dateTime'). All-day events are ignored." },
+    "end": { "type": "string", "format": "date-time" },
+    "location": {
+      "description": "Optional travel override for weather (and time zone of the sky, see open question). Either 'lat,lon' or a place name geocoded server-side. Empty = Dallas.",
+      "type": "string",
+      "maxLength": 200
+    },
+    "extendedProperties": {
+      "type": "object",
+      "properties": {
+        "private": {
+          "type": "object",
+          "properties": {
+            "ticket": { "type": "string", "description": "Team ticket id (Atlas). Never sent to the client." }
+          }
+        }
+      }
+    }
+  }
+}

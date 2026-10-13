@@ -8,6 +8,7 @@ yarn.lock
 node_modules
 
 /build
+/.vercel
 /public/build
 /coverage
 .env
@@ -18,3 +19,4 @@ node_modules
 *storybook.log
 
 .omc
+.react-router

@@ -1,5 +1,4 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionFunctionArgs } from "react-router";
 
 import { singleton } from "~/singleton.server";
 import { retrieveRelevant } from "~/utils/rag/embeddings.server";
@@ -21,7 +20,7 @@ const rateLimiter = singleton("rag-rate-limiter", () =>
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
-    return json({ error: "Method not allowed" }, { status: 405 });
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
 
   let question = "";
@@ -29,11 +28,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const body = (await request.json()) as { question?: unknown };
     question = typeof body.question === "string" ? body.question.trim() : "";
   } catch {
-    return json({ error: "Invalid request body" }, { status: 400 });
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
 
   if (!question) {
-    return json({ error: "question is required" }, { status: 400 });
+    return Response.json({ error: "question is required" }, { status: 400 });
   }
   const truncated = question.slice(0, MAX_QUESTION_LENGTH);
 
@@ -48,16 +47,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   );
 
   if (!withinRateLimit || !hasApiKeys) {
-    return json({ reply: getSkillReply(truncated), source: "fallback" });
+    return Response.json({ reply: getSkillReply(truncated), source: "fallback" });
   }
 
   try {
     const context = await retrieveRelevant(truncated);
     const reply = await generateAnswer(truncated, context);
-    return json({ reply, source: "rag" });
+    return Response.json({ reply, source: "rag" });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("RAG pipeline failed, falling back to static reply:", error);
-    return json({ reply: getSkillReply(truncated), source: "fallback" });
+    return Response.json({ reply: getSkillReply(truncated), source: "fallback" });
   }
 };

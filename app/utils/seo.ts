@@ -1,4 +1,4 @@
-import type { MetaDescriptor, MetaFunction } from "@remix-run/node";
+import type { MetaDescriptor, MetaFunction } from "react-router";
 
 /** Canonical production origin. Every absolute URL in meta tags (og:url,
     og:image, twitter:image) is built from this, not a relative path --
@@ -28,7 +28,7 @@ export function mergeMeta<
   leafMetaFn: MetaFunction<Loader, ParentsLoaders>,
 ): MetaFunction<Loader, ParentsLoaders> {
   return (arg) => {
-    const leafMeta = leafMetaFn(arg);
+    const leafMeta: MetaDescriptor[] = leafMetaFn(arg) ?? [];
     return arg.matches.reduceRight((acc, match) => {
       const parentMeta = match.meta || [];
       for (const parentEntry of parentMeta) {

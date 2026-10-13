@@ -21,7 +21,7 @@ interface HamburgerIconMockProps {
   className?: string;
 }
 
-vi.mock("@remix-run/react", () => ({
+vi.mock("react-router", () => ({
   useLocation: useLocationMock,
   Link: ({ to, children, ...rest }: LinkMockProps) => (
     <a href={to} {...rest}>
@@ -65,7 +65,7 @@ afterEach(() => {
 
 const fakeOptions = [
   { id: "1", option: "Home", caption: "Start here", href: "/" },
-  { id: "2", option: "About", caption: "Who I am", href: "/about-me" },
+  { id: "2", option: "About", caption: "Who I am", href: "/about" },
   { id: "3", option: "Projects", caption: "What I built", href: "/projects" },
 ];
 
@@ -128,7 +128,7 @@ describe("MainMenuNav", () => {
     expect(screen.getByRole("list")).toBeInTheDocument();
 
     useLocationMock.mockReturnValue({
-      pathname: "/about-me",
+      pathname: "/about",
       state: { isMenuNavigation: true },
     });
     rerender(<MainMenuNav options={fakeOptions} />);

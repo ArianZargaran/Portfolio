@@ -9,7 +9,7 @@ interface LinkMockProps extends ComponentProps<"a"> {
   state?: unknown;
 }
 
-vi.mock("@remix-run/react", () => ({
+vi.mock("react-router", () => ({
   Link: ({ to, state, children, ...rest }: LinkMockProps) => (
     <a href={to} data-state={JSON.stringify(state)} {...rest}>
       {children}

@@ -1,7 +1,10 @@
 describe("smoke tests", () => {
   it("renders the home page with hero copy and CTAs", () => {
     cy.visitAndCheck("/");
-    cy.findByRole("heading", { level: 1 }).should("contain.text", "Arian Zargaran");
+    cy.findByRole("heading", { level: 1 }).should(
+      "contain.text",
+      "Arian Zargaran",
+    );
     cy.findByRole("link", { name: /my work/i })
       .should("have.attr", "href")
       .and("include", "/work");
@@ -11,7 +14,7 @@ describe("smoke tests", () => {
   });
 
   it("renders the about page", () => {
-    cy.visitAndCheck("/about-me");
+    cy.visitAndCheck("/about");
     // The headline is position: fixed under the timeline; assert presence,
     // not visibility, since layering is a layout choice.
     cy.findByRole("heading", { name: /about me/i }).should("exist");
@@ -32,10 +35,7 @@ describe("smoke tests", () => {
   it("renders the skills page with a working search input", () => {
     cy.visitAndCheck("/skills");
     cy.findByPlaceholderText(/ask me something/i).type("react");
-    cy.findByPlaceholderText(/ask me something/i).should(
-      "have.value",
-      "react",
-    );
+    cy.findByPlaceholderText(/ask me something/i).should("have.value", "react");
   });
 
   it("blog and contact still resolve at their direct URLs", () => {
@@ -56,10 +56,12 @@ describe("smoke tests", () => {
       .should("eq", 404);
   });
 
-  it("redirects trailing slashes", () => {
-    cy.request({ url: "/about-me/", followRedirect: false }).then((response) => {
+  // Trailing-slash redirects are now handled by Vercel (vercel.json
+  // "trailingSlash": false), not by the app, so they are not tested here.
+  it("redirects the old /about-me URL to /about", () => {
+    cy.request({ url: "/about-me", followRedirect: false }).then((response) => {
       expect(response.status).to.eq(301);
-      expect(response.redirectedToUrl).to.match(/\/about-me$/);
+      expect(response.redirectedToUrl).to.match(/\/about$/);
     });
   });
 });

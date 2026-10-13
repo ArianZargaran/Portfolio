@@ -1,18 +1,16 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction } from "@remix-run/node";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { LinksFunction } from "react-router";
 
 import { ChatDateDivider } from "~/components/chat/chat-date-divider";
 import { ChatHeader } from "~/components/chat/chat-header";
 import { ChatInput } from "~/components/chat/chat-input";
 import { ChatMessage, ChatAuthor } from "~/components/chat/chat-message";
 import { ChatQuickReplies } from "~/components/chat/chat-quick-replies";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import skills from "~/stylesheets/skills.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import skills from "~/stylesheets/skills.css?url";
 import { getSkillReply, QUICK_REPLY_QUESTIONS } from "~/utils/skills-chat";
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: skills },
 ];

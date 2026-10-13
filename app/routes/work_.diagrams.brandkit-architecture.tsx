@@ -1,15 +1,12 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction, MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { LinksFunction, MetaFunction , Link } from "react-router";
 
 import { ArchitectureDataFlowDiagram } from "~/components/work-diagrams/architecture-data-flow";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import workDiagram from "~/stylesheets/work-diagram.css";
-import work from "~/stylesheets/work.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import workDiagram from "~/stylesheets/work-diagram.css?url";
+import work from "~/stylesheets/work.css?url";
 import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: work },
   { rel: "stylesheet", href: workDiagram },

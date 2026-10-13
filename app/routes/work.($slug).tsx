@@ -1,18 +1,15 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction, MetaFunction } from "@remix-run/node";
-import { Link, useLocation, useNavigate, useParams } from "@remix-run/react";
 import { useCallback } from "react";
+import { LinksFunction, MetaFunction , Link, useLocation, useNavigate, useParams } from "react-router";
 
 import { GridWarp } from "~/components/backgrounds/grid-warp/grid-warp";
 import { Isotype } from "~/components/icons/isotype/isotype";
 import { WorkGrid } from "~/components/work/work-grid";
 import { ALL_WORK_CARDS, ID_TO_SLUG, SLUG_TO_ID } from "~/constants/work-cards";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import work from "~/stylesheets/work.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import work from "~/stylesheets/work.css?url";
 import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: work },
 ];

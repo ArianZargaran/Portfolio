@@ -1,11 +1,9 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction, MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { LinksFunction, MetaFunction , Link } from "react-router";
 
 import { Murmuration } from "~/components/work-diagrams/murmuration";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import murmuration from "~/stylesheets/murmuration.css";
-import work from "~/stylesheets/work.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import murmuration from "~/stylesheets/murmuration.css?url";
+import work from "~/stylesheets/work.css?url";
 import { mergeMeta } from "~/utils/seo";
 
 /* Standalone deep-dive page with its own type identity (Newsreader + IBM
@@ -13,7 +11,6 @@ import { mergeMeta } from "~/utils/seo";
    or its --wd-* tokens. Every rule in murmuration.css is scoped under
    .murmuration-page so nothing leaks onto other routes. */
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: work },
   { rel: "stylesheet", href: murmuration },

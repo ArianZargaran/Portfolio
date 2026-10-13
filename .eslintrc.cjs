@@ -77,6 +77,10 @@ module.exports = {
         "prettier",
       ],
       rules: {
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+        ],
         "import/order": [
           "error",
           {

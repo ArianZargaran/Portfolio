@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/node";
+import { redirect } from "react-router";
 
 /**
  * The page lives at /work now ("Projects" stopped representing what the page

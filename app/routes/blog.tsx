@@ -1,10 +1,8 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction } from "@remix-run/node";
+import { LinksFunction } from "react-router";
 
-import commonThemePage from "~/stylesheets/common-page-themes.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
 ];
 

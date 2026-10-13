@@ -1,8 +1,8 @@
-import { useLocation } from "@remix-run/react";
 import { HamburgerIcon as MainMenuToggle } from "animatea";
 import classnames from "classnames";
 import { AnimatePresence, motion, Variants } from "motion/react";
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router";
 
 import { MainMenuNavItem, Option } from "./main-menu-nav-item";
 import styles from "./main-menu-nav.module.css";
@@ -79,7 +79,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
         className={classnames(
           {
             index: !isOpen && location.pathname === "/",
-            about: !isOpen && location.pathname === "/about-me",
+            about: !isOpen && location.pathname === "/about",
             work: !isOpen && location.pathname === "/work",
             skills: !isOpen && location.pathname === "/skills",
             blog: !isOpen && location.pathname === "/blog",

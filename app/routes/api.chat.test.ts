@@ -42,6 +42,8 @@ describe("api.chat action", () => {
       request: new Request("http://localhost/api/chat", { method: "GET" }),
       params: {},
       context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
     });
     expect(response.status).toBe(405);
   });
@@ -52,6 +54,8 @@ describe("api.chat action", () => {
       request: post(undefined),
       params: {},
       context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
     });
     expect(response.status).toBe(400);
   });
@@ -65,6 +69,8 @@ describe("api.chat action", () => {
       request: post("What languages do you know best?"),
       params: {},
       context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
     });
     const data = (await response.json()) as { reply: string; source: string };
 
@@ -82,6 +88,8 @@ describe("api.chat action", () => {
       request: post("What languages do you know best?"),
       params: {},
       context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
     });
     const data = (await response.json()) as { reply: string; source: string };
 
@@ -97,6 +105,8 @@ describe("api.chat action", () => {
       request: post("What languages do you know best?"),
       params: {},
       context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
     });
     const data = (await response.json()) as { reply: string; source: string };
 
@@ -115,6 +125,8 @@ describe("api.chat action", () => {
         request: post("What languages do you know best?", "1.2.3.4"),
         params: {},
         context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
       });
       lastData = (await response.json()) as { reply: string; source: string };
     }

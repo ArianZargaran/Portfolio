@@ -1,6 +1,4 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { LinksFunction , Link } from "react-router";
 
 import { BlurryBackground } from "~/components/backgrounds/blurry-circles/blurry-circles";
 import { Doodles } from "~/components/backgrounds/doodles/doodles";
@@ -9,11 +7,10 @@ import { Download } from "~/components/icons/download";
 import { Isotype } from "~/components/icons/isotype/isotype";
 import Button from "~/components/interactive-elements/button/button";
 import { SocialNav } from "~/components/social-nav/social-nav";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import homeStyles from "~/stylesheets/home.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import homeStyles from "~/stylesheets/home.css?url";
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: homeStyles },
 ];

@@ -4,12 +4,12 @@ import { describe, expect, it } from "vitest";
 import { SocialNav } from "./social-nav";
 
 describe("SocialNav", () => {
-  it("renders a nav element containing exactly 5 links", () => {
+  it("renders a nav element containing exactly 4 links", () => {
     render(<SocialNav />);
     const nav = screen.getByRole("navigation");
     expect(nav).toBeInTheDocument();
     const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(5);
+    expect(links).toHaveLength(4);
   });
 
   it("renders each link with the correct href from the LOGOS data", () => {
@@ -17,7 +17,6 @@ describe("SocialNav", () => {
     const links = screen.getAllByRole("link");
     const hrefs = links.map((l) => l.getAttribute("href"));
     expect(hrefs).toContain("https://x.com/arianfront");
-    expect(hrefs).toContain("tel:408-809-6343");
     expect(hrefs).toContain("https://github.com/arianzargaran");
     expect(hrefs).toContain("https://www.linkedin.com/in/arianzf/");
     expect(hrefs).toContain("mailto:hello@ari.soy");
@@ -36,15 +35,12 @@ describe("SocialNav", () => {
     }
   });
 
-  it("does not set target or rel on the tel: link", () => {
+  it("never renders a tel: link (public contact is hello@ari.soy only)", () => {
     render(<SocialNav />);
-    const links = screen.getAllByRole("link");
-    const telLink = links.find((l) =>
-      l.getAttribute("href")?.startsWith("tel:")
-    );
-    expect(telLink).toBeDefined();
-    expect(telLink!).not.toHaveAttribute("target");
-    expect(telLink!).not.toHaveAttribute("rel");
+    const hrefs = screen
+      .getAllByRole("link")
+      .map((l) => l.getAttribute("href") ?? "");
+    expect(hrefs.some((h) => h.startsWith("tel:"))).toBe(false);
   });
 
   it("does not set target or rel on the mailto: link", () => {
@@ -65,8 +61,8 @@ describe("SocialNav", () => {
     expect(nav).toHaveClass("my-class");
   });
 
-  it("renders exactly 5 list items inside the nav", () => {
+  it("renders exactly 4 list items inside the nav", () => {
     render(<SocialNav />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.getAllByRole("listitem")).toHaveLength(4);
   });
 });

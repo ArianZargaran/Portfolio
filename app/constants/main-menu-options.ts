@@ -12,7 +12,7 @@ export const MAIN_MENU_OPTIONS: Option[] = [
     id: "ID2",
     option: "About",
     caption: "Passion, Experience, and Commitment.",
-    href: "/about-me",
+    href: "/about",
     theme: "about",
   },
   {

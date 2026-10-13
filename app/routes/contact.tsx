@@ -1,8 +1,6 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
-import { LinksFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { LinksFunction , Link } from "react-router";
 
 import { Check } from "~/components/icons/check";
 import { Copy } from "~/components/icons/copy";
@@ -10,11 +8,10 @@ import { Download } from "~/components/icons/download";
 import { Isotype } from "~/components/icons/isotype/isotype";
 import Button from "~/components/interactive-elements/button/button";
 import { SocialNav } from "~/components/social-nav/social-nav";
-import commonThemePage from "~/stylesheets/common-page-themes.css";
-import contactStyles from "~/stylesheets/contact.css";
+import commonThemePage from "~/stylesheets/common-page-themes.css?url";
+import contactStyles from "~/stylesheets/contact.css?url";
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   { rel: "stylesheet", href: commonThemePage },
   { rel: "stylesheet", href: contactStyles },
 ];

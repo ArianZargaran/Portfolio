@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access -- WorkGrid state lives on data attributes/classes with no accessible role */
 import {
   act,
   fireEvent,
@@ -174,8 +175,8 @@ describe("WorkGrid", () => {
         anyExpanded={false}
         showBody={false}
         stateClass=""
-        onBodyExitComplete={() => {}}
-        onToggle={() => {}}
+        onBodyExitComplete={() => undefined}
+        onToggle={() => undefined}
       />,
     );
     expect(

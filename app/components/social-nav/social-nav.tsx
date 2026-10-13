@@ -5,7 +5,6 @@ import { IconProps } from "../icons";
 import { Email } from "../logos/email";
 import { Github } from "../logos/github";
 import { Linkedin } from "../logos/linkedin";
-import { Phone } from "../logos/phone";
 import { X } from "../logos/x";
 
 import "./social-nav.css";
@@ -23,15 +22,6 @@ const LOGOS: {
     props: {
       height: 24,
       width: 24,
-    },
-  },
-  {
-    id: "phone",
-    component: Phone,
-    href: "tel:408-809-6343",
-    props: {
-      height: 32,
-      width: 32,
     },
   },
   {

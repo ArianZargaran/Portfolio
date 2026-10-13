@@ -574,7 +574,7 @@ export const Murmuration: React.FC = () => (
             <p>
               Particles moving through a slowly-changing flow field{" "}
               <em>always</em> collapse onto its attracting streamlines. The
-              field was drifting at a fifth of one cell over a particle's
+              field was drifting at a fifth of one cell over a particle&apos;s
               entire life &mdash; effectively static.
             </p>
             <span className="verdict">Right mechanism, wrong magnitude</span>

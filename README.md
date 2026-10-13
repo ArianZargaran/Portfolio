@@ -4,11 +4,11 @@ Personal portfolio site for Arian Zargaran. Showcases work, an interactive
 about page, a projects grid with per-project case studies in modal dialogs,
 and a downloadable resume.
 
-Deployed to Vercel from `main`.
+Deployed to Vercel from `main` (the redesign lives on the `redesign` branch, not deployed).
 
 ## Stack
 
-- [Remix](https://remix.run) on an Express server
+- [React Router 7](https://reactrouter.com) (framework mode, Vite) with the Vercel preset
 - React 18, [motion](https://motion.dev) for animation
 - TypeScript, vanilla CSS modules
 - [Vitest](https://vitest.dev) (unit) + [Cypress](https://cypress.io) (e2e)
@@ -30,7 +30,7 @@ app/
 public/            Static assets (favicons, project previews, resume.pdf)
 cypress/           E2E specs and support
 test/              Vitest setup
-server.ts          Express + Remix request handler
+react-router.config.ts  React Router + Vercel preset config
 ```
 
 ## Local development
@@ -42,23 +42,23 @@ npm install
 npm run dev
 ```
 
-The dev server runs on port 3000 by default; set `PORT` to override.
+The Vite dev server runs on http://localhost:5173.
 
 ## Scripts
 
-| Command                 | What it does                                              |
-| ----------------------- | --------------------------------------------------------- |
-| `npm run dev`           | Watch-mode Remix + esbuild server bundle                  |
-| `npm run build`         | Production Remix + server build                           |
-| `npm start`             | Run the production build (`build/server.js`)              |
-| `npm test`              | Vitest in watch mode (`app/**/*.test.{ts,tsx}`)           |
-| `npm run test:e2e:dev`  | Cypress against `npm run dev`                             |
-| `npm run test:e2e:run`  | Cypress against a fresh production build                  |
-| `npm run lint`          | ESLint with cache                                         |
-| `npm run typecheck`     | `tsc --noEmit` for app and Cypress projects               |
-| `npm run format`        | Prettier across the repo                                  |
-| `npm run validate`      | `test --run`, `lint`, `typecheck`, `test:e2e:run` in parallel |
-| `npm run storybook`     | Storybook dev server (port 6006)                          |
+| Command                | What it does                                    |
+| ---------------------- | ----------------------------------------------- |
+| `npm run dev`          | Vite dev server (React Router 7, HMR)           |
+| `npm run build`        | Production Remix + server build                 |
+| `npm start`            | Run the production build (`build/server.js`)    |
+| `npm test`             | Vitest in watch mode (`app/**/*.test.{ts,tsx}`) |
+| `npm run test:e2e:dev` | Cypress against `npm run dev`                   |
+| `npm run test:e2e:run` | Cypress against a fresh production build        |
+| `npm run lint`         | ESLint with cache                               |
+| `npm run typecheck`    | `tsc --noEmit` for app and Cypress projects     |
+| `npm run format`       | Prettier across the repo                        |
+| `npm run validate`     | `lint`, `typecheck`, unit tests                 |
+| `npm run storybook`    | Storybook dev server (port 6006)                |
 
 ## Testing
 
@@ -71,9 +71,12 @@ The dev server runs on port 3000 by default; set `PORT` to override.
 
 ## Deployment
 
-Deployed to Vercel from `main`. The Express server (`server.ts`) is bundled
-to `build/server.js` and started with `node ./build/server.js`. Set `PORT`
-to override the default (3000).
+React Router 7 (framework mode, Vite) with the Vercel preset
+(`@vercel/react-router`). There is no custom server: Vercel runs the server
+build as a function. Locally, `npm run build && npm start` serves the
+production build with `react-router-serve` (set `PORT`, default 3000).
+Security headers and the CSP are set in `app/entry.server.tsx`
+(`app/server/security-headers.ts`). See `docs/architecture.md`.
 
 ## License
 
