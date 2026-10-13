@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router";
 
 import { SceneStill } from "~/components/scene/scene-still";
-import { HIT_OBJECTS, rectToPercent } from "~/scene/hit-areas";
+import { HIT_OBJECTS, rectToPercent, zoomOrigin } from "~/scene/hit-areas";
 import { STILL_SOURCES } from "~/scene/still";
 
 /**
@@ -13,16 +13,35 @@ import { STILL_SOURCES } from "~/scene/still";
  */
 export function SceneShell({
   focus,
+  decorative = false,
   children,
 }: {
-  /** Object id the camera is "zoomed" to on a deep link (milestone E). */
+  /** Object id the still is "already zoomed" to on a deep link. */
   focus?: string;
+  /** True on content routes, where the page heading names the place. */
+  decorative?: boolean;
   children?: ReactNode;
 }) {
+  const focused = HIT_OBJECTS.find((o) => o.id === focus);
+  /* One origin per breakpoint as CSS vars; scene.css picks the matching one
+     with the same media queries as the <picture> sources. Static transform,
+     no transition: deep links land already zoomed, motion-free. */
+  const zoomVars = focused
+    ? Object.fromEntries(
+        STILL_SOURCES.map((s) => [
+          `--zoom-origin-${s.breakpoint}`,
+          zoomOrigin(focused.rects[s.breakpoint][0], s.width, s.height),
+        ]),
+      )
+    : undefined;
   return (
-    <div className="scene" data-focus={focus}>
+    <div
+      className={focused ? "scene scene--zoomed" : "scene"}
+      data-focus={focused?.id}
+      style={zoomVars as CSSProperties | undefined}
+    >
       <div className="scene_frame">
-        <SceneStill priority />
+        <SceneStill decorative={decorative} priority={!decorative} />
         {STILL_SOURCES.map((s) => (
           <nav
             key={s.breakpoint}

@@ -1,4 +1,5 @@
-/* Shared layout for scene routes (/resume, /contact, /about, /articles, ...).
+/* Note: html font-size makes 1rem = 1px here (see fonts.css).
+   Shared layout for scene routes (/resume, /contact, /about, /articles, ...).
    Palette tuned for WCAG AA on the warm dusk scene. */
 :root {
   --rp-bg: #fbf6ef;
@@ -30,50 +31,66 @@
   border-radius: 2px;
 }
 
+/* The zoomed still keeps its own aspect ratio and is sized to ~42vh tall,
+   so the focused object (the zoom origin) is always inside the window. */
 .route-page_scene {
   position: relative;
   overflow: hidden;
-  max-height: 42vh;
   background: #2a1d17;
+}
+.route-page_scene .scene {
+  min-height: 0;
+  margin: 0 auto;
+  max-width: calc(42vh * 1440 / 900);
+}
+@media (min-width: 601px) and (max-width: 1024px) {
+  .route-page_scene .scene {
+    max-width: calc(42vh * 820 / 1180);
+  }
+}
+@media (max-width: 600px) {
+  .route-page_scene .scene {
+    max-width: calc(42vh * 390 / 844);
+  }
 }
 
 .route-page_content {
-  max-width: 46rem;
+  max-width: 736rem;
   margin: 0 auto;
-  padding: 2.5rem 1.25rem 5rem;
+  padding: 40rem 20rem 80rem;
 }
 
 .route-page_back {
   display: inline-block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 24rem;
 }
 
 .route-page h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(32rem, 5vw, 48rem);
   line-height: 1.1;
-  margin: 0 0 1rem;
+  margin: 0 0 16rem;
 }
 
 .route-page h2 {
-  font-size: 1.375rem;
-  margin: 2.5rem 0 0.75rem;
-  padding-bottom: 0.35rem;
+  font-size: 22rem;
+  margin: 40rem 0 12rem;
+  padding-bottom: 5.6rem;
   border-bottom: 1px solid var(--rp-rule);
 }
 
 .route-page h3 {
-  font-size: 1.125rem;
+  font-size: 18rem;
   margin: 0;
 }
 
 .route-page_lede {
-  font-size: 1.125rem;
+  font-size: 18rem;
   color: var(--rp-muted);
 }
 
 .route-page_meta {
   color: var(--rp-muted);
-  font-size: 0.95rem;
+  font-size: 15.2rem;
 }
 
 .route-page_list {
@@ -81,18 +98,18 @@
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 1.5rem;
+  gap: 24rem;
 }
 
 .route-page_list ul {
-  margin: 0.5rem 0 0;
-  padding-left: 1.25rem;
+  margin: 8rem 0 0;
+  padding-left: 20rem;
 }
 
 .route-page_tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8rem;
   list-style: none;
   padding: 0;
 }
@@ -100,24 +117,24 @@
 .route-page_tags li {
   border: 1px solid var(--rp-rule);
   border-radius: 999px;
-  padding: 0.15rem 0.7rem;
-  font-size: 0.9rem;
+  padding: 2.4rem 11.2rem;
+  font-size: 14.4rem;
 }
 
 .route-page_actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
+  gap: 12rem 20rem;
   align-items: center;
-  margin: 1.5rem 0;
+  margin: 24rem 0;
 }
 
 .route-page_button {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.55rem 1rem;
-  border-radius: 0.5rem;
+  gap: 6.4rem;
+  padding: 8.8rem 16rem;
+  border-radius: 8rem;
   border: 2px solid var(--rp-accent);
   background: transparent;
   color: var(--rp-accent);

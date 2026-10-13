@@ -3,10 +3,12 @@ import { LinksFunction, MetaFunction, useLoaderData } from "react-router";
 import { RoutePage } from "~/components/route-page/route-page";
 import { PODCAST } from "~/content/podcast";
 import routePage from "~/stylesheets/route-page.css?url";
+import scene from "~/stylesheets/scene.css?url";
 import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: routePage },
+  { rel: "stylesheet", href: scene },
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [

@@ -112,3 +112,13 @@ export const rectToPercent = (
   width: `${(((x2 - x1) / width) * 100).toFixed(3)}%`,
   height: `${(((y2 - y1) / height) * 100).toFixed(3)}%`,
 });
+
+/** Scene object a pathname is "zoomed" to on a deep link (prefix match). */
+export const focusForPath = (pathname: string): HitObject | undefined =>
+  HIT_OBJECTS.find(
+    (o) => pathname === o.href || pathname.startsWith(`${o.href}/`),
+  );
+
+/** transform-origin (% of canvas) centred on an object's first rect. */
+export const zoomOrigin = ([x1, y1, x2, y2]: Rect, w: number, h: number) =>
+  `${(((x1 + x2) / 2 / w) * 100).toFixed(2)}% ${(((y1 + y2) / 2 / h) * 100).toFixed(2)}%`;

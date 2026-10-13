@@ -76,3 +76,27 @@
     transition: opacity 120ms ease-out;
   }
 }
+
+/* Deep link: the still lands "already zoomed" on the route's object. */
+.scene--zoomed {
+  overflow: hidden;
+  min-height: 0;
+}
+.scene--zoomed .scene_frame {
+  transform: scale(1.8);
+}
+@media (min-width: 1025px) {
+  .scene--zoomed .scene_frame {
+    transform-origin: var(--zoom-origin-laptop);
+  }
+}
+@media (min-width: 601px) and (max-width: 1024px) {
+  .scene--zoomed .scene_frame {
+    transform-origin: var(--zoom-origin-tablet);
+  }
+}
+@media (max-width: 600px) {
+  .scene--zoomed .scene_frame {
+    transform-origin: var(--zoom-origin-mobile);
+  }
+}

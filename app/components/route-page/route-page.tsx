@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
-import { SceneStill } from "~/components/scene/scene-still";
+import { SceneShell } from "~/components/scene/scene-shell";
+import { focusForPath } from "~/scene/hit-areas";
 
 /**
- * Page frame for a scene route: the v3.2 still as the scene placeholder, then
- * the route's content. The still is decorative here (the page heading names
- * the place); the scene shell (milestone D) replaces this placeholder.
+ * Page frame for a scene route. A deep link renders the still "already
+ * zoomed" on the route's object (hit areas stay live, the current one marked
+ * aria-current), then the route's loader-fed content in a labelled <main>.
  */
 export function RoutePage({
   id,
@@ -17,11 +18,12 @@ export function RoutePage({
   title: string;
   children: ReactNode;
 }) {
+  const { pathname } = useLocation();
   const headingId = `${id}-title`;
   return (
     <div className={`route-page route-page--${id}`}>
       <div className="route-page_scene">
-        <SceneStill decorative />
+        <SceneShell decorative focus={focusForPath(pathname)?.id} />
       </div>
       <main className="route-page_content" aria-labelledby={headingId}>
         <Link className="route-page_back" to="/">

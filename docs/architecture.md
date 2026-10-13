@@ -256,3 +256,9 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - **Estimated hit areas (flag):** the Queen poster boxes on tablet and mobile are hand estimates (the layout json has only the old `framed_photo`). They are marked `estimated: ["tablet", "mobile"]` in the data. Replace when design supplies measured boxes.
 - **Placeholder compositions (flag):** the tablet (820×1180) and mobile (390×844) v3.2 stills are rough collages, used as placeholders only. Final paintings come from Design; hit boxes must be re-measured when they land.
 - The old home hero (`home.css`, blurry circles, doodles, noise, social nav) is no longer used by `/`; remove in a cleanup pass.
+
+### Milestone E — deep links load each route's content (done)
+- Every route's content comes from its loader and is server-rendered, so a deep link (or no-JS visit) gets the full page. `RoutePage` now renders `<SceneShell decorative focus=…>`: the still lands "already zoomed" on the route's object (`focusForPath`, prefix match, so `/work/<slug>` → laptop and `/case-studies/*` → Lego). The zoom is a static `transform: scale(1.8)` with a per-breakpoint `transform-origin` in CSS vars (`--zoom-origin-{laptop,tablet,mobile}`). There is no transition, so it is reduced-motion safe. Hit areas stay live, and the current object is marked `aria-current="page"`.
+- `/work` and the case-study diagram pages keep their own layouts (no zoomed still yet).
+- Fix: `route-page.css` sized in rem assuming 16px, but this codebase sets 1rem = 1px (`fonts.css`). Values were converted, so the /resume, /contact, /about, /articles, /podcast and /case-studies layouts now render at the intended size. This was broken since Milestone A.
+- Tests: `app/routes/deep-links.test.tsx` covers each content route (loader → h1 inside `<main>`, zoom object current in every breakpoint nav); Cypress fetches each URL and checks the server HTML.

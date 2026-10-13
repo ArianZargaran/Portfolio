@@ -4,10 +4,12 @@ import { useLoaderData } from "react-router";
 import { RoutePage } from "~/components/route-page/route-page";
 import { formatRange, RESUME } from "~/content/resume";
 import routePage from "~/stylesheets/route-page.css?url";
+import scene from "~/stylesheets/scene.css?url";
 import { mergeMeta } from "~/utils/seo";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: routePage },
+  { rel: "stylesheet", href: scene },
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [

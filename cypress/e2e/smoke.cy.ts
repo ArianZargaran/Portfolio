@@ -1,4 +1,18 @@
 describe("smoke tests", () => {
+  it("deep links server-render each route's content (no JS needed)", () => {
+    [
+      ["/resume", "Resume"],
+      ["/about", "About me"],
+      ["/articles", "Notebook"],
+      ["/podcast", "Podcast"],
+      ["/case-studies", "Case studies"],
+      ["/contact", "<h1"],
+      ["/work", "Work"],
+    ].forEach(([url, text]) =>
+      cy.request(url).its("body").should("include", text),
+    );
+  });
+
   it("renders the still-frame scene with a hit area for every route", () => {
     cy.visitAndCheck("/");
     cy.findByRole("heading", { level: 1 }).should(
