@@ -1,6 +1,6 @@
 import { LinksFunction, MetaFunction, Link } from "react-router";
 
-import { AiDesignToCodeDiagram } from "~/components/work-diagrams/ai-design-to-code";
+import { NamingConventionDiagram } from "~/components/work-diagrams/naming-convention";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import workDiagram from "~/stylesheets/work-diagram.css?url";
 import work from "~/stylesheets/work.css?url";
@@ -13,18 +13,18 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [
-  { title: "Structure Over Agents — Arian Zargaran" },
+  { title: "One Name, Three Tools — Arian Zargaran" },
 ]);
 
-const AiDesignToCodeRoute = () => (
+const NamingConventionRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies/brandkit">
+      ← Brandkit
     </Link>
     <div className="work-diagram_wrap">
-      <AiDesignToCodeDiagram />
+      <NamingConventionDiagram />
     </div>
   </section>
 );
 
-export default AiDesignToCodeRoute;
+export default NamingConventionRoute;

@@ -1,6 +1,6 @@
 import { LinksFunction, MetaFunction, Link } from "react-router";
 
-import { ArchitectureDataFlowDiagram } from "~/components/work-diagrams/architecture-data-flow";
+import { ContentModelingDiagram } from "~/components/work-diagrams/content-modeling";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import workDiagram from "~/stylesheets/work-diagram.css?url";
 import work from "~/stylesheets/work.css?url";
@@ -13,18 +13,18 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [
-  { title: "Architecture & Data Flow — Arian Zargaran" },
+  { title: "Two Ways to Model Content — Arian Zargaran" },
 ]);
 
-const ArchitectureDataFlowRoute = () => (
+const ContentModelingRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies">
+      ← All case studies
     </Link>
     <div className="work-diagram_wrap">
-      <ArchitectureDataFlowDiagram />
+      <ContentModelingDiagram />
     </div>
   </section>
 );
 
-export default ArchitectureDataFlowRoute;
+export default ContentModelingRoute;

@@ -18,8 +18,8 @@ export const meta: MetaFunction = mergeMeta(() => [
 
 const MarshalRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies">
+      ← All case studies
     </Link>
     <div className="work-diagram_wrap">
       <MarshalRef />

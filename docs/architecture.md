@@ -238,3 +238,8 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - `/resume` and `/contact` render from typed data (`app/content/resume.ts`, `app/content/contact.ts`); web email is hello@ari.soy (PDF keeps arianzf@gmail.com).
 - Shared `RoutePage` shell: decorative v3.2 still (`SceneStill`, `app/scene/still.ts`) as scene placeholder, then a labelled `<main>` with one h1.
 - `/skills` now 302s to `/resume` (auto via `RESUME_ROUTE_EXISTS`); unit + Cypress tests updated.
+
+### Milestone B — /work and /case-studies split (done)
+- 9 diagram pages → 7 case studies (`app/content/case-studies.ts`): `/case-studies/brandkit` (+ `/theming`, `/naming-convention`, `/architecture`), `marshal`, `ask-nova`, `ai-design-to-code`, `content-modeling`, `motion-spec-sheet`, `murmuration`. Single-diagram cases render the diagram on the case page.
+- Old `/work/diagrams/<x>` → 301 via one route, `work_.diagrams.$diagram.tsx` (`LEGACY_DIAGRAM_REDIRECTS`); unknown → 404. Work-card `diagrams`/`references` hrefs point at the new URLs.
+- Atlas decision: the `live-on-this-site` work card follows `FEATURE_SKILLS_CHAT` — hidden from the grid (`visibleWorkRows`) and `/work/live-on-this-site` 404s while off. Tested in `case-studies.test.ts`.

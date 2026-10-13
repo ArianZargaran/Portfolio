@@ -1,6 +1,6 @@
 import { LinksFunction, MetaFunction, Link } from "react-router";
 
-import { AskNovaRef } from "~/components/work-diagrams/ask-nova";
+import { BrandkitThemingDiagram } from "~/components/work-diagrams/brandkit-theming";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import workDiagram from "~/stylesheets/work-diagram.css?url";
 import work from "~/stylesheets/work.css?url";
@@ -13,18 +13,18 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [
-  { title: "Ask Nova — AI Mode Reference — Arian Zargaran" },
+  { title: "Semantic Theming — Arian Zargaran" },
 ]);
 
-const AskNovaRoute = () => (
+const BrandkitThemingRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies/brandkit">
+      ← Brandkit
     </Link>
     <div className="work-diagram_wrap">
-      <AskNovaRef />
+      <BrandkitThemingDiagram />
     </div>
   </section>
 );
 
-export default AskNovaRoute;
+export default BrandkitThemingRoute;

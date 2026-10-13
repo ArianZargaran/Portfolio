@@ -44,7 +44,7 @@ export interface WorkCard {
   meta: string;
   /** Present only when the work is publicly reachable. */
   link?: { href: string; label: string };
-  /** Self-hosted diagram deep-dives (see app/routes/work_.diagrams.*),
+  /** Self-hosted case-study deep-dives (see app/routes/case-studies.*),
       distinct from `link`: these are internal detail pages, not the live
       product. A card can have zero, one, or several. */
   diagrams?: { href: string; label: string }[];
@@ -63,15 +63,15 @@ const BRANDKIT: WorkCard = {
   meta: "Airtable · 2021–2025 · still in production",
   diagrams: [
     {
-      href: "/work/diagrams/brandkit-theming",
+      href: "/case-studies/brandkit/theming",
       label: "Diagram: semantic theming",
     },
     {
-      href: "/work/diagrams/brandkit-naming-convention",
+      href: "/case-studies/brandkit/naming-convention",
       label: "Diagram: the naming convention",
     },
     {
-      href: "/work/diagrams/brandkit-architecture",
+      href: "/case-studies/brandkit/architecture",
       label: "Diagram: architecture & data flow",
     },
   ],
@@ -120,7 +120,7 @@ const AI_DESIGN_TO_CODE: WorkCard = {
   meta: "Freshworks · 2025–present",
   diagrams: [
     {
-      href: "/work/diagrams/ai-design-to-code",
+      href: "/case-studies/ai-design-to-code",
       label: "Diagram: structure over agents",
     },
   ],
@@ -167,7 +167,7 @@ const SIX_WEEK_REDESIGN: WorkCard = {
   link: { href: "https://www.freshworks.com", label: "Visit Freshworks" },
   references: [
     {
-      href: "/work/diagrams/murmuration",
+      href: "/case-studies/murmuration",
       label: "Deep-dive: rebuilding the homepage's particle effect",
     },
   ],
@@ -218,7 +218,7 @@ const MOTION: WorkCard = {
       label: "Play with an auto-peek tilt-card demo",
     },
     {
-      href: "/work/diagrams/motion-spec-sheet",
+      href: "/case-studies/motion-spec-sheet",
       label: "Deep-dive: the motion spec sheet",
     },
   ],
@@ -258,7 +258,7 @@ const CONTENT_MODELING: WorkCard = {
   meta: "Airtable + Freshworks",
   diagrams: [
     {
-      href: "/work/diagrams/content-modeling",
+      href: "/case-studies/content-modeling",
       label: "Diagram: two ways to model content",
     },
   ],
@@ -498,7 +498,7 @@ const CABIFY_DESIGN_SYSTEM: WorkCard = {
   },
   diagrams: [
     {
-      href: "/work/diagrams/marshal",
+      href: "/case-studies/marshal",
       label: "Deep-dive: governing Marshal across design and engineering",
     },
   ],
@@ -583,7 +583,7 @@ const ASK_NOVA_EVAL: WorkCard = {
   },
   references: [
     {
-      href: "/work/diagrams/ask-nova",
+      href: "/case-studies/ask-nova",
       label: "Deep-dive: Ask Nova design & architecture",
     },
   ],
@@ -640,7 +640,7 @@ const AI_MODE: WorkCard = {
       label: "See the Webby Honoree listing",
     },
     {
-      href: "/work/diagrams/ask-nova",
+      href: "/case-studies/ask-nova",
       label: "Deep-dive: Ask Nova design & architecture",
     },
   ],
@@ -746,3 +746,12 @@ export const SLUG_TO_ID: Readonly<Record<string, string>> = Object.fromEntries(
 export const ID_TO_SLUG: Readonly<Record<string, string>> = Object.fromEntries(
   ALL_WORK_CARDS.map((card) => [card.id, card.slug]),
 );
+
+/** Card id hidden while the skills chat is paused (FEATURE_SKILLS_CHAT off). */
+export const SKILLS_CHAT_CARD_ID = RAG_CHAT.id;
+
+/** Rows to render: the live-on-this-site card only shows when the chat is on. */
+export const visibleWorkRows = (skillsChat: boolean): WorkCard[][] =>
+  skillsChat
+    ? WORK_ROWS
+    : WORK_ROWS.map((row) => row.filter((c) => c.id !== SKILLS_CHAT_CARD_ID));

@@ -32,8 +32,8 @@ export const meta: MetaFunction = mergeMeta(() => [
 
 const MurmurationRoute = () => (
   <section className="page murmuration-page">
-    <Link className="murmuration-page_back" to="/work">
-      ← Back to Work
+    <Link className="murmuration-page_back" to="/case-studies">
+      ← All case studies
     </Link>
     <Murmuration />
   </section>

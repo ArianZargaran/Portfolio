@@ -1,6 +1,6 @@
 import { LinksFunction, MetaFunction, Link } from "react-router";
 
-import { BrandkitThemingDiagram } from "~/components/work-diagrams/brandkit-theming";
+import { ArchitectureDataFlowDiagram } from "~/components/work-diagrams/architecture-data-flow";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import workDiagram from "~/stylesheets/work-diagram.css?url";
 import work from "~/stylesheets/work.css?url";
@@ -13,18 +13,18 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [
-  { title: "Semantic Theming — Arian Zargaran" },
+  { title: "Architecture & Data Flow — Arian Zargaran" },
 ]);
 
-const BrandkitThemingRoute = () => (
+const ArchitectureDataFlowRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies/brandkit">
+      ← Brandkit
     </Link>
     <div className="work-diagram_wrap">
-      <BrandkitThemingDiagram />
+      <ArchitectureDataFlowDiagram />
     </div>
   </section>
 );
 
-export default BrandkitThemingRoute;
+export default ArchitectureDataFlowRoute;

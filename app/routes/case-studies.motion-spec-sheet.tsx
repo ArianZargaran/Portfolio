@@ -24,8 +24,8 @@ export const meta: MetaFunction = mergeMeta(() => [
 
 const MotionSpecSheetRoute = () => (
   <section className="page motion-lab-page">
-    <Link className="motion-lab-page_back" to="/work">
-      ← Back to Work
+    <Link className="motion-lab-page_back" to="/case-studies">
+      ← All case studies
     </Link>
     <MotionSpecSheet />
   </section>

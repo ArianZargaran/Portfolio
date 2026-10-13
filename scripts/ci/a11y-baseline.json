@@ -5,9 +5,9 @@
     "/work color-contrast",
     "/about color-contrast",
     "/contact color-contrast",
-    "/work/diagrams/marshal color-contrast",
-    "/work/diagrams/marshal link-in-text-block",
-    "/work/diagrams/marshal scrollable-region-focusable",
-    "/work/diagrams/murmuration color-contrast"
+    "/case-studies/marshal color-contrast",
+    "/case-studies/marshal link-in-text-block",
+    "/case-studies/marshal scrollable-region-focusable",
+    "/case-studies/murmuration color-contrast"
   ]
 }

@@ -1,6 +1,6 @@
 import { LinksFunction, MetaFunction, Link } from "react-router";
 
-import { ContentModelingDiagram } from "~/components/work-diagrams/content-modeling";
+import { AiDesignToCodeDiagram } from "~/components/work-diagrams/ai-design-to-code";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import workDiagram from "~/stylesheets/work-diagram.css?url";
 import work from "~/stylesheets/work.css?url";
@@ -13,18 +13,18 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [
-  { title: "Two Ways to Model Content — Arian Zargaran" },
+  { title: "Structure Over Agents — Arian Zargaran" },
 ]);
 
-const ContentModelingRoute = () => (
+const AiDesignToCodeRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies">
+      ← All case studies
     </Link>
     <div className="work-diagram_wrap">
-      <ContentModelingDiagram />
+      <AiDesignToCodeDiagram />
     </div>
   </section>
 );
 
-export default ContentModelingRoute;
+export default AiDesignToCodeRoute;

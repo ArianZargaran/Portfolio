@@ -37,6 +37,23 @@ describe("smoke tests", () => {
     cy.findByRole("heading", { name: /^work$/i }).should("exist");
   });
 
+  it("301s old /work/diagrams URLs to /case-studies", () => {
+    cy.request({
+      url: "/work/diagrams/brandkit-theming",
+      followRedirect: false,
+    }).then((response) => {
+      expect(response.status).to.eq(301);
+      expect(response.redirectedToUrl).to.match(
+        /\/case-studies\/brandkit\/theming$/,
+      );
+    });
+    cy.visitAndCheck("/case-studies");
+    cy.findByRole("heading", { level: 1, name: /case studies/i }).should(
+      "exist",
+    );
+    cy.request("/case-studies/marshal").its("status").should("eq", 200);
+  });
+
   it("redirects the old /projects URL to /work", () => {
     cy.request({ url: "/projects", followRedirect: false }).then((response) => {
       expect(response.status).to.eq(301);

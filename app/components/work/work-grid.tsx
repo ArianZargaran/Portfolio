@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import "./work-grid.css";
 import { WORK_ROWS } from "~/constants/work-cards";
+import type { WorkCard } from "~/constants/work-cards";
 
 import { WorkCardTile } from "./work-card";
 
@@ -82,11 +83,14 @@ interface WorkGridProps {
       already know about. The route decides whether that means calling
       navigate(); WorkGrid doesn't know or care what a URL is. */
   onOpenIdChange?: (id: string | undefined) => void;
+  /** Rows to render; defaults to every card (see visibleWorkRows). */
+  rows?: WorkCard[][];
 }
 
 export const WorkGrid: React.FC<WorkGridProps> = ({
   routeOpenId,
   onOpenIdChange,
+  rows = WORK_ROWS,
 }) => {
   const [phases, setPhases] = useState<Record<string, Phase>>({});
   /* Set for exactly one short beat when a card enters "settling" — see
@@ -286,7 +290,7 @@ export const WorkGrid: React.FC<WorkGridProps> = ({
 
   return (
     <div data-testid="work-grid" className="work-grid">
-      {WORK_ROWS.map((row, rowIdx) => {
+      {rows.map((row, rowIdx) => {
         const rowPhases = row.map((card) => phases[card.id]);
         const rowHasActive = rowPhases.some((p) => p !== undefined);
         /* Row-mates shrink (is-vacating) whenever some card in the row is

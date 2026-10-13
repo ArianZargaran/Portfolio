@@ -7,7 +7,9 @@ export const PAGE_ROUTES = [
   "/contact",
   "/resume",
   "/blog",
-  "/work/diagrams/marshal",
-  "/work/diagrams/murmuration",
+  "/case-studies",
+  "/case-studies/brandkit",
+  "/case-studies/marshal",
+  "/case-studies/murmuration",
 ];
 export const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";

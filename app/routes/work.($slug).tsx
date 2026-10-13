@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import {
   LinksFunction,
+  LoaderFunctionArgs,
+  useLoaderData,
   MetaFunction,
   Link,
   useLocation,
@@ -11,7 +13,14 @@ import {
 import { GridWarp } from "~/components/backgrounds/grid-warp/grid-warp";
 import { Isotype } from "~/components/icons/isotype/isotype";
 import { WorkGrid } from "~/components/work/work-grid";
-import { ALL_WORK_CARDS, ID_TO_SLUG, SLUG_TO_ID } from "~/constants/work-cards";
+import {
+  ALL_WORK_CARDS,
+  ID_TO_SLUG,
+  SKILLS_CHAT_CARD_ID,
+  SLUG_TO_ID,
+  visibleWorkRows,
+} from "~/constants/work-cards";
+import { featureNotFound, readFeatures } from "~/features";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import work from "~/stylesheets/work.css?url";
 import { mergeMeta } from "~/utils/seo";
@@ -33,6 +42,15 @@ export const links: LinksFunction = () => [
    per this morning's fix. An unrecognized or absent slug returns no
    overrides at all, so the bare /work behavior is exactly what it was
    before this route had a meta export. */
+/** The live-on-this-site card follows the paused skills chat: hidden from the
+    grid, and its deep link 404s, unless FEATURE_SKILLS_CHAT is on. */
+export const loader = ({ params }: LoaderFunctionArgs) => {
+  const { skillsChat } = readFeatures();
+  if (!skillsChat && params.slug === ID_TO_SLUG[SKILLS_CHAT_CARD_ID])
+    throw featureNotFound();
+  return { skillsChat };
+};
+
 export const meta: MetaFunction = mergeMeta(({ params }) => {
   const card = params.slug
     ? ALL_WORK_CARDS.find((c) => c.slug === params.slug)
@@ -53,6 +71,7 @@ const WorkPage = () => {
   const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { skillsChat } = useLoaderData<typeof loader>();
 
   /* null (not undefined) once routing is confirmed in play — see the
      three-state contract on WorkGridProps.routeOpenId in work-grid.tsx. An
@@ -84,6 +103,7 @@ const WorkPage = () => {
         <WorkGrid
           routeOpenId={routeOpenId}
           onOpenIdChange={handleOpenIdChange}
+          rows={visibleWorkRows(skillsChat)}
         />
       </article>
     </section>

@@ -1,6 +1,6 @@
 import { LinksFunction, MetaFunction, Link } from "react-router";
 
-import { NamingConventionDiagram } from "~/components/work-diagrams/naming-convention";
+import { AskNovaRef } from "~/components/work-diagrams/ask-nova";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import workDiagram from "~/stylesheets/work-diagram.css?url";
 import work from "~/stylesheets/work.css?url";
@@ -13,18 +13,18 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = mergeMeta(() => [
-  { title: "One Name, Three Tools — Arian Zargaran" },
+  { title: "Ask Nova — AI Mode Reference — Arian Zargaran" },
 ]);
 
-const NamingConventionRoute = () => (
+const AskNovaRoute = () => (
   <section className="page work work-diagram-page">
-    <Link className="work-diagram-page_back" to="/work">
-      ← Back to Work
+    <Link className="work-diagram-page_back" to="/case-studies">
+      ← All case studies
     </Link>
     <div className="work-diagram_wrap">
-      <NamingConventionDiagram />
+      <AskNovaRef />
     </div>
   </section>
 );
 
-export default NamingConventionRoute;
+export default AskNovaRoute;

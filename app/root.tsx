@@ -74,10 +74,11 @@ export const links: LinksFunction = () => [
 /** Maps a pathname to its page-theme class (see themes.css) so the <body>
     behind the page-enter fade always matches the page settling in, instead
     of a hardcoded theme leaking through mid-transition. `startsWith` on
-    /work covers nested routes like /work/diagrams/*. */
+    /work and /case-studies cover their nested routes. */
 const themeClassForPathname = (pathname: string): string => {
   if (pathname === "/about") return "about";
-  if (pathname.startsWith("/work")) return "work";
+  if (pathname.startsWith("/work") || pathname.startsWith("/case-studies"))
+    return "work";
   if (pathname === "/skills") return "skills";
   if (pathname === "/blog") return "blog";
   if (pathname === "/contact") return "contact";
