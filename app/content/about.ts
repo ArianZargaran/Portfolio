@@ -4,6 +4,6 @@ import { data as TIMELINE } from "~/constants/timeline-data-set";
 export const ABOUT = {
   title: "About me",
   /** TODO(content): Ari's own poster-face bio; this is the resume summary. */
-  bio: "Design Engineer at the intersection of design systems and applied AI. Bilingual (EN/ES), based in Chicago.",
+  bio: "Design Engineer at the intersection of design systems and applied AI. Bilingual (EN/ES), based in Dallas, TX.",
   timeline: TIMELINE,
 };
