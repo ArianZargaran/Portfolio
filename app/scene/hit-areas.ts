@@ -15,13 +15,21 @@ export interface HitObject {
   /** Breakpoints whose rects are hand estimates, not measured from layers.
       Atlas: keep for launch, replace when design supplies real boxes. */
   estimated?: Breakpoint[];
+  /** Design entities the object is drawn from (layer card names), so a
+      layer rebuild can be traced to the hit areas it affects. */
+  entities?: string[];
 }
+
+/** Layer 6 bookshelf v1 (designs/…v3.2/layers/layer06_bookshelf_v1/
+    piece.json) retired the old 50_hot_lego / bookshelf / 20_room_shelf-*
+    cards. Shelf, books and collectibles are now separate entities. */
+export const LAYER06 = "layer06_bookshelf_v1";
 
 /**
  * Object → route map for the v3.2 still. DOM order = tab order and stacking
  * order: later entries sit on top, so Lego (inside the bookshelf box) comes
  * after the bookshelf and wins where they overlap.
- * Laptop boxes: layer alpha bounds. Tablet/mobile: layout json, except the
+ * Laptop boxes: layer alpha bounds (bookshelf and Lego: layer 6 entities). Tablet/mobile: layout json, except the
  * poster (the layout has no poster box, only the old framed_photo).
  */
 export const HIT_OBJECTS: HitObject[] = [
@@ -50,24 +58,54 @@ export const HIT_OBJECTS: HitObject[] = [
     id: "bookshelf",
     label: "Resume",
     href: "/resume",
+    /* Laptop: layer 6 canvas_bbox of shelf.frame (clamped to the canvas)
+       plus the photo frames standing on top. Tablet/mobile: old layout json. */
     rects: {
-      laptop: [[867, 213, 1440, 900]],
+      laptop: [
+        [884, 208, 1440, 900],
+        [1234, 110, 1415, 208],
+      ],
       tablet: [
         [511, 84, 802, 417],
         [681, 760, 820, 1180],
       ],
       mobile: [[143, 278, 380, 463]],
     },
+    /* Every shelf entity except the Lego minifig opens /resume. */
+    entities: [
+      `${LAYER06}/shelf.frame`,
+      `${LAYER06}/shelf.interior`,
+      `${LAYER06}/shelf_books.upper_left`,
+      `${LAYER06}/shelf_books.top`,
+      `${LAYER06}/shelf_books.lower_left`,
+      `${LAYER06}/shelf_books.bottom`,
+      `${LAYER06}/item.xwing`,
+      `${LAYER06}/item.vader`,
+      `${LAYER06}/item.r2d2`,
+      `${LAYER06}/item.hero_cap`,
+      `${LAYER06}/item.hero_glasses`,
+      `${LAYER06}/item.hero_top`,
+      `${LAYER06}/item.photo_a`,
+      `${LAYER06}/item.photo_b`,
+      `${LAYER06}/item.shelf_lamp`,
+    ],
+    // Until Dusk delivers real boxes for the layer 6 entities.
+    estimated: ["laptop", "tablet", "mobile"],
   },
   {
     id: "lego",
     label: "Case studies",
     href: "/case-studies",
+    /* Laptop: layer 6 canvas_bbox of item.lego. Tablet/mobile: old
+       layout json (drawn from the retired 50_hot_lego card). */
     rects: {
-      laptop: [[968, 583, 1048, 679]],
+      laptop: [[984, 572, 1042, 670]],
       tablet: [[762, 930, 805, 1004]],
       mobile: [[189, 370, 212, 411]],
     },
+    entities: [`${LAYER06}/item.lego`],
+    // Until Dusk delivers real boxes for the layer 6 entities.
+    estimated: ["laptop", "tablet", "mobile"],
   },
   {
     id: "phone",

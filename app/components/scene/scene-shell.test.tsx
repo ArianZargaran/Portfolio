@@ -26,13 +26,15 @@ describe("<SceneShell>", () => {
     expect(screen.getAllByRole("link", { name: "Work" })).toHaveLength(3);
   });
 
-  it("hides the tablet bookshelf's extra rect from AT and tab order", async () => {
+  it("hides the bookshelf's extra rects (laptop photo frames, tablet lower shelf) from AT and tab order", async () => {
     await mountShell();
     const all = screen.getAllByRole("link", { hidden: true });
     const hidden = all.filter((a) => a.getAttribute("aria-hidden") === "true");
-    expect(hidden).toHaveLength(1);
-    expect(hidden[0]).toHaveAttribute("tabindex", "-1");
-    expect(hidden[0]).toHaveAttribute("href", "/resume");
+    expect(hidden).toHaveLength(2);
+    for (const a of hidden) {
+      expect(a).toHaveAttribute("tabindex", "-1");
+      expect(a).toHaveAttribute("href", "/resume");
+    }
   });
 
   it("server-renders the still with a text alternative", async () => {

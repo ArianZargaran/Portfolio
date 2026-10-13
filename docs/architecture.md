@@ -250,7 +250,7 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - Deleted the unused `contact.css`. Old about-page pieces (`about.css`, `AshesRain`, `IllustrationsSidebar`, `TimelineEvent`) are now unused; remove in a cleanup pass.
 
 ### Milestone D — still-frame scene shell (done)
-- `/` renders `<SceneShell>`: the server-rendered v3.2 still (`priority`, real alt text) plus link hit areas for all 7 routes (`app/scene/hit-areas.ts`). One `<nav aria-label="Scene">` per breakpoint, shown by the same media queries as the `<picture>` sources; boxes are % of the canvas, so they track the image at any width. Multi-rect objects (tablet bookshelf) expose only the first rect to AT and tab order. Lego is stacked after the bookshelf, so it wins the overlap.
+- `/` renders `<SceneShell>`: the server-rendered v3.2 still (`priority`, real alt text) plus link hit areas for all 7 routes (`app/scene/hit-areas.ts`). One `<nav aria-label="Scene">` per breakpoint, shown by the same media queries as the `<picture>` sources; boxes are % of the canvas, so they track the image at any width. Multi-rect objects (bookshelf: laptop photo frames, tablet lower shelf) expose only the first rect to AT and tab order. Lego is stacked after the bookshelf, so it wins the overlap.
 - No JS and no motion: this shell is also the reduced-motion and no-JS scene. Labels appear on hover/focus; the label fade only runs under `prefers-reduced-motion: no-preference`.
 - Minimal `/podcast` page (speakers) links to the SWE feed proxy.
 - **Estimated hit areas (flag):** the Queen poster boxes on tablet and mobile are hand estimates (the layout json has only the old `framed_photo`). They are marked `estimated: ["tablet", "mobile"]` in the data. Replace when design supplies measured boxes.
@@ -262,3 +262,11 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - `/work` and the case-study diagram pages keep their own layouts (no zoomed still yet).
 - Fix: `route-page.css` sized in rem assuming 16px, but this codebase sets 1rem = 1px (`fonts.css`). Values were converted, so the /resume, /contact, /about, /articles, /podcast and /case-studies layouts now render at the intended size. This was broken since Milestone A.
 - Tests: `app/routes/deep-links.test.tsx` covers each content route (loader → h1 inside `<main>`, zoom object current in every breakpoint nav); Cypress fetches each URL and checks the server HTML.
+
+### Bookshelf re-point to layer 6 entities (Dusk, Oct 13)
+- Dusk retired the old `50_hot_lego` card (and `bookshelf`, `20_room_shelf-*`, `50_hot_frame{a,b}`); layer 6 (`layers/layer06_bookshelf_v1/piece.json`) splits the shelf into free entities. `HitObject.entities` now names the layer 6 cards each hit area stands for:
+  - `/case-studies` (id `lego`) → `layer06_bookshelf_v1/item.lego`. Laptop box = its canvas_bbox `[984,572,1042,670]`.
+  - `/resume` (id `bookshelf`) → `shelf.frame`, `shelf.interior`, the 4 `shelf_books.*` groups, `item.xwing`, `item.vader`, `item.r2d2`, `item.hero_{cap,glasses,top}`, `item.photo_{a,b}`, `item.shelf_lamp`. Laptop boxes = `shelf.frame` `[884,208,1440,900]` + photo frames `[1234,110,1415,208]` (pointer-only).
+  - X-Wing, Vader, R2 and the hero figures have no route of their own (layer plan: "—"), so they open /resume with the rest of the shelf. Lego stays stacked above the shelf.
+- **Estimated (flag):** both objects are marked `estimated` on laptop, tablet and mobile until Dusk delivers real boxes. Laptop uses layer 6 bboxes (rectangles, not alpha-tight); tablet/mobile still use the old layout-json boxes drawn from the retired cards.
+- The `prototypes/2.5d-v2.1` config still loads `50_hot_lego.png`; it predates layer 6 and is not used by the site.
