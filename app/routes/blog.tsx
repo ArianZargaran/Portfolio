@@ -1,13 +1,4 @@
-import { LinksFunction } from "react-router";
+import { redirect } from "react-router";
 
-import commonThemePage from "~/stylesheets/common-page-themes.css?url";
-
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: commonThemePage },
-];
-
-const BlogPage = () => {
-  return <section className="page blog"></section>;
-};
-
-export default BlogPage;
+/** /blog was an empty page; the notebook now lives at /articles. */
+export const loader = () => redirect("/articles", { status: 301 });

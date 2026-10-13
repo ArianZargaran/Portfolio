@@ -25,11 +25,11 @@ describe("smoke tests", () => {
     );
   });
 
-  it("renders the about page", () => {
+  it("renders the about page and the static notebook", () => {
     cy.visitAndCheck("/about");
-    // The headline is position: fixed under the timeline; assert presence,
-    // not visibility, since layering is a layout choice.
-    cy.findByRole("heading", { name: /about me/i }).should("exist");
+    cy.findByRole("heading", { level: 1, name: /about me/i }).should("exist");
+    cy.visitAndCheck("/articles");
+    cy.findByRole("heading", { level: 1, name: /notebook/i }).should("exist");
   });
 
   it("renders the work page with the grid", () => {
@@ -78,8 +78,11 @@ describe("smoke tests", () => {
       .should("eq", 404);
   });
 
-  it("blog and contact still resolve at their direct URLs", () => {
-    cy.request("/blog").its("status").should("eq", 200);
+  it("/blog 301s to /articles and contact resolves", () => {
+    cy.request({ url: "/blog", followRedirect: false }).then((response) => {
+      expect(response.status).to.eq(301);
+      expect(response.redirectedToUrl).to.match(/\/articles$/);
+    });
     cy.request("/contact").its("status").should("eq", 200);
   });
 

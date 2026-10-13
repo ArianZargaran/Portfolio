@@ -243,3 +243,8 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - 9 diagram pages → 7 case studies (`app/content/case-studies.ts`): `/case-studies/brandkit` (+ `/theming`, `/naming-convention`, `/architecture`), `marshal`, `ask-nova`, `ai-design-to-code`, `content-modeling`, `motion-spec-sheet`, `murmuration`. Single-diagram cases render the diagram on the case page.
 - Old `/work/diagrams/<x>` → 301 via one route, `work_.diagrams.$diagram.tsx` (`LEGACY_DIAGRAM_REDIRECTS`); unknown → 404. Work-card `diagrams`/`references` hrefs point at the new URLs.
 - Atlas decision: the `live-on-this-site` work card follows `FEATURE_SKILLS_CHAT` — hidden from the grid (`visibleWorkRows`) and `/work/live-on-this-site` 404s while off. Tested in `case-studies.test.ts`.
+
+### Milestone C — /about and /articles (done)
+- `/about` rebuilt on the `RoutePage` shell from typed data (`app/content/about.ts`): bio + the timeline as an ordered list; long stories in native `<details>` (replaces the modal dialog and scroll lock). Bio is a placeholder until Ari writes the poster-face blurb.
+- `/articles` is the static notebook (`app/content/articles.ts`, empty `ARTICLES`), no interactivity at launch per Ari. `/blog` → 301 `/articles`.
+- Deleted the unused `contact.css`. Old about-page pieces (`about.css`, `AshesRain`, `IllustrationsSidebar`, `TimelineEvent`) are now unused; remove in a cleanup pass.

@@ -80,7 +80,7 @@ const themeClassForPathname = (pathname: string): string => {
   if (pathname.startsWith("/work") || pathname.startsWith("/case-studies"))
     return "work";
   if (pathname === "/skills") return "skills";
-  if (pathname === "/blog") return "blog";
+  if (pathname === "/articles") return "blog";
   if (pathname === "/contact") return "contact";
   if (pathname === "/resume") return "contact";
   return "home";

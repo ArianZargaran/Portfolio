@@ -82,7 +82,7 @@ const MainMenuNav: React.FC<MainMenuProps> = ({ options }) => {
             about: !isOpen && location.pathname === "/about",
             work: !isOpen && location.pathname === "/work",
             skills: !isOpen && location.pathname === "/skills",
-            blog: !isOpen && location.pathname === "/blog",
+            blog: !isOpen && location.pathname === "/articles",
             contact: (!isOpen && location.pathname === "/contact") || isOpen,
             [styles["mobile-open-reset"]]: isOpen,
           },

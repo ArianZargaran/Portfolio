@@ -150,3 +150,14 @@
   width: 100%;
   height: auto;
 }
+
+.about-timeline img {
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.route-page details summary {
+  cursor: pointer;
+  color: var(--rp-accent);
+}
