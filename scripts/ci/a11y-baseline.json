@@ -1,10 +1,7 @@
 {
   "$comment": "Known serious a11y debt on the pre-redesign pages (2026-10-13). Colour contrast is a design decision for the redesign (Designer via Atlas); do not add new entries without Atlas sign-off.",
   "known": [
-    "/ color-contrast",
     "/work color-contrast",
-    "/about color-contrast",
-    "/contact color-contrast",
     "/case-studies/marshal color-contrast",
     "/case-studies/marshal link-in-text-block",
     "/case-studies/marshal scrollable-region-focusable",
