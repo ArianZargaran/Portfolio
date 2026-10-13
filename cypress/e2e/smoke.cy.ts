@@ -32,10 +32,18 @@ describe("smoke tests", () => {
     });
   });
 
-  it("renders the skills page with a working search input", () => {
-    cy.visitAndCheck("/skills");
-    cy.findByPlaceholderText(/ask me something/i).type("react");
-    cy.findByPlaceholderText(/ask me something/i).should("have.value", "react");
+  it("hides the paused skills chat (feature flag off by default)", () => {
+    cy.request({ url: "/skills", failOnStatusCode: false })
+      .its("status")
+      .should("eq", 404);
+    cy.request({
+      url: "/api/chat",
+      method: "POST",
+      body: { question: "hi" },
+      failOnStatusCode: false,
+    })
+      .its("status")
+      .should("eq", 404);
   });
 
   it("blog and contact still resolve at their direct URLs", () => {

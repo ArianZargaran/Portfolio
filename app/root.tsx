@@ -6,10 +6,12 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  useRouteLoaderData,
 } from "react-router";
 
 import MainMenuNav from "~/components/main-menu-nav/main-menu-nav";
-import { MAIN_MENU_OPTIONS } from "~/constants/main-menu-options";
+import { menuOptionsFor } from "~/constants/main-menu-options";
+import { DEFAULT_FEATURES, readFeatures } from "~/features";
 import { useNonce } from "~/nonce";
 import borderStylesheet from "~/stylesheets/border.css?url";
 import colorsStylesheet from "~/stylesheets/colors.css?url";
@@ -55,6 +57,9 @@ export const meta: MetaFunction = ({ location }) => {
   ];
 };
 
+/** Exposes only the feature flags (booleans) to the client. */
+export const loader = () => ({ features: readFeatures() });
+
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: resetStylesheet },
   { rel: "stylesheet", href: fontsStylesheet },
@@ -82,6 +87,9 @@ const themeClassForPathname = (pathname: string): string => {
 export default function App() {
   const location = useLocation();
   const nonce = useNonce();
+  // Error boundaries render without loader data; fall back to all-off.
+  const features =
+    useRouteLoaderData<typeof loader>("root")?.features ?? DEFAULT_FEATURES;
   const bodyThemeClass = themeClassForPathname(location.pathname);
 
   return (
@@ -167,7 +175,7 @@ export default function App() {
         <Links />
       </head>
       <body className={`body ${bodyThemeClass}`}>
-        <MainMenuNav options={MAIN_MENU_OPTIONS} />
+        <MainMenuNav options={menuOptionsFor(features)} />
         <Outlet />
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />

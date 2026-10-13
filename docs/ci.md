@@ -30,7 +30,7 @@ Notes:
 | `check:a11y`   | `a11y.mjs`         | `@axe-core/playwright`, WCAG 2.0/2.1 A+AA, desktop 1440x900 and mobile 390x844, reduced motion. Fails on serious/critical violations not in `a11y-baseline.json`; prints baseline entries that are now fixed.                                                                        |
 | `lhci`         | `lighthouserc.cjs` | Mobile, 3 runs on `/`, `/work`, `/about`, `/contact`. Errors: a11y ≥ 0.9, best practices ≥ 0.9, SEO ≥ 0.9, CLS ≤ 0.1. Warnings (until M5): performance ≥ 0.8, LCP ≤ 2.5 s, TBT ≤ 300 ms. Reports to `.lighthouseci/` (no public upload).                                             |
 
-Routes checked are listed once in `scripts/ci/routes.mjs`; add new routes there.
+Routes checked are listed once in `scripts/ci/routes.mjs`; add new routes there. `/skills` is excluded while `FEATURE_SKILLS_CHAT` is off (it 404s).
 
 ## Run locally
 

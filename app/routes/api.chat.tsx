@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs } from "react-router";
 
+import { featureNotFound, readFeatures } from "~/features";
 import { singleton } from "~/singleton.server";
 import { retrieveRelevant } from "~/utils/rag/embeddings.server";
 import { generateAnswer } from "~/utils/rag/generate.server";
@@ -18,7 +19,15 @@ const rateLimiter = singleton("rag-rate-limiter", () =>
   createRateLimiter(RATE_LIMIT, RATE_WINDOW_MS),
 );
 
+/** GET /api/chat: 404 when the feature is off (no hint it exists). */
+export const loader = () => {
+  if (!readFeatures().skillsChat) throw featureNotFound();
+  return Response.json({ error: "Method not allowed" }, { status: 405 });
+};
+
 export const action = async ({ request }: ActionFunctionArgs) => {
+  // Paused for launch: behaves as if the route did not exist.
+  if (!readFeatures().skillsChat) return featureNotFound();
   if (request.method !== "POST") {
     return Response.json({ error: "Method not allowed" }, { status: 405 });
   }

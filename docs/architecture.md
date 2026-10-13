@@ -57,7 +57,7 @@ app/routes/
   `ROUTE_MAP: Record<Base, Partial<Record<RouteId, ObjectId>>>`. Unknown object for a base (car/plane/office resume) = route still works, content opens as a panel without a dolly.
 - **Deep link:** loader returns `{ sceneId, routeId, objectId }`; SSR renders the still _already zoomed_ (pre-cropped still per object and breakpoint, or CSS transform of the rest still, decided with the Motion handoff). On hydrate the camera starts at the dolly end pose. Back = history pop -> dolly out.
 - **Redirects (proposal, 301):** `/about-me -> /about` (done in M2), `/blog -> /articles`, `/projects -> /work`, `/skills -> /resume` (chat paused), `/work/diagrams/<x> -> /case-studies/<case>#<x>` (see 1.1), `/work/<slug>` stays. Implemented in a single `redirects.ts` table, tested.
-- Skills chat: removed from nav/routing, code kept behind `FEATURE_SKILLS_CHAT` flag (not deleted).
+- Skills chat (done): gated by `FEATURE_SKILLS_CHAT` (`app/features.ts`, default **off**). The root loader exposes only the boolean flags; `menuOptionsFor()` drops the Skills nav entry; the `/skills` loader and the `/api/chat` loader/action return 404 when off (no sign the endpoint exists, no API spend). Tests: flag parsing, nav filtering, `/skills` 404/200, `/api/chat` 404; Cypress smoke asserts both 404s. Code kept, not deleted.
 
 ### 1.1 DRAFT: /work vs /case-studies split
 
@@ -116,6 +116,8 @@ GET /api/scene-state            app/routes/api.scene-state.ts
 Wiring from env: `app/server/scene-config.server.ts`. The `_scene` layout loader (M4) calls the same `resolveScene`.
 
 ### 4.0 Calendar access (read-only): two options
+
+**Decided (Atlas, 2026-10-13): the secret iCal URL is the primary.** The scene calendar lives in the dedicated account **ari.port.folio.calendar@gmail.com**; its secret iCal address goes into `SCENE_CALENDAR_ICAL_URL` (Vercel env, never committed). The service account stays documented as the fallback option. The account address is server-side configuration knowledge only and never reaches the client.
 
 Both are behind one interface, `CalendarProvider` (`app/server/calendar/types.ts`): `eventsAt(now) -> CalendarEvent[]` with only `summary, start, end, location?, timeZone?`; all-day and cancelled events excluded; recurrences expanded; outage throws `CalendarUnavailableError` (the resolver turns that into the default scene). **`app/server/calendar/contract.test.ts` runs the same suite against all three implementations** (mock, iCal with a generated Google-style feed, Google API with a faked token and events endpoint): whitelisted fields only, overlap, start inclusive / end exclusive, all-day and cancelled excluded, daily recurrence with COUNT, recurrence across the DST change, empty calendar, outage.
 

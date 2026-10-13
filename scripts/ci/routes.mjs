@@ -6,7 +6,6 @@ export const PAGE_ROUTES = [
   "/about",
   "/contact",
   "/blog",
-  "/skills",
   "/work/diagrams/marshal",
   "/work/diagrams/murmuration",
 ];

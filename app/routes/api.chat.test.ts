@@ -30,10 +30,26 @@ describe("api.chat action", () => {
     vi.clearAllMocks();
     process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
     process.env.VOYAGE_API_KEY = "test-voyage-key";
+    process.env.FEATURE_SKILLS_CHAT = "1";
   });
 
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
+  });
+
+  it("is a 404 when the skills chat flag is off (default)", async () => {
+    delete process.env.FEATURE_SKILLS_CHAT;
+    const { action, loader } = await import("./api.chat");
+    const response = await action({
+      request: post("hi"),
+      params: {},
+      context: {},
+      url: new URL("http://localhost/api/chat"),
+      pattern: "/api/chat",
+    });
+    expect(response.status).toBe(404);
+    expect(() => loader()).toThrow();
+    expect(generateAnswerMock).not.toHaveBeenCalled();
   });
 
   it("rejects non-POST methods", async () => {

@@ -6,9 +6,16 @@ import { ChatHeader } from "~/components/chat/chat-header";
 import { ChatInput } from "~/components/chat/chat-input";
 import { ChatMessage, ChatAuthor } from "~/components/chat/chat-message";
 import { ChatQuickReplies } from "~/components/chat/chat-quick-replies";
+import { featureNotFound, readFeatures } from "~/features";
 import commonThemePage from "~/stylesheets/common-page-themes.css?url";
 import skills from "~/stylesheets/skills.css?url";
 import { getSkillReply, QUICK_REPLY_QUESTIONS } from "~/utils/skills-chat";
+
+/** Paused for launch: 404 unless FEATURE_SKILLS_CHAT is on. */
+export const loader = () => {
+  if (!readFeatures().skillsChat) throw featureNotFound();
+  return null;
+};
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: commonThemePage },
