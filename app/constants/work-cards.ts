@@ -332,95 +332,6 @@ const BRUMA: WorkCard = {
   ],
 };
 
-const FITCOUNTER: WorkCard = {
-  id: "fitcounter",
-  slug: "product-design",
-  eyebrow: "PRODUCT DESIGN",
-  signal:
-    "Most calorie apps let you earn treats back. I designed one that refuses — on purpose.",
-  meta: "Personal project, design led · live on the App Store",
-  link: { href: "https://fitcounter.com/", label: "Visit FitCounter" },
-  references: [
-    {
-      href: "https://apps.apple.com/es/app/ai-calorie-counter-fitcounter/id6498909414?l=en-GB",
-      label: "See it on the App Store",
-    },
-  ],
-  images: [
-    {
-      src: "/fitcounter.webp",
-      alt: "FitCounter 'Coming Soon' brand mark: a tomato-and-leaf icon over bold lettering",
-    },
-  ],
-  blocks: [
-    {
-      kind: "problem",
-      face: "Most calorie apps die at step one: search a food database, guess the portion, give up in a week.",
-      expanded:
-        "FitCounter is a nutrition-tracking app I designed, live on the App Store. Typing a food name into a search box and guessing its portion size is the exact friction that gets calorie trackers deleted within days. The entry point had to stop being a keyboard and start being a camera: snap a photo, let AI recognize the meal and estimate the macros, log it in one tap.",
-    },
-    {
-      kind: "decision",
-      face: "I designed the app to refuse something users would want: earning calories back through exercise.",
-      expanded:
-        "Most competitors let you \"earn\" extra food by logging a workout, which turns a nutrition plan into a bargain you can always renegotiate. FitCounter doesn't allow it, on purpose — the plan stays consistent and science-backed instead of elastic. That's a product stance as much as a design one: I had to design the restriction to feel like support from a coach, not a penalty, which is why it ships alongside Smart Coach guidance rather than as a bare rule.",
-    },
-    {
-      kind: "craft",
-      face: "A macro ring replaced a wall of numbers. NutriScore and NOVA ratings sit right where you're about to add the food.",
-      expanded:
-        "The add-food screen centers a circular kcal ring with protein, fat, and carbs read at a glance instead of four stacked numbers competing for attention. NutriScore and NOVA quality ratings surface in that same screen, so \"is this food actually good for me\" stays visible next to \"how much of it is this,\" not buried in a separate tab nobody opens.",
-    },
-    {
-      kind: "outcome",
-      face: "Shipped, ad-free, and the reviews single out the design, not just the feature list.",
-      expanded:
-        "FitCounter is live on the App Store at 4.8 stars, subscription-funded and ad-free — which also meant designing with no ad slots to route around. One review, translated from Spanish: “Has a spectacular design, very well structured — very accessible and intuitive.” It shipped already localized across 16+ languages, so the screens had to hold up in more than one language from the first draft, not as a retrofit.",
-    },
-  ],
-};
-
-const EPHEMERAL: WorkCard = {
-  id: "ephemeral",
-  slug: "mental-health-ux",
-  eyebrow: "MENTAL HEALTH UX",
-  signal:
-    "Most mood apps open by asking how you feel. Ephemeral opens by asking you to move.",
-  meta: "Personal design concept · Figma, unshipped",
-  images: [
-    {
-      src: "/ephemeral.webp",
-      alt: "Ephemeral logo, a stylized quote mark, with the tagline 'moments in time'",
-    },
-  ],
-  blocks: [
-    {
-      kind: "problem",
-      face: "Most mood apps ask you to log a feeling. Ephemeral's whole pitch is one line: you're one workout away from a good mood.",
-      expanded:
-        "Ephemeral is a mental-health app concept I designed — a full onboarding flow, style guide, and paywall, not shipped. Most apps in this category are diagnostic-first: log your mood, journal an entry, watch a chart. That's passive. The hook I designed around instead treats movement as the lever on mood, not just something to track alongside it — action first, reflection second.",
-    },
-    {
-      kind: "decision",
-      face: "Depression, letting go, missing someone — themes most apps bury in settings, surfaced as the very first tap.",
-      expanded:
-        "Onboarding opens with a personalization screen: tappable pill chips for Mental health, Positive thinking, Self-love, Depression, Letting go, Growth, Sadness, Missing someone, Productivity. Naming genuinely heavy topics like depression and grief in the first ten seconds is a real design risk — it can read as clinical or presumptuous. The earthy palette and rounded, warm pill shapes were the deliberate counterweight: the goal was recognition, not a diagnostic form.",
-    },
-    {
-      kind: "craft",
-      face: "A recurring illustrated character and a themeable home-screen widget carry the brand outside the app itself.",
-      expanded:
-        "A consistent illustrated pair — a person and their corgi — recurs across onboarding screens (walking to a bus stop, carrying a bag), giving a subject that could read as clinical a soft, approachable throughline instead of stock icons. The onboarding also sells a home-screen widget with a photo-theme picker (ocean, forest, watercolor), and a custom pre-permission screen explaining notifications before the OS prompt does — both surfaces most onboarding flows skip designing with the same care as the core screens.",
-    },
-    {
-      kind: "outcome",
-      face: "A 5-day trial laid out as a timeline — today, no commitment, charged in 5 days — instead of fine print.",
-      expanded:
-        "The paywall (8,99€/year, discounted from 17,99€) lays out the free trial as a three-step timeline with icons — Today: start using it; No Commitment: cancel anytime before the trial ends; In 5 days: you're charged, via the App Store — instead of a wall of legal text. It's concept work: a full style guide, a competitive-analysis page, and this onboarding exist in Figma, not on a store shelf, but the thesis — that the app should ask you to move before it asks you to reflect — runs through every screen.",
-    },
-  ],
-};
-
 const CHECKOUT_AT_SCALE: WorkCard = {
   id: "checkout-honest-failure",
   slug: "honest-failure",
@@ -707,20 +618,20 @@ const RAG_CHAT: WorkCard = {
 
 /**
  * Row layout mirrors the bento rhythm: wide pairs for the centerpieces,
- * trios for the supporting cards, one closing quad (2/3/3/3/4). Order
+ * trios for the supporting cards, a closing pair (2/3/3/3/2). Order
  * below is author-specified (not derived from any scoring here) — this
  * exact sequence, chunked in order:
  * AI Mode, AI × Design, Six-Week Redesign, Motion, Brandkit, Ask Nova eval,
- * Cabify, FitCounter, Checkout at Scale, Ephemeral, RAG Chat, Content
- * Modeling, Quality Origins, Bruma, pouk.ai.
+ * Cabify, Checkout at Scale, RAG Chat, Content Modeling, Quality Origins,
+ * Bruma, pouk.ai.
  * The page scrolls; rows are not viewport-locked.
  */
 export const WORK_ROWS: WorkCard[][] = [
   [AI_MODE, AI_DESIGN_TO_CODE],
   [SIX_WEEK_REDESIGN, MOTION, BRANDKIT],
-  [ASK_NOVA_EVAL, CABIFY_DESIGN_SYSTEM, FITCOUNTER],
-  [CHECKOUT_AT_SCALE, EPHEMERAL, RAG_CHAT],
-  [CONTENT_MODELING, QUALITY_ORIGINS, BRUMA, POUK],
+  [ASK_NOVA_EVAL, CABIFY_DESIGN_SYSTEM, CHECKOUT_AT_SCALE],
+  [RAG_CHAT, CONTENT_MODELING, QUALITY_ORIGINS],
+  [BRUMA, POUK],
 ];
 
 

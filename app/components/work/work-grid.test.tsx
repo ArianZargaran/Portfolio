@@ -23,9 +23,9 @@ const advancePhase = () =>
   });
 
 describe("WorkGrid", () => {
-  it("renders all 15 work cards across 5 rows", () => {
+  it("renders all 13 work cards across 5 rows", () => {
     render(<WorkGrid />);
-    expect(screen.getAllByTestId("work-card")).toHaveLength(15);
+    expect(screen.getAllByTestId("work-card")).toHaveLength(13);
     expect(screen.getAllByTestId("work-row")).toHaveLength(5);
   });
 
