@@ -83,6 +83,27 @@ app/routes/
 4. **Contract with Motion:** `SceneController` interface: `load(manifest)`, `setState(sceneId)`, `focus(objectId, {instant})`, `rest()`, `dispose()`. Router -> controller via `useLocation`. Every layer stays a separate entity (atlases + lazy loading, never flattened).
 5. Breakpoint switch on resize swaps composition (debounced), never scales one into another.
 
+### 2.1 Hero scene (branch `feat/hero-scene`, local only)
+
+The first real motion on `/`: the locked painted character over the locked V12 dusk room. Encoding comparison, measurements and gaps are in `docs/hero-encoding.md`.
+
+- **First paint:** the SSR `<picture>` still. On laptop it is now the V12 room with the polished character still (LOCK_PAINTED_CHAR_STILL_POLISH_V5). It is the LCP image and the whole scene for no-JS, reduced motion, Save-Data/2G, and tablet/mobile.
+- **Lazy motion:** `HeroMount` (in `SceneShell`, home only) waits for the `load` event plus an idle slot. It then `React.lazy`-loads `hero-player` (2.4 kB gzip) only if the laptop query matches and motion is allowed (`motionAllowed`). Otherwise no JS chunk and no media are fetched. It reacts live to the media queries changing.
+- **Composition:** one opaque crop of the full composite (x 176, y 272, 464x576), absolutely positioned in % of the 1440x900 frame. It has a 12 px feathered `mask-image` edge, so there's no seam against the still and it scales with the still at any width. `pointer-events: none`; the hit-area navs sit above it (`z-index: 1`), so every link still works (the smoke test clicks the laptop and the poster mid-playback).
+- **Clock and actions:** `app/scene/hero/`
+  - `clock.ts`: one shared clock (`performance.now`, paused while the tab is hidden), `phase = (t mod period) / period`.
+  - `actions.ts`: typed registry. `BASE_LOOP` is typing, 216 frames at 12 fps. `ACTIONS.nod` (E2 v3) has `spliceOffset` 120, so action frame i shows base frame (120 + i) mod 216; enter window 0–60, exit window 110–167, clip trimmed to f48–121. `ACTIONS.bounce` has offset 0, windows 0–83 / 108–215, clip f72–119.
+  - `schedule.ts`: pure `stateAt(t)`, `decide()`, `nextOccurrence()`, `validateRotation()`. `HERO_ROTATION` is the draft order [typing, nod, bounce, typing]; 4 x 18 s = 72 s, the cloud period.
+  - `hero-player.tsx`: turns decisions into `<video>` calls. It cuts in only inside the enter window, and only once the clip has a frame up. If the clip misses the window, that occurrence is skipped rather than popped in mid-motion. It cuts out in the exit window and re-seeks only on more than 1.5 frames of drift.
+  - To add an action: render it against the locked loop, run `scripts/hero/build_web_media.py`, add one `ACTIONS` entry and a rotation slot. `validateAction` and `validateRotation` run in the unit tests.
+- **Media:** `public/scene/home-office.desk.coding.dusk.clear/hero/*.{av1,h264}.mp4`, 1.37 MB total in git (AV1 set 576 KB, H.264 set 760 KB); `hero-media.json` records the source frames and hashes. No LFS needed at this size. CSP unchanged: `media-src 'self'`.
+- **Tests:** `schedule.test.ts` (splice mapping, phases, rotation overlap, 72 s periodicity, drift, decisions), `media.test.ts`, `media-files.test.ts` (shipped clips match the registry), `hero-mount.test.tsx` (reduced motion/tablet load nothing; control mounts). `scripts/hero-smoke.mjs` is the headless Chrome smoke test: normal, nod and bounce cut-ins, H.264 fallback, reduced motion, tablet, CPU.
+- **Open:**
+  - 18 s locked loop vs the spec's 24 s master (decision for Ari).
+  - No tablet/mobile composition in the spec.
+  - Laptop hit boxes are estimates on V12.
+  - The Harvey screenshot (launch checklist).
+
 ## 3. Content data models (`app/content/`, typed, no components)
 
 ```text
@@ -216,6 +237,9 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - [ ] Lighthouse performance/LCP assertions switched from warn to error.
 - [ ] `scripts/ci/a11y-baseline.json` empty.
 - [ ] All Cypress e2e running in CI.
+- [ ] **Monitor screenshot check (hero scene).** The typing loop's screen shows a real harvey.ai screenshot during the Harvey hold (typing f192–23, `designs/painted_char_typing_t959/v5_1/ref/harvey_home_1440x900.png`). It's allowed for the local preview only. Before anything goes public (remote preview included), Ari decides to keep it (with permission/attribution checked), replace it, or blur it; then re-render the loop and re-run `scripts/hero/build_web_media.py`.
+- [ ] Hero timing: decide the 18 s locked character loop vs the spec's 24 s master (see `docs/hero-encoding.md`).
+- [ ] Measured V12 laptop hit boxes from Dusk (today: estimates, `estimated: ["laptop"]`).
 - [ ] Arian approves the launch through Atlas; only then merge to `main` and deploy.
 
 ## 7. Open questions (for Atlas)
@@ -235,21 +259,25 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 13. ~~Poster for /about~~: resolved, the Queen poster opens /about.
 
 ### Milestone A — /resume and /contact foundations (done)
+
 - `/resume` and `/contact` render from typed data (`app/content/resume.ts`, `app/content/contact.ts`); web email is hello@ari.soy (PDF keeps arianzf@gmail.com).
 - Shared `RoutePage` shell: decorative v3.2 still (`SceneStill`, `app/scene/still.ts`) as scene placeholder, then a labelled `<main>` with one h1.
 - `/skills` now 302s to `/resume` (auto via `RESUME_ROUTE_EXISTS`); unit + Cypress tests updated.
 
 ### Milestone B — /work and /case-studies split (done)
+
 - 9 diagram pages → 7 case studies (`app/content/case-studies.ts`): `/case-studies/brandkit` (+ `/theming`, `/naming-convention`, `/architecture`), `marshal`, `ask-nova`, `ai-design-to-code`, `content-modeling`, `motion-spec-sheet`, `murmuration`. Single-diagram cases render the diagram on the case page.
 - Old `/work/diagrams/<x>` → 301 via one route, `work_.diagrams.$diagram.tsx` (`LEGACY_DIAGRAM_REDIRECTS`); unknown → 404. Work-card `diagrams`/`references` hrefs point at the new URLs.
 - Atlas decision: the `live-on-this-site` work card follows `FEATURE_SKILLS_CHAT` — hidden from the grid (`visibleWorkRows`) and `/work/live-on-this-site` 404s while off. Tested in `case-studies.test.ts`.
 
 ### Milestone C — /about and /articles (done)
+
 - `/about` rebuilt on the `RoutePage` shell from typed data (`app/content/about.ts`): bio + the timeline as an ordered list; long stories in native `<details>` (replaces the modal dialog and scroll lock). Bio is a placeholder until Ari writes the poster-face blurb.
 - `/articles` is the static notebook (`app/content/articles.ts`, empty `ARTICLES`), no interactivity at launch per Ari. `/blog` → 301 `/articles`.
 - Deleted the unused `contact.css`. Old about-page pieces (`about.css`, `AshesRain`, `IllustrationsSidebar`, `TimelineEvent`) are now unused; remove in a cleanup pass.
 
 ### Milestone D — still-frame scene shell (done)
+
 - `/` renders `<SceneShell>`: the server-rendered v3.2 still (`priority`, real alt text) plus link hit areas for all 7 routes (`app/scene/hit-areas.ts`). One `<nav aria-label="Scene">` per breakpoint, shown by the same media queries as the `<picture>` sources; boxes are % of the canvas, so they track the image at any width. Multi-rect objects (bookshelf: laptop photo frames, tablet lower shelf) expose only the first rect to AT and tab order. Lego is stacked after the bookshelf, so it wins the overlap.
 - No JS and no motion: this shell is also the reduced-motion and no-JS scene. Labels appear on hover/focus; the label fade only runs under `prefers-reduced-motion: no-preference`.
 - Minimal `/podcast` page (speakers) links to the SWE feed proxy.
@@ -258,12 +286,14 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - The old home hero (`home.css`, blurry circles, doodles, noise, social nav) is no longer used by `/`; remove in a cleanup pass.
 
 ### Milestone E — deep links load each route's content (done)
+
 - Every route's content comes from its loader and is server-rendered, so a deep link (or no-JS visit) gets the full page. `RoutePage` now renders `<SceneShell decorative focus=…>`: the still lands "already zoomed" on the route's object (`focusForPath`, prefix match, so `/work/<slug>` → laptop and `/case-studies/*` → Lego). The zoom is a static `transform: scale(1.8)` with a per-breakpoint `transform-origin` in CSS vars (`--zoom-origin-{laptop,tablet,mobile}`). There is no transition, so it is reduced-motion safe. Hit areas stay live, and the current object is marked `aria-current="page"`.
 - `/work` and the case-study diagram pages keep their own layouts (no zoomed still yet).
 - Fix: `route-page.css` sized in rem assuming 16px, but this codebase sets 1rem = 1px (`fonts.css`). Values were converted, so the /resume, /contact, /about, /articles, /podcast and /case-studies layouts now render at the intended size. This was broken since Milestone A.
 - Tests: `app/routes/deep-links.test.tsx` covers each content route (loader → h1 inside `<main>`, zoom object current in every breakpoint nav); Cypress fetches each URL and checks the server HTML.
 
 ### Bookshelf re-point to layer 6 entities (Dusk, Oct 13)
+
 - Dusk retired the old `50_hot_lego` card (and `bookshelf`, `20_room_shelf-*`, `50_hot_frame{a,b}`); layer 6 (`layers/layer06_bookshelf_v1/piece.json`) splits the shelf into free entities. `HitObject.entities` now names the layer 6 cards each hit area stands for:
   - `/case-studies` (id `lego`) → `layer06_bookshelf_v1/item.lego`. Laptop box = its canvas_bbox `[984,572,1042,670]`.
   - `/resume` (id `bookshelf`) → `shelf.frame`, `shelf.interior`, the 4 `shelf_books.*` groups, `item.xwing`, `item.vader`, `item.r2d2`, `item.hero_{cap,glasses,top}`, `item.photo_{a,b}`, `item.shelf_lamp`. Laptop boxes = `shelf.frame` `[884,208,1440,900]` + photo frames `[1234,110,1415,208]` (pointer-only).
