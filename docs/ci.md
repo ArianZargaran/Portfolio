@@ -25,7 +25,7 @@ Notes:
 
 | npm script     | Script             | Notes                                                                                                                                                                                                                                                                                |
 | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `check:bundle` | `check-bundle.mjs` | gzip sizes from `build/client/assets`; initial JS = `entry.client` + `root` and their static imports (Vite manifest, needs `BUNDLE_REPORT=1 npm run build`). Budgets in `bundle-budgets.json`.                                                                                       |
+| `check:bundle` | `check-bundle.mjs` | gzip sizes from `build/client/assets`; initial JS = `entry.client` + `root` and their static imports (React Router manifest from a plain `npm run build`; uses the Vite manifest instead when built with `BUNDLE_REPORT=1`). Budgets in `bundle-budgets.json`.                       |
 | `check:csp`    | `check-csp.mjs`    | Per route: CSP present, nonce in `script-src`, no `unsafe-inline`/`unsafe-eval` for scripts, `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `nosniff`; every `<script>` carries the nonce; then Chromium loads each route and fails on any CSP console violation. |
 | `check:a11y`   | `a11y.mjs`         | `@axe-core/playwright`, WCAG 2.0/2.1 A+AA, desktop 1440x900 and mobile 390x844, reduced motion. Fails on serious/critical violations not in `a11y-baseline.json`; prints baseline entries that are now fixed.                                                                        |
 | `lhci`         | `lighthouserc.cjs` | Mobile, 3 runs on `/`, `/work`, `/about`, `/contact`. Errors: a11y ≥ 0.9, best practices ≥ 0.9, SEO ≥ 0.9, CLS ≤ 0.1. Warnings (until M5): performance ≥ 0.8, LCP ≤ 2.5 s, TBT ≤ 300 ms. Reports to `.lighthouseci/` (no public upload).                                             |
@@ -35,7 +35,7 @@ Routes checked are listed once in `scripts/ci/routes.mjs`; add new routes there.
 ## Run locally
 
 ```bash
-BUNDLE_REPORT=1 npm run build && npm run check:bundle
+npm run build && npm run check:bundle
 PORT=3123 npm start &                      # production preview
 export BASE_URL=http://localhost:3123
 npm run check:csp && npm run check:a11y
