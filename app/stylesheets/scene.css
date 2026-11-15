@@ -172,3 +172,27 @@
 .scene_hits {
   z-index: 1;
 }
+
+/* Per-breakpoint text alternative of the still (see scene-still.tsx):
+   only the label of the visible composition is rendered. */
+.scene-still_alt {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+@media (min-width: 1025px) {
+  .scene-still_alt--laptop {
+    display: block;
+  }
+}
+@media (min-width: 601px) and (max-width: 1024px) {
+  .scene-still_alt--tablet {
+    display: block;
+  }
+}
+@media (max-width: 600px) {
+  .scene-still_alt--mobile {
+    display: block;
+  }
+}

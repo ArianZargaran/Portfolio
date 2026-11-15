@@ -57,12 +57,29 @@ export const STILL_SOURCES: StillSource[] = [
   },
 ];
 
-export const STILL_ALT =
+/* One text alternative per composition: each describes the image that
+   breakpoint actually shows. The laptop V12 room has no speaker (the
+   Podcast hotspot sits on the navy Stanley tumbler); tablet and mobile are
+   still the v3.2 placeholder collages. */
+const ALT_V12_LAPTOP =
   "Painted scene at dusk: Arian types on a laptop at a standing desk in his " +
   "home office, headphones on, beside a window onto trees in pink evening " +
-  "light. Around him: a phone on a stand, a notebook, a speaker, a Queen " +
-  "concert poster, a framed number 7 jersey, a glowing bat lamp and a " +
-  "cabinet of books, figures and an X-Wing diorama.";
+  "light. On the desk: a navy tumbler, a phone on a stand and a notebook. " +
+  "On the walls: a Queen concert poster, a framed number 7 jersey and a " +
+  "glowing bat lamp, above a cabinet of books, figures and an X-Wing diorama.";
+
+const ALT_V32_COLLAGE =
+  "Painted scene at dusk: Arian codes at a standing desk, headphones on, a " +
+  "city skyline glowing through the window and a bat signal on the wall. On " +
+  "the desk: a laptop, a blue tumbler, a speaker, a phone and a notebook. " +
+  "Around him: a Queen concert poster, a framed number 7 jersey with photos, " +
+  "and bookshelves with an X-Wing, Darth Vader, R2-D2 and other figures.";
+
+export const STILL_ALTS: Record<Breakpoint, string> = {
+  laptop: ALT_V12_LAPTOP,
+  tablet: ALT_V32_COLLAGE,
+  mobile: ALT_V32_COLLAGE,
+};
 
 export const srcSetAttr = (s: StillSource) =>
   s.srcSet.map((x) => `${x.src} ${x.width}w`).join(", ");

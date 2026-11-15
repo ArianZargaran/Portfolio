@@ -37,10 +37,26 @@ describe("<SceneShell>", () => {
     }
   });
 
-  it("server-renders the still with a text alternative", async () => {
+  it("server-renders the still eagerly, with one text alternative per composition", async () => {
     await mountShell();
-    expect(
-      screen.getByRole("img", { name: /painted scene at dusk/i }),
-    ).toHaveAttribute("loading", "eager");
+    // The <img> is presentational; each breakpoint's label describes its own painting.
+    expect(screen.getByRole("presentation")).toHaveAttribute(
+      "loading",
+      "eager",
+    );
+    const labels = screen.getAllByRole("img");
+    expect(labels.map((l) => l.dataset.breakpoint)).toEqual([
+      "mobile",
+      "tablet",
+      "laptop",
+    ]);
+    const byBp = Object.fromEntries(
+      labels.map((l) => [l.dataset.breakpoint, l.getAttribute("aria-label")]),
+    );
+    expect(byBp.laptop).toMatch(/navy tumbler/);
+    expect(byBp.laptop).not.toMatch(/speaker/i);
+    expect(byBp.laptop).toMatch(/X-Wing diorama/);
+    expect(byBp.tablet).toMatch(/city skyline/);
+    expect(byBp.mobile).toMatch(/city skyline/);
   });
 });
