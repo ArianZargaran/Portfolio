@@ -62,11 +62,12 @@ export const STILL_SOURCES: StillSource[] = [
    Podcast hotspot sits on the navy Stanley tumbler); tablet and mobile are
    still the v3.2 placeholder collages. */
 const ALT_V12_LAPTOP =
-  "Painted scene at dusk: Arian types on a laptop at a standing desk in his " +
-  "home office, headphones on, beside a window onto trees in pink evening " +
-  "light. On the desk: a navy tumbler, a phone on a stand and a notebook. " +
-  "On the walls: a Queen concert poster, a framed number 7 jersey and a " +
-  "glowing bat lamp, above a cabinet of books, figures and an X-Wing diorama.";
+  "Painted scene at dusk: in his home office, Arian sits in a gaming chair at " +
+  "his desk, headphones on, typing on a laptop beside a window onto trees in " +
+  "pink evening light. On the desk: a navy tumbler, a phone on a stand and a " +
+  "notebook. On the walls: a Queen concert poster, a framed, signed number 7 " +
+  "jersey and a glowing bat-shaped light, above a cabinet of books, family " +
+  "photos, figures and an X-Wing diorama.";
 
 const ALT_V32_COLLAGE =
   "Painted scene at dusk: Arian codes at a standing desk, headphones on, a " +
