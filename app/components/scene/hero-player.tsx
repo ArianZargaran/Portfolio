@@ -113,6 +113,13 @@ export default function HeroPlayer() {
       dead = true;
       root.dataset.state = "failed"; // the still underneath stays
     };
+    // A failed <source> is not fatal: the browser moves on to the next one
+    // (AV1 -> H.264). Only the last source failing, or a media error on the
+    // element itself, means no clip can play.
+    const onError = (e: Event) => {
+      const t = e.target;
+      if (t === base || t === base.querySelector("source:last-of-type")) fail();
+    };
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
@@ -182,7 +189,7 @@ export default function HeroPlayer() {
       }
     };
 
-    base.addEventListener("error", fail, true);
+    base.addEventListener("error", onError, true);
     document.addEventListener("visibilitychange", onVisibility);
     base.currentTime = frameTime(stateAt(clock.now()).baseFrame, FPS);
     base.play().then(
@@ -196,7 +203,7 @@ export default function HeroPlayer() {
     return () => {
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
-      base.removeEventListener("error", fail, true);
+      base.removeEventListener("error", onError, true);
       base.pause();
       release();
     };
