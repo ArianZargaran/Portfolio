@@ -3,7 +3,7 @@ Writes quality.json. Re-runnable (results cached per output sha256)."""
 import os, sys, json, subprocess, re, time, numpy as np
 from PIL import Image, ImageSequence
 from skimage.metrics import structural_similarity as ssim
-R="/workspace/hero-encoding-report"; SRC=f"{R}/work/src"; ENC=f"{R}/work/enc"
+from paths import REPORT as R, SRC, ENC
 W,H=464,576
 state=json.load(open(f"{ENC}/state.json")); QF=f"{R}/quality.json"
 cache=json.load(open(QF)) if os.path.exists(QF) else {}

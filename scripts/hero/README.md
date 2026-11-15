@@ -1,10 +1,19 @@
 # Hero media pipeline (local, $0)
 
 Python 3 + Pillow + numpy + scikit-image + ffmpeg 7.1 (libx264, libx265,
-libvpx-vp9, libsvtav1). Paths are absolute to the shared box
-(`/workspace/portfolio-brain` is read-only source; working files go to
-`/workspace/hero-encoding-report/`). Every step is idempotent and
-checkpointed, so a box restart resumes.
+libvpx-vp9, libsvtav1). Every step is idempotent and checkpointed, so a box
+restart resumes.
+
+Paths (`paths.py`, shared by every script) take a CLI flag or an env var:
+
+| Flag           | Env var       | Default                           | What                                    |
+| -------------- | ------------- | --------------------------------- | --------------------------------------- |
+| `--brain DIR`  | `HERO_BRAIN`  | `/workspace/portfolio-brain`      | design source, read-only, never written |
+| `--report DIR` | `HERO_REPORT` | `/workspace/hero-encoding-report` | working files and reports               |
+
+The repo root comes from the script's own location, so any clone works. Example:
+`HERO_REPORT=/tmp/hero python3 scripts/hero/prep.py` or
+`python3 scripts/hero/verify_locks.py --brain ~/brain --report ./out`.
 
 | Step                                                                        | Script                | Output                                                                           |
 | --------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------- |

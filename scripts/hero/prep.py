@@ -5,10 +5,11 @@ composited over transparent, RGBA (for alpha encodes; armrest goes on top as a s
 import os, sys, json, numpy as np
 from PIL import Image
 from multiprocessing import Pool
-B="/workspace/portfolio-brain"; S=f"{B}/scenes/home-office.desk.coding.dusk.clear"
+from paths import BRAIN as B, SRC
+S=f"{B}/scenes/home-office.desk.coding.dusk.clear"
 T=f"{B}/designs/painted_char_typing_t959/v5_1"; E=f"{B}/designs/painted_char_action_E2_headbang_t960/v3"
 RECT=(176,272,464,576); X,Y,W,H=RECT; BOX=(X,Y,X+W,Y+H)
-OUT="/workspace/hero-encoding-report/work/src"
+OUT=SRC
 CS=f"{B}/designs/painted_char_footrest_t956/v2/layers/CONTACT_SHADOW_deck_dusk_1440x900_RGBA_v2.png"
 ARM=f"{S}/m2/variants/d4_armrest/locked/placed/armrest_front_down_dusk_graded.png"
 PLATE=f"{S}/m2/variants/room_v12/locked_room_m2_v12/frames/ROOM_V12_dusk_clean_fullroom.png"

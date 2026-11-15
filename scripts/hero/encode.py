@@ -2,7 +2,8 @@
 recorded sha256 in state.json is skipped, so a box restart resumes). Outputs: work/enc/<seq>/."""
 import os, sys, json, hashlib, subprocess, time, math
 from PIL import Image
-R="/workspace/hero-encoding-report"; SRC=f"{R}/work/src"; ENC=f"{R}/work/enc"; STATE=f"{R}/work/enc/state.json"
+from paths import REPORT as R, SRC, ENC
+STATE=f"{R}/work/enc/state.json"
 FPS=12
 os.makedirs(ENC,exist_ok=True)
 state=json.load(open(STATE)) if os.path.exists(STATE) else {}

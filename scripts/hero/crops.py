@@ -1,7 +1,8 @@
 """Side-by-side 3x crops (source vs each encoding) for a few frames. Output: crops/*.png"""
 import os, json, subprocess, numpy as np
 from PIL import Image, ImageDraw
-R="/workspace/hero-encoding-report"; SRC=f"{R}/work/src"; ENC=f"{R}/work/enc"; OUT=f"{R}/crops"; os.makedirs(OUT,exist_ok=True)
+from paths import REPORT as R, SRC, ENC
+OUT=f"{R}/crops"; os.makedirs(OUT,exist_ok=True)
 W,H=464,576; X0,Y0=176,272
 plate=np.asarray(Image.open(f"{SRC}/plate_crop.png").convert("RGB"),np.float32)
 arm=np.asarray(Image.open(f"{SRC}/armrest_crop.png").convert("RGBA"),np.float32)

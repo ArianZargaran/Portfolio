@@ -3,8 +3,8 @@ Vite content-hashes them into build/client/assets/), from the staged copies.
 Checkpointed: a clip whose recorded sha256 matches is skipped. Build metadata (sources, encoder
 settings, hashes) goes to scripts/hero/hero-media.build.json, which is never served."""
 import os, json, hashlib, subprocess, sys
-R="/workspace/hero-encoding-report"; SRC=f"{R}/work/src"
-HERE=os.path.dirname(os.path.abspath(__file__)); REPO=os.path.dirname(os.path.dirname(HERE))
+from paths import REPO, SRC
+HERE=os.path.dirname(os.path.abspath(__file__))
 DST=f"{REPO}/app/scene/hero/media"
 os.makedirs(DST,exist_ok=True); MAN=f"{HERE}/hero-media.build.json"
 man=json.load(open(MAN)) if os.path.exists(MAN) else {"clips":{}}

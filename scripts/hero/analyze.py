@@ -1,6 +1,6 @@
 import numpy as np, json, glob
 from PIL import Image
-B="/workspace/portfolio-brain"
+from paths import BRAIN as B, REPORT as R
 S=f"{B}/scenes/home-office.desk.coding.dusk.clear"
 T=f"{B}/designs/painted_char_typing_t959/v5_1"
 E=f"{B}/designs/painted_char_action_E2_headbang_t960/v3"
@@ -41,5 +41,6 @@ for k,fl in seqs.items():
     res[k]={"vs_plate_bbox":bbox(v),"animated_bbox":bbox(a),"animated_px":int(a.sum()),"vs_plate_px":int(v.sum())}
     allv|=v; anim|=a
 res["union_vs_plate_bbox"]=bbox(allv); res["union_animated_bbox"]=bbox(anim)
-np.save("/workspace/hero-encoding-report/tools/anim_mask.npy",anim); np.save("/workspace/hero-encoding-report/tools/vsplate_mask.npy",allv)
-print(json.dumps(res,indent=1)); json.dump(res,open("/workspace/hero-encoding-report/regions.json","w"),indent=1)
+import os; os.makedirs(f"{R}/tools",exist_ok=True)
+np.save(f"{R}/tools/anim_mask.npy",anim); np.save(f"{R}/tools/vsplate_mask.npy",allv)
+print(json.dumps(res,indent=1)); json.dump(res,open(f"{R}/regions.json","w"),indent=1)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only lock check for every asset the hero scene uses. Writes lock_check.json."""
 import hashlib, json, os, sys
-B = "/workspace/portfolio-brain"
+from paths import BRAIN as B, REPORT
 S = "scenes/home-office.desk.coding.dusk.clear"
 CP = f"{S}/m2/variants/char_painted"
 def sha(p):
@@ -45,7 +45,7 @@ for p, h in e2["builds_on"].items():
     if not ok: mism.append(f"E2 builds_on {p}")
 out["mismatches"] = mism
 out["result"] = "PASS" if not mism else "FAIL"
-json.dump(out, open("/workspace/hero-encoding-report/lock_check.json", "w"), indent=1)
+json.dump(out, open(f"{REPORT}/lock_check.json", "w"), indent=1)
 print(json.dumps({k: v for k, v in out.items() if k != "locks"}, indent=1))
 for k, v in out["locks"].items(): print(k, {x: y for x, y in v.items() if x != "mismatched"})
 sys.exit(0 if not mism else 1)
