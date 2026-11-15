@@ -1,9 +1,15 @@
 /**
- * The server-rendered still frame of the current scene. Placeholder until the
- * Motion handoff: always the approved v3.2 baseline. One composition per
+ * The server-rendered still frame of the current scene. One composition per
  * breakpoint (laptop, tablet and mobile are separate paintings, never a
  * scaled copy of each other). Files live in public/scene/<sceneId>/.
+ *
+ * Laptop: the locked V12 dusk room with the polished painted character
+ * (LOCK_PAINTED_CHAR_STILL_POLISH_V5, REVIEW_IN_SCENE.png). It is also the
+ * reduced-motion / slow-connection fallback of the hero motion.
+ * Tablet and mobile: still the v3.2 placeholder collages; scene.spec.yaml
+ * has no tablet/mobile composition for the V12 room yet.
  */
+export const SCENE_ID = "home-office.desk.coding.dusk.clear";
 export const PLACEHOLDER_SCENE_ID = "home-office.desk.coding.dusk.clear.v3.2";
 
 export type Breakpoint = "laptop" | "tablet" | "mobile";
@@ -19,6 +25,7 @@ export interface StillSource {
 }
 
 const dir = `/scene/${PLACEHOLDER_SCENE_ID}`;
+const laptopDir = `/scene/${SCENE_ID}`;
 
 export const STILL_SOURCES: StillSource[] = [
   {
@@ -44,17 +51,18 @@ export const STILL_SOURCES: StillSource[] = [
     width: 1440,
     height: 900,
     srcSet: [
-      { src: `${dir}/laptop-960.webp`, width: 960 },
-      { src: `${dir}/laptop-1440.webp`, width: 1440 },
+      { src: `${laptopDir}/laptop-960.webp`, width: 960 },
+      { src: `${laptopDir}/laptop-1440.webp`, width: 1440 },
     ],
   },
 ];
 
 export const STILL_ALT =
-  "Painted scene at dusk: Arian codes at a standing desk in his home office, " +
-  "headphones on, a city skyline glowing through the window. Around him: a " +
-  "laptop, a phone on a stand, a notebook, speakers, a Queen concert poster, " +
-  "and a bookshelf with a lit Lego figure.";
+  "Painted scene at dusk: Arian types on a laptop at a standing desk in his " +
+  "home office, headphones on, beside a window onto trees in pink evening " +
+  "light. Around him: a phone on a stand, a notebook, a speaker, a Queen " +
+  "concert poster, a framed number 7 jersey, a glowing bat lamp and a " +
+  "cabinet of books, figures and an X-Wing diorama.";
 
 export const srcSetAttr = (s: StillSource) =>
   s.srcSet.map((x) => `${x.src} ${x.width}w`).join(", ");

@@ -38,14 +38,14 @@ describe("/resume", () => {
     ).toHaveAttribute("href", "/arian-zargaran-resume.pdf");
   });
 
-  it("uses the v3.2 still as a decorative placeholder", async () => {
+  it("uses the scene still (laptop: V12 dusk room) as a decorative image", async () => {
     await renderAt("/resume");
     // Decorative (alt="") images have role "presentation".
     const img = screen.getByRole("presentation");
     expect(img).toHaveAttribute("alt", "");
     expect(img).toHaveAttribute(
       "src",
-      expect.stringContaining("home-office.desk.coding.dusk.clear.v3.2"),
+      "/scene/home-office.desk.coding.dusk.clear/laptop-1440.webp",
     );
   });
 });

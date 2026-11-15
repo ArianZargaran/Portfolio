@@ -26,7 +26,15 @@ export interface HitObject {
 export const LAYER06 = "layer06_bookshelf_v1";
 
 /**
- * Object → route map for the v3.2 still. DOM order = tab order and stacking
+ * Laptop rects are hand estimates on the V12 dusk still (feat/hero-scene):
+ * the room was re-laid out (poster beside the jersey, cabinet with an
+ * X-Wing diorama instead of the Lego shelf, speaker left of the laptop), so
+ * the v3.2 laptop boxes no longer applied. Every object is marked
+ * `estimated` on laptop until Dusk supplies measured V12 boxes. The X-Wing
+ * diorama stands in for the Lego (/case-studies). Tablet/mobile boxes still
+ * belong to the v3.2 placeholder collages.
+ *
+ * Object → route map. DOM order = tab order and stacking
  * order: later entries sit on top, so Lego (inside the bookshelf box) comes
  * after the bookshelf and wins where they overlap.
  * Laptop boxes: layer alpha bounds (bookshelf and Lego: layer 6 entities). Tablet/mobile: layout json, except the
@@ -38,21 +46,22 @@ export const HIT_OBJECTS: HitObject[] = [
     label: "Work",
     href: "/work",
     rects: {
-      laptop: [[523, 411, 697, 563]],
+      laptop: [[452, 425, 632, 588]],
       tablet: [[408, 803, 539, 937]],
       mobile: [[225, 636, 298, 710]],
     },
+    estimated: ["laptop"],
   },
   {
     id: "queen-poster",
     label: "About me",
     href: "/about",
     rects: {
-      laptop: [[749, 21, 963, 420]],
+      laptop: [[656, 84, 780, 410]],
       tablet: [[578, 506, 742, 808]],
       mobile: [[12, 22, 100, 187]],
     },
-    estimated: ["tablet", "mobile"],
+    estimated: ["laptop", "tablet", "mobile"],
   },
   {
     id: "bookshelf",
@@ -62,8 +71,8 @@ export const HIT_OBJECTS: HitObject[] = [
        plus the photo frames standing on top. Tablet/mobile: old layout json. */
     rects: {
       laptop: [
-        [884, 208, 1440, 900],
-        [1234, 110, 1415, 208],
+        [883, 274, 1438, 858],
+        [1040, 210, 1255, 282],
       ],
       tablet: [
         [511, 84, 802, 417],
@@ -99,7 +108,7 @@ export const HIT_OBJECTS: HitObject[] = [
     /* Laptop: layer 6 canvas_bbox of item.lego. Tablet/mobile: old
        layout json (drawn from the retired 50_hot_lego card). */
     rects: {
-      laptop: [[984, 572, 1042, 670]],
+      laptop: [[1088, 555, 1372, 705]],
       tablet: [[762, 930, 805, 1004]],
       mobile: [[189, 370, 212, 411]],
     },
@@ -112,30 +121,33 @@ export const HIT_OBJECTS: HitObject[] = [
     label: "Contact",
     href: "/contact",
     rects: {
-      laptop: [[339, 442, 404, 544]],
+      laptop: [[640, 475, 708, 584]],
       tablet: [[266, 834, 312, 899]],
       mobile: [[147, 653, 172, 689]],
     },
+    estimated: ["laptop"],
   },
   {
     id: "notebook",
     label: "Notebook",
     href: "/articles",
     rects: {
-      laptop: [[451, 559, 694, 622]],
+      laptop: [[568, 588, 706, 622]],
       tablet: [[407, 927, 524, 971]],
       mobile: [[224, 705, 289, 728]],
     },
+    estimated: ["laptop"],
   },
   {
     id: "speakers",
     label: "Podcast",
     href: "/podcast",
     rects: {
-      laptop: [[772, 454, 858, 565]],
+      laptop: [[408, 445, 450, 540]],
       tablet: [[593, 837, 662, 927]],
       mobile: [[327, 655, 366, 705]],
     },
+    estimated: ["laptop"],
   },
 ];
 

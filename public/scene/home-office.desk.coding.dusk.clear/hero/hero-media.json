@@ -1,0 +1,163 @@
+{
+ "clips": {
+  "typing.av1.mp4": {
+   "source_seq": "typing",
+   "first_frame": 0,
+   "frames": 216,
+   "fps": 12,
+   "bytes": 333271,
+   "sha256": "daf42347d411f519f76b852ae59e86106846bf7e0683dfd093580c012f818a4f",
+   "ffmpeg_args": [
+    "-c:v",
+    "libsvtav1",
+    "-preset",
+    "4",
+    "-crf",
+    "30",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "typing.h264.mp4": {
+   "source_seq": "typing",
+   "first_frame": 0,
+   "frames": 216,
+   "fps": 12,
+   "bytes": 445269,
+   "sha256": "5fb1a7b2c160eb32ebdd7849fa9084a9831b13a9765f9ec1c36ae97810978cda",
+   "ffmpeg_args": [
+    "-c:v",
+    "libx264",
+    "-preset",
+    "veryslow",
+    "-crf",
+    "20",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-profile:v",
+    "high",
+    "-level",
+    "3.2",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "nod.av1.mp4": {
+   "source_seq": "e2",
+   "first_frame": 48,
+   "frames": 74,
+   "fps": 12,
+   "bytes": 164081,
+   "sha256": "2d89c9cf3e8bfb51fdcc518edb7c8520d29f14f06219f59ac75e96ce84b74a99",
+   "ffmpeg_args": [
+    "-c:v",
+    "libsvtav1",
+    "-preset",
+    "4",
+    "-crf",
+    "30",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "nod.h264.mp4": {
+   "source_seq": "e2",
+   "first_frame": 48,
+   "frames": 74,
+   "fps": 12,
+   "bytes": 217147,
+   "sha256": "372c811667c8210d3751797f40ed302551cd24c32a154c89d45f55b9bc171a61",
+   "ffmpeg_args": [
+    "-c:v",
+    "libx264",
+    "-preset",
+    "veryslow",
+    "-crf",
+    "20",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-profile:v",
+    "high",
+    "-level",
+    "3.2",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "bounce.av1.mp4": {
+   "source_seq": "bounce",
+   "first_frame": 72,
+   "frames": 48,
+   "fps": 12,
+   "bytes": 92800,
+   "sha256": "2732c00d4012171b1327a66c38c1094e5e80bfdc42b8e6a826b977d7a0299918",
+   "ffmpeg_args": [
+    "-c:v",
+    "libsvtav1",
+    "-preset",
+    "4",
+    "-crf",
+    "30",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ]
+  },
+  "bounce.h264.mp4": {
+   "source_seq": "bounce",
+   "first_frame": 72,
+   "frames": 48,
+   "fps": 12,
+   "bytes": 115915,
+   "sha256": "3bacca7b7bbf182db5cf9ca127172c988ee65c3753d3c1faf8d1ba55c3b1a0b5",
+   "ffmpeg_args": [
+    "-c:v",
+    "libx264",
+    "-preset",
+    "veryslow",
+    "-crf",
+    "20",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-profile:v",
+    "high",
+    "-level",
+    "3.2",
+    "-movflags",
+    "+faststart"
+   ]
+  }
+ },
+ "rect_xywh": [
+  176,
+  272,
+  464,
+  576
+ ],
+ "composition": [
+  1440,
+  900
+ ],
+ "sources": {
+  "typing": "designs/painted_char_typing_t959/v5_1/frames/typing (LOCK_PAINTED_CHAR_TYPING_LOOP_V5_1)",
+  "bounce": "designs/painted_char_typing_t959/v5_1/frames/bounce (same lock)",
+  "nod": "designs/painted_char_action_E2_headbang_t960/v3/frames (LOCK_PAINTED_CHAR_ACTION_E2_NOD_V3)"
+ }
+}

@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router";
 
+import { HeroMount } from "~/components/scene/hero-mount";
 import { SceneStill } from "~/components/scene/scene-still";
 import { HIT_OBJECTS, rectToPercent, zoomOrigin } from "~/scene/hit-areas";
 import { STILL_SOURCES } from "~/scene/still";
@@ -14,8 +15,11 @@ import { STILL_SOURCES } from "~/scene/still";
 export function SceneShell({
   focus,
   decorative = false,
+  motion = false,
   children,
 }: {
+  /** Home only: lazy-load the hero motion over the still (laptop, motion allowed). */
+  motion?: boolean;
   /** Object id the still is "already zoomed" to on a deep link. */
   focus?: string;
   /** True on content routes, where the page heading names the place. */
@@ -42,6 +46,7 @@ export function SceneShell({
     >
       <div className="scene_frame">
         <SceneStill decorative={decorative} priority={!decorative} />
+        {motion && !focused ? <HeroMount /> : null}
         {STILL_SOURCES.map((s) => (
           <nav
             key={s.breakpoint}

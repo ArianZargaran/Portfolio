@@ -29,12 +29,16 @@ describe("scene hit areas", () => {
     );
   });
 
-  it("flags estimated boxes: poster on tablet/mobile, layer 6 shelf objects everywhere", () => {
+  it("flags estimated boxes: every laptop box (V12 hand estimates), poster on tablet/mobile, layer 6 shelf objects everywhere", () => {
     const estimated = HIT_OBJECTS.filter((o) => o.estimated?.length);
     expect(estimated.map((o) => [o.id, o.estimated])).toEqual([
-      ["queen-poster", ["tablet", "mobile"]],
+      ["laptop", ["laptop"]],
+      ["queen-poster", ["laptop", "tablet", "mobile"]],
       ["bookshelf", ["laptop", "tablet", "mobile"]],
       ["lego", ["laptop", "tablet", "mobile"]],
+      ["phone", ["laptop"]],
+      ["notebook", ["laptop"]],
+      ["speakers", ["laptop"]],
     ]);
   });
 
