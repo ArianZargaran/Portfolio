@@ -1,9 +1,12 @@
-"""Build the shipped hero clips into the repo (public/scene/<scene>/hero/), from the staged copies.
-Checkpointed: a clip whose recorded sha256 matches is skipped. Writes hero-media.json next to them."""
+"""Build the shipped hero clips into the repo (app/scene/hero/media/, imported by actions.ts so
+Vite content-hashes them into build/client/assets/), from the staged copies.
+Checkpointed: a clip whose recorded sha256 matches is skipped. Build metadata (sources, encoder
+settings, hashes) goes to scripts/hero/hero-media.build.json, which is never served."""
 import os, json, hashlib, subprocess, sys
 R="/workspace/hero-encoding-report"; SRC=f"{R}/work/src"
-DST="/workspace/Portfolio/public/scene/home-office.desk.coding.dusk.clear/hero"
-os.makedirs(DST,exist_ok=True); MAN=f"{DST}/hero-media.json"
+HERE=os.path.dirname(os.path.abspath(__file__)); REPO=os.path.dirname(os.path.dirname(HERE))
+DST=f"{REPO}/app/scene/hero/media"
+os.makedirs(DST,exist_ok=True); MAN=f"{HERE}/hero-media.build.json"
 man=json.load(open(MAN)) if os.path.exists(MAN) else {"clips":{}}
 CLIPS={"typing":("typing",0,216),"nod":("e2",48,74),"bounce":("bounce",72,48)}
 ENC={

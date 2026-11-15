@@ -71,7 +71,12 @@ ffmpeg software decode, one thread, best of 3.
 | I1  | Animated AVIF with alpha (`<img>`, not clock-controllable)            |  166 KB | 41.68 / 37.1                 | 0.987 |            n/a (image decode) |
 | I2  | Animated WebP with alpha (`<img>`)                                    | 3967 KB | 40.22 / 36.05                | 0.980 |            n/a (image decode) |
 
-Shipped clips (public/scene/home-office.desk.coding.dusk.clear/hero/):
+Shipped clips (`app/scene/hero/media/`, imported by `actions.ts`; Vite
+content-hashes them to `/assets/<clip>.<codec>-<hash>.mp4`, served with
+`Cache-Control: public, max-age=31536000, immutable` by react-router-serve and
+by the `/assets/(.*)` header in `vercel.json`. Build metadata, i.e. source
+frames, encoder args and sha256, is in `scripts/hero/hero-media.build.json`
+and is not served):
 
 | Clip      | Frames      |        AV1 |      H.264 |
 | --------- | ----------- | ---------: | ---------: |

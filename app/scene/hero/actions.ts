@@ -14,6 +14,12 @@
  * play by itself, a slot in HERO_ROTATION (schedule.ts).
  */
 
+import bounceAv1 from "./media/bounce.av1.mp4";
+import bounceH264 from "./media/bounce.h264.mp4";
+import nodAv1 from "./media/nod.av1.mp4";
+import nodH264 from "./media/nod.h264.mp4";
+import typingAv1 from "./media/typing.av1.mp4";
+import typingH264 from "./media/typing.h264.mp4";
 export type MediaType = "video/mp4" | "video/webm";
 
 export interface ClipSource {
@@ -58,19 +64,28 @@ export interface ActionDef {
   lock: string;
 }
 
-const MEDIA = "/scene/home-office.desk.coding.dusk.clear/hero";
+/* Imported, not served from public/: Vite content-hashes each file into
+   build/client/assets/<name>-<hash>.mp4, which is cached immutably (1 year)
+   by react-router-serve and by the /assets/* header in vercel.json. Build
+   metadata (sources, encoder settings, hashes) lives in
+   scripts/hero/hero-media.build.json, which is never served. */
+const CLIP_URLS = {
+  typing: { av1: typingAv1, h264: typingH264 },
+  nod: { av1: nodAv1, h264: nodH264 },
+  bounce: { av1: bounceAv1, h264: bounceH264 },
+} as const;
 
 /* AV1 first (about 25% smaller at the same quality; Chrome, Edge, Firefox,
    Safari on AV1 hardware), H.264 High as the universal fallback. Both are
    opaque crops of the full composite (see docs/hero-encoding.md). */
-const sources = (name: string): ClipSource[] => [
+const sources = (name: keyof typeof CLIP_URLS): ClipSource[] => [
   {
-    src: `${MEDIA}/${name}.av1.mp4`,
+    src: CLIP_URLS[name].av1,
     type: "video/mp4",
     codecs: "av01.0.01M.08",
   },
   {
-    src: `${MEDIA}/${name}.h264.mp4`,
+    src: CLIP_URLS[name].h264,
     type: "video/mp4",
     codecs: "avc1.640020",
   },

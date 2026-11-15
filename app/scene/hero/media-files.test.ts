@@ -4,15 +4,10 @@ import path from "node:path";
 import { ACTIONS, BASE_LOOP } from "./actions";
 import { HERO_RECT } from "./media";
 
-const PUBLIC = path.resolve(__dirname, "../../../public");
+const MEDIA_DIR = path.resolve(__dirname, "media");
+const ROOT = path.resolve(__dirname, "../../..");
 const manifest = JSON.parse(
-  readFileSync(
-    path.join(
-      PUBLIC,
-      "scene/home-office.desk.coding.dusk.clear/hero/hero-media.json",
-    ),
-    "utf8",
-  ),
+  readFileSync(path.join(ROOT, "scripts/hero/hero-media.build.json"), "utf8"),
 ) as {
   rect_xywh: number[];
   clips: Record<
@@ -27,8 +22,10 @@ describe("shipped hero clips match the registry", () => {
   it.each(clips.flatMap((c) => c.sources.map((s) => ({ c, s }))))(
     "$s.src",
     ({ c, s }) => {
-      expect(existsSync(path.join(PUBLIC, s.src))).toBe(true);
-      const m = manifest.clips[path.basename(s.src)];
+      // Under Vitest the import resolves to the source path (the build hashes it).
+      const name = path.basename(s.src);
+      expect(existsSync(path.join(MEDIA_DIR, name))).toBe(true);
+      const m = manifest.clips[name];
       expect(m.first_frame).toBe(c.firstFrame);
       expect(m.frames).toBe(c.frames);
       expect(m.fps).toBe(BASE_LOOP.fps);
@@ -50,5 +47,13 @@ describe("shipped hero clips match the registry", () => {
       0,
     );
     expect(total).toBeLessThan(2 * 1024 * 1024);
+  });
+
+  it("keeps clips and build metadata out of public/ (nothing internal is served)", () => {
+    const pub = path.join(
+      ROOT,
+      "public/scene/home-office.desk.coding.dusk.clear/hero",
+    );
+    expect(existsSync(pub)).toBe(false);
   });
 });

@@ -27,11 +27,16 @@ async function run(name, ctxOpts, fn) {
     "console",
     (m) => /Content Security Policy/i.test(m.text()) && csp.push(m.text()),
   );
+  const cache = {};
   page.on(
     "request",
-    (r) => /\/hero\//.test(r.url()) && media.push(r.url().replace(BASE, "")),
+    (r) => /\.mp4(\?|$)/.test(r.url()) && media.push(r.url().replace(BASE, "")),
   );
-  const r = { csp, media };
+  page.on("response", (res) => {
+    if (/\.mp4(\?|$)/.test(res.url()))
+      cache[res.url().replace(BASE, "")] = res.headers()["cache-control"];
+  });
+  const r = { csp, media, cache };
   try {
     await fn(page, r);
   } catch (e) {
@@ -67,6 +72,20 @@ await run("normal", {}, async (page, r) => {
   await page.screenshot({ path: `${OUT}/01_first_paint_still.png` });
   await page.waitForSelector('.hero[data-state="live"]', { timeout: 20000 });
   r.live_after_ms = Date.now() - t0;
+  // The reveal: still -> live clip. Capture the hero crop through the fade so
+  // any double exposure (ghosted hands) would show.
+  r.fade = [];
+  for (const ms of [0, 50, 100, 150, 250]) {
+    const op = await page.evaluate(
+      () => getComputedStyle(document.querySelector(".hero")).opacity,
+    );
+    r.fade.push({ ms, opacity: +(+op).toFixed(2) });
+    await page.screenshot({
+      path: `${OUT}/01b_fade_${String(ms).padStart(3, "0")}ms.png`,
+      clip: { x: 176, y: 272, width: 464, height: 576 },
+    });
+    await page.waitForTimeout(ms === 0 ? 50 : ms === 150 ? 100 : 50);
+  }
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Performance.enable");
   const m0 = Object.fromEntries(
@@ -92,6 +111,12 @@ await run("normal", {}, async (page, r) => {
     js_heap_mb: +(m1.JSHeapUsedSize / 1048576).toFixed(1),
   };
   r.at_typing = await heroState(page);
+  // Hero clips are content-hashed build assets served as immutable.
+  if (!/\/assets\/typing\.av1-[\w-]+\.mp4$/.test(r.at_typing.videos[0].src))
+    throw new Error(`unhashed clip URL ${r.at_typing.videos[0].src}`);
+  for (const [u, cc] of Object.entries(r.cache))
+    if (!/immutable/.test(cc ?? "") || !/max-age=31536000/.test(cc ?? ""))
+      throw new Error(`clip ${u} not immutable: ${cc}`);
   await page.screenshot({ path: `${OUT}/02_live_typing.png` });
   await page
     .locator(".scene_hits--laptop")
@@ -133,12 +158,12 @@ await run("normal", {}, async (page, r) => {
 
 await run("h264_fallback", {}, async (page, r) => {
   // A browser without AV1 (or a failed AV1 fetch) must fall through to H.264.
-  await page.route("**/*.av1.mp4", (route) => route.abort());
+  await page.route(/\.av1-[\w-]+\.mp4$/, (route) => route.abort());
   await page.goto(BASE + "/", { waitUntil: "domcontentloaded" });
   await page.waitForSelector('.hero[data-state="live"]', { timeout: 20000 });
   await page.waitForTimeout(1500);
   r.at_typing = await heroState(page);
-  if (!/typing\.h264\.mp4$/.test(r.at_typing.videos[0].src))
+  if (!/\/assets\/typing\.h264-[\w-]+\.mp4$/.test(r.at_typing.videos[0].src))
     throw new Error("no H.264 fallback");
   await page.screenshot({ path: `${OUT}/07_h264_fallback.png` });
 });

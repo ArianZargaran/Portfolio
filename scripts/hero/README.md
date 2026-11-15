@@ -14,6 +14,6 @@ checkpointed, so a box restart resumes.
 | 4. Prototype encodes                                                        | `encode.py typing e2` | `work/enc/<seq>/*`, `work/enc/state.json`                                        |
 | 5. Quality / size / decode cost                                             | `quality.py`          | `quality.json`                                                                   |
 | 6. Side-by-side 3x crops                                                    | `crops.py`            | `crops/SIDEBYSIDE_*.png`                                                         |
-| 7. Shipped clips                                                            | `build_web_media.py`  | `public/scene/home-office.desk.coding.dusk.clear/hero/*.mp4` + `hero-media.json` |
+| 7. Shipped clips                                                            | `build_web_media.py`  | `app/scene/hero/media/*.mp4` + `scripts/hero/hero-media.build.json` (not served) |
 
 Smoke test of a running build: `BASE_URL=http://localhost:3000 OUT=… node scripts/hero-smoke.mjs`.
