@@ -38,6 +38,7 @@ driven by the shared clock through a typed action registry.
 
 - **Animated region:** the union over typing, bounce and E2 of the pixels that ever change is x 197–620, y 295–814 (`regions.json`). Pixels outside it never change, which matches the spec's rule that pixels outside the motion zones never change.
 - **Crop:** x 176, y 272, 464 x 576, on a 16 px grid. This leaves a static margin of at least 20 px on every side.
+- **Reveal:** the clip fades in over 120 ms (ease-out, motion users only). The still's pose and typing frame 0 differ, so the earlier 400 ms crossfade showed a soft double exposure of the hands; at 120 ms it reads as a cut-in. The smoke test freezes the transition and saves crops at 0/25/50/75/100% (`01b_fade_*pct.png`).
 - **Feather:** the mask feathers the clip edge over 12 px, inside the static margin. On the live page the ring just outside the clip matches the still with max diff 0, and the feather ring is closer to the locked plate (mean 2.7) than the WebP still is (3.6).
 - **Why baked, not alpha + occluder layers:** the PLATEEXACT occluders are per frame (`a_eff = a * ca` off the flag mask), so the backrest and chair base can't be static overlays. Only the armrest is static. Baking keeps the locked order exactly: plate, contact shadow, arm shadow, screen, key spill, character, character spill, backrest, chair base, armrest. The alpha prototypes (E1, F1) put the per-frame stack in the clip and the armrest on top as a static PNG; that also works, but costs more browser support for no visible gain.
 

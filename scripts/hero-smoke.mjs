@@ -64,6 +64,24 @@ const heroState = (page) =>
   });
 
 await run("normal", {}, async (page, r) => {
+  // Pause the reveal transition the moment it starts (see the fade crops below).
+  await page.addInitScript(() => {
+    new MutationObserver((recs, obs) => {
+      const h = document.querySelector(".hero");
+      if (h?.dataset.state !== "live") return;
+      getComputedStyle(h).opacity; // flush style so the transition starts now
+      const a = h.getAnimations()[0];
+      if (a) a.pause();
+      window.__heroFade = {
+        duration_ms: a ? a.effect.getComputedTiming().duration : 0,
+      };
+      obs.disconnect();
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-state"],
+    });
+  });
   const t0 = Date.now();
   await page.goto(BASE + "/", { waitUntil: "domcontentloaded" });
   // SSR still is in the HTML (first paint) before any media.
@@ -72,20 +90,26 @@ await run("normal", {}, async (page, r) => {
   await page.screenshot({ path: `${OUT}/01_first_paint_still.png` });
   await page.waitForSelector('.hero[data-state="live"]', { timeout: 20000 });
   r.live_after_ms = Date.now() - t0;
-  // The reveal: still -> live clip. Capture the hero crop through the fade so
-  // any double exposure (ghosted hands) would show.
-  r.fade = [];
-  for (const ms of [0, 50, 100, 150, 250]) {
-    const op = await page.evaluate(
-      () => getComputedStyle(document.querySelector(".hero")).opacity,
-    );
-    r.fade.push({ ms, opacity: +(+op).toFixed(2) });
+  // The reveal: still -> live clip. Freeze the opacity transition and step
+  // through it so any double exposure (ghosted hands) shows in the crops.
+  r.fade = await page.evaluate(() => window.__heroFade ?? { duration_ms: 0 });
+  for (const f of r.fade.duration_ms ? [0, 0.25, 0.5, 0.75, 1] : []) {
+    await page.evaluate((x) => {
+      const a = document.querySelector(".hero").getAnimations()[0];
+      a.currentTime = x * a.effect.getComputedTiming().duration;
+    }, f);
+    await page.waitForTimeout(50);
     await page.screenshot({
-      path: `${OUT}/01b_fade_${String(ms).padStart(3, "0")}ms.png`,
+      path: `${OUT}/01b_fade_${String(Math.round(f * 100)).padStart(3, "0")}pct.png`,
       clip: { x: 176, y: 272, width: 464, height: 576 },
     });
-    await page.waitForTimeout(ms === 0 ? 50 : ms === 150 ? 100 : 50);
   }
+  await page.evaluate(() =>
+    document
+      .querySelector(".hero")
+      .getAnimations()
+      .forEach((a) => a.finish()),
+  );
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Performance.enable");
   const m0 = Object.fromEntries(

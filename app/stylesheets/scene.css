@@ -152,8 +152,10 @@
   opacity: 1;
 }
 @media (prefers-reduced-motion: no-preference) {
+  /* Short on purpose: the still's pose and typing frame 0 differ, so a long
+     crossfade double-exposes the hands. 120 ms reads as a cut-in, not a ghost. */
   .hero {
-    transition: opacity 400ms ease-out;
+    transition: opacity 120ms ease-out;
   }
 }
 .hero_clip {
