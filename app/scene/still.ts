@@ -70,9 +70,10 @@ const ALT_V12_LAPTOP =
   "photos, figures and an X-Wing diorama.";
 
 const ALT_V32_COLLAGE =
-  "Painted scene at dusk: Arian codes at a standing desk, headphones on, a " +
-  "city skyline glowing through the window and a bat signal on the wall. On " +
-  "the desk: a laptop, a blue tumbler, a speaker, a phone and a notebook. " +
+  "Painted scene at dusk: Arian sits in a red gaming chair coding at his " +
+  "desk, headphones on, a city skyline glowing through the window and a bat " +
+  "signal on the wall. On the desk: a laptop, a blue tumbler, a speaker, a " +
+  "phone and a notebook. " +
   "Around him: a Queen concert poster, a framed number 7 jersey with photos, " +
   "and bookshelves with an X-Wing, Darth Vader, R2-D2 and other figures.";
 
