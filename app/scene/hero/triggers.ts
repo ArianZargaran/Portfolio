@@ -4,8 +4,9 @@
  * mounts (and never under reduced motion, a stored freeze, or off laptop).
  *
  * Hotspots are found by their `data-object` id (hit-areas.ts ids), never by
- * geometry: the boxes in HIT_OBJECTS are still hand estimates, and Dusk's
- * measured boxes (dependency B4) drop in as data without touching this file.
+ * geometry: the laptop boxes in HIT_OBJECTS come from Dusk's measured box
+ * file via the importer (docs/hotspots.md), so new boxes drop in as data
+ * without touching this file.
  *
  * Sources:
  * - Hover (pointer devices that can hover: HOVER_MQ) and keyboard focus on

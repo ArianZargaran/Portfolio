@@ -13,7 +13,12 @@ import { SceneStill } from "~/components/scene/scene-still";
 import { useMotionAllowed } from "~/components/scene/use-motion-allowed";
 import { DEFAULT_FEATURES, type Features } from "~/features";
 import { heroFreeze } from "~/scene/hero/freeze";
-import { HIT_OBJECTS, rectToPercent, zoomOrigin } from "~/scene/hit-areas";
+import {
+  HIT_OBJECTS,
+  rectToPercent,
+  stackIndex,
+  zoomOrigin,
+} from "~/scene/hit-areas";
 import { STILL_SOURCES } from "~/scene/still";
 
 /**
@@ -114,7 +119,12 @@ export function SceneShell({
                   className="scene_hit"
                   data-object={o.id}
                   aria-current={focus === o.id ? "page" : undefined}
-                  style={rectToPercent(r, s.width, s.height) as CSSProperties}
+                  style={
+                    {
+                      ...rectToPercent(r, s.width, s.height),
+                      zIndex: stackIndex(s.breakpoint, o.id),
+                    } as CSSProperties
+                  }
                   {...(i > 0 ? { "aria-hidden": true, tabIndex: -1 } : {})}
                 >
                   <span className="scene_hit-label">{o.label}</span>

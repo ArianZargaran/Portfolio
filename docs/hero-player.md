@@ -34,7 +34,9 @@ The loop starts automatically, runs indefinitely and sits beside the page's link
 - **Freeze is an instant stop.** The clock and every `<video>` pause where they are, so the visible frame holds, with no easing. Resuming continues the same clock, so splices stay in sync.
 - **Frozen means no reactions.** The reaction queue rejects requests while frozen (see below).
 
-### Hooks pending Ari (flags off by default, `app/features.ts`)
+### Hooks Ari skipped (flags stay off, `app/features.ts`)
+
+Ari skipped F4 and F5 (Nov 17 2026). Both flags stay **off** in every environment; the code stays as an unused hook. Turning either on needs a fresh decision from Ari via Atlas.
 
 | Flag                       | Fix | What it renders                                                                                                                                                    |
 | -------------------------- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -51,7 +53,7 @@ The loop starts automatically, runs indefinitely and sits beside the page's link
 Reactions are one-shot actions triggered by the visitor. They're cut into the typing loop at the next **join point**.
 
 - **Join points** (`join-config.ts`): every 36 frames (3 s, on the head-sway cycle) of the decided 18 s loop: f0, f36, f72, f108, f144, f180.
-- **B1 hook:** the points come from `HERO_JOIN`, so the retouched loop (v5_2, pending Ari) drops in by adding its config and pointing `HERO_JOIN` at it.
+- **B1 (approved by Ari, Nov 17 2026; media not landed):** Dusk is building the v5_2 hand retouch. `HERO_JOIN` stays `JOIN_V5_1` until the v5_2 media exists. Then add `JOIN_V5_2` (every 36 frames, `homePoseClean: true`) and point `HERO_JOIN` at it. Don't switch before the media is in.
 - **Today only some joins are usable:** `homePoseClean` is false for v5_1, so a reaction may only use joins its clip's own cut window covers. That's f72 for the bounce and f180 for the nod (`joinableKs`).
 
 `reactions.ts` is a pure machine; the player only feeds it the clock.
@@ -110,7 +112,7 @@ Decided (PLAN v3.3 §4): reaction media is fetched **on hover/focus intent only*
 
 - **Map:** `speakers → speaker` (T6), `phone → phone` (S5). The other hotspots (`laptop`, `queen-poster`, `bookshelf`, `lego`, `notebook`) send only intent and visit messages, which the E2 egg uses.
 - **Missing clips:** the speaker, phone and sip reactions have no clips yet, so the queue refuses them as `unknown` and nothing is fetched for them. They start working once their clips are registered in `REACTIONS`. Today the reachable reactions are the idle and return bounces, plus the egg nod.
-- **Dependency, not a blocker (Track B4):** hotspots are matched by their `data-object` id, never by geometry. The boxes in `HIT_OBJECTS` (`app/scene/hit-areas.ts`) are still the hand estimates marked `estimated`. Dusk's measured hotspot boxes aren't in the brain yet. When they land, only the `rects` data in `hit-areas.ts` changes: this wiring, the reaction map and the tests stay as they are.
+- **Track B4 (done for laptop):** hotspots are matched by their `data-object` id, never by geometry. The laptop boxes are Dusk's measured t995 v2 boxes, imported by `scripts/hotspots/import-hotspots.mjs` ([hotspots.md](./hotspots.md)). `speakers` is drawn on the navy Stanley (V12 has no speaker). The S4 sip has no hotspot (timer only). Tablet and mobile are still unmeasured estimates.
 - **Fetch timing for non-hover triggers:** an idle, time-on-page or return trigger is itself the intent. Its clip is fetched when the trigger fires (the bounce is 90.6 KiB with AV1), then cut in at the next join. That isn't the rejected "idle prefetch", which meant speculatively fetching hover variants before any intent (PLAN v3.3 §4).
 
 ## Warm hidden videos (M6)

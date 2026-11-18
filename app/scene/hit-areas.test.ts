@@ -1,4 +1,4 @@
-import { HIT_OBJECTS, LAYER06 } from "~/scene/hit-areas";
+import { HIT_OBJECTS, HIT_STACK, LAYER06, stackIndex } from "~/scene/hit-areas";
 import { STILL_SOURCES } from "~/scene/still";
 
 describe("scene hit areas", () => {
@@ -29,17 +29,16 @@ describe("scene hit areas", () => {
     );
   });
 
-  it("flags estimated boxes: every laptop box (V12 hand estimates), poster on tablet/mobile, layer 6 shelf objects everywhere", () => {
+  it("flags estimated boxes: laptop is measured (t995 v2); poster and shelf objects on tablet/mobile", () => {
     const estimated = HIT_OBJECTS.filter((o) => o.estimated?.length);
     expect(estimated.map((o) => [o.id, o.estimated])).toEqual([
-      ["laptop", ["laptop"]],
-      ["queen-poster", ["laptop", "tablet", "mobile"]],
-      ["bookshelf", ["laptop", "tablet", "mobile"]],
-      ["lego", ["laptop", "tablet", "mobile"]],
-      ["phone", ["laptop"]],
-      ["notebook", ["laptop"]],
-      ["speakers", ["laptop"]],
+      ["queen-poster", ["tablet", "mobile"]],
+      ["bookshelf", ["tablet", "mobile"]],
+      ["lego", ["tablet", "mobile"]],
     ]);
+    expect(HIT_OBJECTS.some((o) => o.estimated?.includes("laptop"))).toBe(
+      false,
+    );
   });
 
   it("maps /case-studies to the layer 6 Lego entity and /resume to the rest of the shelf", () => {
@@ -72,8 +71,195 @@ describe("scene hit areas", () => {
     expect(lx1 >= sx1 && ly1 >= sy1 && lx2 <= sx2 && ly2 <= sy2).toBe(true);
   });
 
-  it("stacks Lego above the bookshelf so it wins where they overlap", () => {
-    const ids = HIT_OBJECTS.map((o) => o.id);
-    expect(ids.indexOf("lego")).toBeGreaterThan(ids.indexOf("bookshelf"));
+  it.each(["laptop", "tablet", "mobile"] as const)(
+    "stacks Lego above the bookshelf on %s",
+    (bp) => {
+      expect(stackIndex(bp, "lego")).toBeGreaterThan(
+        stackIndex(bp, "bookshelf"),
+      );
+    },
+  );
+
+  it("laptop: stacks the phone above the notebook, and both plus speakers above the laptop", () => {
+    expect(HIT_STACK.laptop).toEqual([
+      "bookshelf",
+      "lego",
+      "queen-poster",
+      "laptop",
+      "notebook",
+      "phone",
+      "speakers",
+    ]);
+    expect(stackIndex("laptop", "phone")).toBeGreaterThan(
+      stackIndex("laptop", "notebook"),
+    );
+  });
+
+  it("keeps the DOM/tab order and the tablet/mobile stacking unchanged", () => {
+    const legacy = [
+      "laptop",
+      "queen-poster",
+      "bookshelf",
+      "lego",
+      "phone",
+      "notebook",
+      "speakers",
+    ];
+    expect(HIT_OBJECTS.map((o) => o.id)).toEqual(legacy);
+    expect(HIT_STACK.tablet).toEqual(legacy);
+    expect(HIT_STACK.mobile).toEqual(legacy);
+  });
+
+  it("keeps tablet and mobile on their current (pre-t995) data", () => {
+    expect(
+      Object.fromEntries(
+        HIT_OBJECTS.map((o) => [o.id, [o.rects.tablet, o.rects.mobile]]),
+      ),
+    ).toMatchInlineSnapshot(`
+      {
+        "bookshelf": [
+          [
+            [
+              511,
+              84,
+              802,
+              417,
+            ],
+            [
+              681,
+              760,
+              820,
+              1180,
+            ],
+          ],
+          [
+            [
+              143,
+              278,
+              380,
+              463,
+            ],
+          ],
+        ],
+        "laptop": [
+          [
+            [
+              408,
+              803,
+              539,
+              937,
+            ],
+          ],
+          [
+            [
+              225,
+              636,
+              298,
+              710,
+            ],
+          ],
+        ],
+        "lego": [
+          [
+            [
+              762,
+              930,
+              805,
+              1004,
+            ],
+          ],
+          [
+            [
+              189,
+              370,
+              212,
+              411,
+            ],
+          ],
+        ],
+        "notebook": [
+          [
+            [
+              407,
+              927,
+              524,
+              971,
+            ],
+          ],
+          [
+            [
+              224,
+              705,
+              289,
+              728,
+            ],
+          ],
+        ],
+        "phone": [
+          [
+            [
+              266,
+              834,
+              312,
+              899,
+            ],
+          ],
+          [
+            [
+              147,
+              653,
+              172,
+              689,
+            ],
+          ],
+        ],
+        "queen-poster": [
+          [
+            [
+              578,
+              506,
+              742,
+              808,
+            ],
+          ],
+          [
+            [
+              12,
+              22,
+              100,
+              187,
+            ],
+          ],
+        ],
+        "speakers": [
+          [
+            [
+              593,
+              837,
+              662,
+              927,
+            ],
+          ],
+          [
+            [
+              327,
+              655,
+              366,
+              705,
+            ],
+          ],
+        ],
+      }
+    `);
+  });
+
+  it("splits the laptop bookshelf into 3 cabinet boxes + the photo frames, clear of the jersey frame", () => {
+    const shelf = HIT_OBJECTS.find((o) => o.id === "bookshelf")!;
+    expect(shelf.rects.laptop).toHaveLength(4);
+    const jersey = [796, 134, 953, 364];
+    for (const [x1, y1, x2, y2] of HIT_OBJECTS.flatMap((o) => o.rects.laptop))
+      expect(
+        x1 < jersey[2] && jersey[0] < x2 && y1 < jersey[3] && jersey[1] < y2,
+      ).toBe(false);
   });
 });

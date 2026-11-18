@@ -26,15 +26,47 @@ describe("<SceneShell>", () => {
     expect(screen.getAllByRole("link", { name: "Work" })).toHaveLength(3);
   });
 
-  it("hides the bookshelf's extra rects (laptop photo frames, tablet lower shelf) from AT and tab order", async () => {
+  it("hides the bookshelf's extra rects (laptop: 2 upper cabinet boxes + photo frames; tablet: lower shelf) from AT and tab order", async () => {
     await mountShell();
     const all = screen.getAllByRole("link", { hidden: true });
     const hidden = all.filter((a) => a.getAttribute("aria-hidden") === "true");
-    expect(hidden).toHaveLength(2);
+    expect(hidden).toHaveLength(4);
     for (const a of hidden) {
       expect(a).toHaveAttribute("tabindex", "-1");
       expect(a).toHaveAttribute("href", "/resume");
     }
+  });
+
+  it("stacks the laptop hotspots by z-index (phone above notebook) without changing the tab order", async () => {
+    await mountShell();
+    const laptop = screen
+      .getAllByRole("navigation", { name: "Scene" })
+      .find((n) => n.getAttribute("class")?.includes("scene_hits--laptop"))!;
+    const links = within(laptop).getAllByRole("link", { hidden: true });
+    const z = (id: string) =>
+      Number(
+        /z-index:\s*(\d+)/.exec(
+          links
+            .find((a) => a.getAttribute("data-object") === id)!
+            .getAttribute("style") ?? "",
+        )?.[1],
+      );
+    expect(z("phone")).toBeGreaterThan(z("notebook"));
+    expect(z("lego")).toBeGreaterThan(z("bookshelf"));
+    expect(z("speakers")).toBeGreaterThan(z("laptop"));
+    expect(
+      links
+        .filter((a) => a.getAttribute("tabindex") === null)
+        .map((a) => a.getAttribute("data-object")),
+    ).toEqual([
+      "laptop",
+      "queen-poster",
+      "bookshelf",
+      "lego",
+      "phone",
+      "notebook",
+      "speakers",
+    ]);
   });
 
   it("server-renders the still eagerly, with one text alternative per composition", async () => {

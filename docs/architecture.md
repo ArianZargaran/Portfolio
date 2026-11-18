@@ -101,7 +101,7 @@ The first real motion on `/`: the locked painted character over the locked V12 d
 - **Open:**
   - 18 s locked loop vs the spec's 24 s master (decision for Ari).
   - No tablet/mobile composition in the spec.
-  - Laptop hit boxes are estimates on V12.
+  - Laptop hit boxes are measured on V12 (t995 v2, docs/hotspots.md).
   - The Harvey screenshot (launch checklist).
 
 ## 3. Content data models (`app/content/`, typed, no components)
@@ -239,7 +239,7 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 - [ ] All Cypress e2e running in CI.
 - [ ] **Monitor screenshot check (hero scene).** The typing loop's screen shows a real harvey.ai screenshot during the Harvey hold (typing f192–23, `designs/painted_char_typing_t959/v5_1/ref/harvey_home_1440x900.png`). It's allowed for the local preview only. Before anything goes public (remote preview included), Ari decides to keep it (with permission/attribution checked), replace it, or blur it; then re-render the loop and re-run `scripts/hero/build_web_media.py`.
 - [ ] Hero timing: decide the 18 s locked character loop vs the spec's 24 s master (see `docs/hero-encoding.md`).
-- [ ] Measured V12 laptop hit boxes from Dusk (today: estimates, `estimated: ["laptop"]`).
+- [x] Measured V12 laptop hit boxes from Dusk (t995 v2, docs/hotspots.md). Tablet/mobile still unmeasured.
 - [ ] Arian approves the launch through Atlas; only then merge to `main` and deploy.
 
 ## 7. Open questions (for Atlas)
@@ -298,5 +298,5 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
   - `/case-studies` (id `lego`) → `layer06_bookshelf_v1/item.lego`. Laptop box = its canvas_bbox `[984,572,1042,670]`.
   - `/resume` (id `bookshelf`) → `shelf.frame`, `shelf.interior`, the 4 `shelf_books.*` groups, `item.xwing`, `item.vader`, `item.r2d2`, `item.hero_{cap,glasses,top}`, `item.photo_{a,b}`, `item.shelf_lamp`. Laptop boxes = `shelf.frame` `[884,208,1440,900]` + photo frames `[1234,110,1415,208]` (pointer-only).
   - X-Wing, Vader, R2 and the hero figures have no route of their own (layer plan: "—"), so they open /resume with the rest of the shelf. Lego stays stacked above the shelf.
-- **Estimated (flag):** both objects are marked `estimated` on laptop, tablet and mobile until Dusk delivers real boxes. Laptop uses layer 6 bboxes (rectangles, not alpha-tight); tablet/mobile still use the old layout-json boxes drawn from the retired cards.
+- **Estimated (flag):** both objects are marked `estimated` on tablet and mobile (old layout-json boxes drawn from the retired cards). Laptop is measured: the bookshelf is 3 cabinet boxes plus the photo frames, and the X-Wing diorama bay is the Lego box (t995 v2).
 - The `prototypes/2.5d-v2.1` config still loads `50_hot_lego.png`; it predates layer 6 and is not used by the site.

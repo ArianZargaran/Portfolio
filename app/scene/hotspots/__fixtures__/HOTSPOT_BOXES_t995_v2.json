@@ -1,0 +1,2032 @@
+{
+ "task": "t995 / B4 measured hotspot boxes v2 (errata + Atlas decisions baked in; v1 kept unchanged)",
+ "scene": "home-office.desk.coding.dusk.clear, laptop composition",
+ "scene_size": [
+  1440,
+  900
+ ],
+ "units": "scene px of the 1440x900 composition; box = [x, y, w, h], *_xyxy = [x1, y1, x2, y2] exclusive (hit-areas.ts Rect convention)",
+ "cost_usd": 0,
+ "provider_calls": 0,
+ "locks_created": 0,
+ "sources": {
+  "v12_dusk": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/room_v12/locked_room_m2_v12/frames/ROOM_V12_dusk_clean_fullroom.png",
+   "sha256": "0e28655e511565b3d4ea0cdcba876688b732496cfbfe4e4906417091311b0c2b"
+  },
+  "hero_still_webp": {
+   "path": "/workspace/Portfolio/public/scene/home-office.desk.coding.dusk.clear/laptop-1440.webp",
+   "sha256": "4df20d5d01b988824198773e7153da31c5338fcb22134705a66ba9b7d9001daf",
+   "vs_png_source": {
+    "mean_absmax_rgb": 3.42,
+    "p99": 16.0,
+    "note": "laptop-1440.webp is REVIEW_IN_SCENE.png (LOCK_PAINTED_CHAR_STILL_POLISH_V5 composite) WebP-encoded; differences are codec noise"
+   }
+  },
+  "hero_still_png_source": {
+   "path": "/workspace/portfolio-brain/designs/painted_char_polish_t958/v5/REVIEW_IN_SCENE.png",
+   "sha256": "15faadfd1ca947473676dfca32fce5c3b54ab433a3aef45c7a908cdd11b154a6"
+  }
+ },
+ "layers": {
+  "stanley": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d8_stanley/locked/placed/stanley_V2_matte_navy_down_dusk_graded.png",
+   "sha256": "93c1a02d30c1785523463bc5ded98bdde9d05d39007ce4853f173095c13f65be",
+   "z": 31,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    409,
+    436,
+    43,
+    127
+   ],
+   "tight": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.8338,
+    "ncc_at_0": 0.8338,
+    "mean_abs_rgb_diff_at_0": 12.29,
+    "core_px": 4133
+   }
+  },
+  "phone_stand": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d7_phone/locked/placed/stand_S1_charcoal_alu_down_dusk_graded.png",
+   "sha256": "0184b41e7b9dd6f8da24253e3ed845330642c663220bf17c7bba8cb785940611",
+   "z": 33.0,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    638,
+    511,
+    78,
+    79
+   ],
+   "tight": [
+    638,
+    512,
+    77,
+    78
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     -3,
+     -3
+    ],
+    "ncc_at_best": 0.0238,
+    "ncc_at_0": -0.1745,
+    "mean_abs_rgb_diff_at_0": 11.51,
+    "core_px": 3052
+   }
+  },
+  "phone": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d7_phone/locked/placed/phone_D_terracotta_down_dusk_graded.png",
+   "sha256": "93fd551713f5beee1eeb855e16781eda8ad8abc6cf7e34528ab77d18da89bfd8",
+   "z": 33.1,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    646,
+    476,
+    59,
+    101
+   ],
+   "tight": [
+    647,
+    477,
+    57,
+    99
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.9784,
+    "ncc_at_0": 0.9784,
+    "mean_abs_rgb_diff_at_0": 1.23,
+    "core_px": 3549
+   }
+  },
+  "notebook": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d6_notebook/locked/placed/notebook_E_down_dusk_graded.png",
+   "sha256": "ab83bfdf927f84e89d6030f971f0abb766959e18c32dd91f1422994750cd69a0",
+   "z": 34,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    571,
+    584,
+    140,
+    37
+   ],
+   "tight": [
+    571,
+    584,
+    140,
+    37
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.9376,
+    "ncc_at_0": 0.9376,
+    "mean_abs_rgb_diff_at_0": 9.76,
+    "core_px": 3183
+   }
+  },
+  "laptop": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d5_laptop/locked_r2/placed/laptop_B_down_dusk_graded.png",
+   "sha256": "1e87a6efaf1c775fcda335a8b22bc519e49019bf721f8acc68ea18dded07af5a",
+   "z": 35,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    346,
+    427,
+    287,
+    174
+   ],
+   "tight": [
+    347,
+    428,
+    284,
+    172
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.9727,
+    "ncc_at_0": 0.9727,
+    "mean_abs_rgb_diff_at_0": 2.96,
+    "core_px": 26948
+   }
+  },
+  "chair": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d3_chair/locked_A/placed/chair_A_down_dusk_graded.png",
+   "sha256": "959b0c2acefcff4f40774a2e8fa4e3fe9c9e8a79c7e87e33f9b17eec53a70ccd",
+   "z": 30,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    30,
+    309,
+    404,
+    591
+   ],
+   "tight": [
+    32,
+    310,
+    400,
+    590
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.9478,
+    "ncc_at_0": 0.9478,
+    "mean_abs_rgb_diff_at_0": 2.96,
+    "core_px": 102447
+   }
+  },
+  "armrest": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d4_armrest/locked/placed/armrest_front_down_dusk_graded.png",
+   "sha256": "bcdba1a0004df6af10f885c30f701fe944f92fbb655f3a837b389e498442489a",
+   "z": 41,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    288,
+    632,
+    143,
+    152
+   ],
+   "tight": [
+    290,
+    634,
+    140,
+    148
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.9987,
+    "ncc_at_0": 0.9987,
+    "mean_abs_rgb_diff_at_0": 0.48,
+    "core_px": 7524
+   }
+  },
+  "shelf": {
+   "path": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/shelf/v1_persp/scene_m3/v3c_crackfix/layers/SHELF_LAYER_down_dusk_v3c_BGRA.png",
+   "sha256": "7f7992a037023c209afb0140061171a8e38478f835d6670b7bafe579c891e5be",
+   "z": 20,
+   "alpha_threshold": 128,
+   "tight_alpha_ge1": [
+    878,
+    276,
+    560,
+    624
+   ],
+   "tight": [
+    879,
+    276,
+    559,
+    624
+   ],
+   "align_vs_v12": {
+    "best_shift_dxdy": [
+     0,
+     0
+    ],
+    "ncc_at_best": 0.4806,
+    "ncc_at_0": 0.4806,
+    "mean_abs_rgb_diff_at_0": 7.85,
+    "core_px": 214740
+   }
+  }
+ },
+ "hit_rule": {
+  "pad_px": 8,
+  "min_side_px": 44,
+  "clamp": [
+   1440,
+   900
+  ],
+  "stacking_advice": "smallest/front-most wins: speakers(=mug-sip), phone, notebook > laptop > character; lego > bookshelf (matches repo DOM order: later entries on top)"
+ },
+ "hotspots": [
+  {
+   "id": "laptop",
+   "tight": [
+    450,
+    428,
+    181,
+    137
+   ],
+   "tight_xyxy": [
+    450,
+    428,
+    631,
+    565
+   ],
+   "hit": [
+    442,
+    420,
+    197,
+    153
+   ],
+   "hit_xyxy": [
+    442,
+    420,
+    639,
+    573
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "v2: hit = screen_lid (D5 layer alpha restricted to x>=450, y<565); full-body bbox under full_body_reference",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d5_laptop/locked_r2/placed/laptop_B_down_dusk_graded.png",
+   "notes": "Bbox includes the whole base, which runs left under the hands and behind the Stanley (perspective). The tumbler (speakers) box sits inside it, so speakers must stack ABOVE laptop (repo DOM order already does). In the hero still the screen shows code (SCREEN_CODE layer) and the hands cover the keyboard; geometry is identical to V12. A screen-only alternative is given in sub_boxes.",
+   "visible_v12": [
+    347,
+    428,
+    284,
+    172
+   ],
+   "visible_hero_still": [
+    454,
+    428,
+    177,
+    172
+   ],
+   "visible_all_loop_frames": [
+    454,
+    428,
+    177,
+    172
+   ],
+   "occluded_by_character_px": {
+    "hero_still": 5316,
+    "loop_union": 5899,
+    "object_px": 27711
+   },
+   "sub_boxes": {
+    "screen_lid": {
+     "tight": [
+      450,
+      428,
+      181,
+      137
+     ],
+     "hit": [
+      442,
+      420,
+      197,
+      153
+     ],
+     "method": "laptop layer alpha restricted to x>=450, y<565 (lid/screen; manual cut, see contact sheet)"
+    }
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 10.17,
+    "webp_p99": 75.0,
+    "png_source_vs_v12_px_gt2_outside_character": 18354,
+    "png_source_vs_v12_max": 95
+   },
+   "current_repo_rect_xyxy": [
+    452,
+    425,
+    632,
+    588
+   ],
+   "iou_tight_vs_current_repo": 0.578,
+   "full_body_reference": {
+    "tight": [
+     347,
+     428,
+     284,
+     172
+    ],
+    "hit": [
+     339,
+     420,
+     300,
+     188
+    ],
+    "role": "reference only (not a hit: swallows the Stanley, window, wall and the forearm)"
+   },
+   "role": "hit"
+  },
+  {
+   "id": "speakers",
+   "tight": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "tight_xyxy": [
+    410,
+    437,
+    451,
+    563
+   ],
+   "hit": [
+    402,
+    429,
+    49,
+    142
+   ],
+   "hit_xyxy": [
+    402,
+    429,
+    451,
+    571
+   ],
+   "hit_rule": "tight + 8 px per side, min 44, clamped; trimmed where it would cover a lower hotspot (see hit_trims)",
+   "method": "layer alpha bbox (alpha>=128), LOCK_D8 placed DOWN dusk graded layer (navy Stanley tumbler)",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d8_stanley/locked/placed/stanley_V2_matte_navy_down_dusk_graded.png",
+   "notes": "THERE IS NO SPEAKER IN THE V12 ROOM. Like the current repo (hit-areas.ts / STILL_ALTS), the Podcast/speakers hotspot sits on the navy Stanley tumbler. The same tumbler is the only drinkable desk prop, so mug/sip (S4) maps to the same pixels; see mug-sip. Lies fully inside the laptop tight box; the far hand + watch crosses its lower part in every loop frame.",
+   "visible_v12": [
+    410,
+    437,
+    41,
+    123
+   ],
+   "visible_hero_still": [
+    410,
+    437,
+    41,
+    106
+   ],
+   "visible_all_loop_frames": [
+    410,
+    437,
+    41,
+    105
+   ],
+   "occluded_by_character_px": {
+    "hero_still": 547,
+    "loop_union": 565,
+    "object_px": 4180
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 4.51,
+    "webp_p99": 25.0,
+    "png_source_vs_v12_px_gt2_outside_character": 22,
+    "png_source_vs_v12_max": 36
+   },
+   "current_repo_rect_xyxy": [
+    408,
+    445,
+    450,
+    540
+   ],
+   "iou_tight_vs_current_repo": 0.709,
+   "role": "hit",
+   "decision": "T6 stays on the Stanley tumbler"
+  },
+  {
+   "id": "mug-sip",
+   "tight": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "tight_xyxy": [
+    410,
+    437,
+    451,
+    563
+   ],
+   "hit": null,
+   "hit_xyxy": null,
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "same as speakers (Stanley layer alpha)",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d8_stanley/locked/placed/stanley_V2_matte_navy_down_dusk_graded.png",
+   "notes": "S4 Sipping is a 45 s TIMER trigger (PLAN_v3 \u00a73 row 5): NO hit box (Atlas decision). Box kept only as prop geometry (= the Stanley = speakers).",
+   "visible_v12": [
+    410,
+    437,
+    41,
+    123
+   ],
+   "visible_hero_still": [
+    410,
+    437,
+    41,
+    106
+   ],
+   "visible_all_loop_frames": [
+    410,
+    437,
+    41,
+    105
+   ],
+   "occluded_by_character_px": {
+    "hero_still": 547,
+    "loop_union": 565,
+    "object_px": 4180
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 4.51,
+    "webp_p99": 25.0,
+    "png_source_vs_v12_px_gt2_outside_character": 22,
+    "png_source_vs_v12_max": 36
+   },
+   "role": "no_hit"
+  },
+  {
+   "id": "phone",
+   "tight": [
+    638,
+    477,
+    77,
+    113
+   ],
+   "tight_xyxy": [
+    638,
+    477,
+    715,
+    590
+   ],
+   "hit": [
+    630,
+    469,
+    93,
+    115
+   ],
+   "hit_xyxy": [
+    630,
+    469,
+    723,
+    584
+   ],
+   "hit_rule": "tight + 8 px per side, min 44, clamped; trimmed where it would cover a lower hotspot (see hit_trims)",
+   "method": "union of layer alpha bboxes: LOCK_D7 phone D (z33.1) + stand S1 (z33.0)",
+   "source": [
+    "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d7_phone/locked/placed/phone_D_terracotta_down_dusk_graded.png",
+    "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d7_phone/locked/placed/stand_S1_charcoal_alu_down_dusk_graded.png"
+   ],
+   "notes": "Phone alone is given in sub_boxes. Not occluded by the character in any loop frame.",
+   "visible_v12": [
+    638,
+    477,
+    77,
+    111
+   ],
+   "visible_hero_still": [
+    638,
+    477,
+    77,
+    111
+   ],
+   "visible_all_loop_frames": [
+    638,
+    477,
+    77,
+    111
+   ],
+   "occluded_by_character_px": {
+    "hero_still": 0,
+    "loop_union": 0,
+    "object_px": 5107
+   },
+   "sub_boxes": {
+    "phone_only": {
+     "tight": [
+      647,
+      477,
+      57,
+      99
+     ],
+     "hit": [
+      639,
+      469,
+      73,
+      115
+     ]
+    },
+    "stand_only": {
+     "tight": [
+      638,
+      512,
+      77,
+      78
+     ]
+    }
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 3.77,
+    "webp_p99": 14.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   },
+   "current_repo_rect_xyxy": [
+    640,
+    475,
+    708,
+    584
+   ],
+   "iou_tight_vs_current_repo": 0.823,
+   "role": "hit"
+  },
+  {
+   "id": "notebook",
+   "tight": [
+    571,
+    584,
+    140,
+    37
+   ],
+   "tight_xyxy": [
+    571,
+    584,
+    711,
+    621
+   ],
+   "hit": [
+    571,
+    584,
+    140,
+    45
+   ],
+   "hit_xyxy": [
+    571,
+    584,
+    711,
+    629
+   ],
+   "hit_rule": "tight + 8 px per side, min 44, clamped; trimmed where it would cover a lower hotspot (see hit_trims)",
+   "method": "layer alpha bbox (alpha>=128), LOCK_D6_E placed DOWN dusk graded layer (closed state)",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d6_notebook/locked/placed/notebook_E_down_dusk_graded.png",
+   "notes": "Closed state as in V12/still. D6b open/half-open states (LOCK_D6b) would change the box if the notebook ever animates.",
+   "visible_v12": [
+    571,
+    584,
+    140,
+    37
+   ],
+   "visible_hero_still": [
+    571,
+    584,
+    140,
+    37
+   ],
+   "visible_all_loop_frames": [
+    571,
+    584,
+    140,
+    37
+   ],
+   "occluded_by_character_px": {
+    "hero_still": 0,
+    "loop_union": 0,
+    "object_px": 3280
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 5.1,
+    "webp_p99": 17.0,
+    "png_source_vs_v12_px_gt2_outside_character": 20,
+    "png_source_vs_v12_max": 4
+   },
+   "current_repo_rect_xyxy": [
+    568,
+    588,
+    706,
+    622
+   ],
+   "iou_tight_vs_current_repo": 0.822,
+   "role": "hit"
+  },
+  {
+   "id": "queen-poster",
+   "tight": [
+    658,
+    84,
+    120,
+    328
+   ],
+   "tight_xyxy": [
+    658,
+    84,
+    778,
+    412
+   ],
+   "hit": [
+    650,
+    76,
+    136,
+    344
+   ],
+   "hit_xyxy": [
+    650,
+    76,
+    786,
+    420
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "LOCK_POSTER_M2_V3 sheet_quad_room_px (code-drawn sheet silhouette incl. cream border), floor/ceil to px; checked by pixel inspection at 2x",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/walls_top_m2/LOCK_POSTER_M2_V3.json",
+   "notes": "Sheet is a perspective quad (top edge slopes from y85 at right to y105 at left); the box includes the empty wall wedge top-left (~120x20 px triangle). quad TL,TR,BR,BL = [[658.1, 105.0], [777.7, 85.0], [777.7, 411.1], [658.1, 408.6]]",
+   "quad_TL_TR_BR_BL": [
+    [
+     658.14,
+     104.96
+    ],
+    [
+     777.75,
+     84.96
+    ],
+    [
+     777.75,
+     411.08
+    ],
+    [
+     658.14,
+     408.55
+    ]
+   ],
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 7.04,
+    "webp_p99": 27.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   },
+   "current_repo_rect_xyxy": [
+    656,
+    84,
+    780,
+    410
+   ],
+   "iou_tight_vs_current_repo": 0.962,
+   "role": "hit"
+  },
+  {
+   "id": "bookshelf",
+   "tight": [
+    913,
+    522,
+    525,
+    336
+   ],
+   "tight_xyxy": [
+    913,
+    522,
+    1438,
+    858
+   ],
+   "hit": [
+    913,
+    514,
+    527,
+    352
+   ],
+   "hit_xyxy": [
+    913,
+    514,
+    1440,
+    866
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "v2 split: three bands chosen from the SHELF_V1c layer alpha row profile (hutch / middle tier / lower tier + base); tight = bbox of cabinet content (shelf alpha alpha>=128 plus the diorama bay, which is transparent in the shelf layer) inside each band; legs below y857 and the base sliver left of x913 (x879-912, y672-816) dropped because x<913 at y522-671 is the desk tip and wall; photo frames kept as the 4th pointer-only rect.",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/shelf/v1_persp/scene_m3/v3c_crackfix/layers/SHELF_LAYER_down_dusk_v3c_BGRA.png",
+   "notes": "Cabinet runs off the bottom edge (lock bbox bottom y937.5) and to x1438. Contains the lego/diorama box, neon, FREEDOM mug and Funkos; lego must stack above bookshelf (repo DOM order does). The photo frames on top are a separate sub-box (repo uses them as a second pointer-only rect).",
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 3.73,
+    "webp_p99": 15.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   },
+   "sub_boxes": {
+    "photo_frames_on_top": {
+     "tight": [
+      1043,
+      211,
+      214,
+      76
+     ],
+     "hit": [
+      1035,
+      203,
+      230,
+      92
+     ],
+     "method": "pixel inspection at 2x of the three outer frame bands (fs/fp/fl); lock image quads (inner photo areas) lie inside",
+     "per_frame_outer": {
+      "fs": [
+       1043,
+       230,
+       61,
+       57
+      ],
+      "fp": [
+       1104,
+       211,
+       62,
+       74
+      ],
+      "fl": [
+       1178,
+       224,
+       79,
+       55
+      ]
+     },
+     "lock_image_quads": {
+      "fs": [
+       [
+        1048.7,
+        233.7
+       ],
+       [
+        1099.6,
+        230.3
+       ],
+       [
+        1094.0,
+        285.2
+       ],
+       [
+        1043.0,
+        287.2
+       ]
+      ],
+      "fp": [
+       [
+        1110.2,
+        215.7
+       ],
+       [
+        1161.0,
+        212.0
+       ],
+       [
+        1153.2,
+        282.2
+       ],
+       [
+        1102.2,
+        284.3
+       ]
+      ],
+      "fl": [
+       [
+        1179.7,
+        229.0
+       ],
+       [
+        1251.9,
+        224.4
+       ],
+       [
+        1247.7,
+        279.6
+       ],
+       [
+        1175.2,
+        282.5
+       ]
+      ]
+     }
+    }
+   },
+   "current_repo_rect_xyxy": [
+    883,
+    274,
+    1438,
+    858
+   ],
+   "iou_tight_vs_current_repo": 0.923,
+   "v1_single_box_reference": {
+    "tight": [
+     879,
+     276,
+     559,
+     624
+    ],
+    "hit": [
+     871,
+     268,
+     569,
+     632
+    ],
+    "role": "reference only (v1 single bbox, 38% empty, overlapped the jersey frame)"
+   },
+   "rects": [
+    {
+     "part": "hutch",
+     "band_rect": [
+      1002,
+      276,
+      319,
+      120
+     ],
+     "tight": [
+      1002,
+      276,
+      319,
+      120
+     ],
+     "hit": [
+      994,
+      268,
+      335,
+      136
+     ]
+    },
+    {
+     "part": "middle_tier",
+     "band_rect": [
+      959,
+      396,
+      407,
+      126
+     ],
+     "tight": [
+      959,
+      396,
+      407,
+      126
+     ],
+     "hit": [
+      951,
+      388,
+      423,
+      142
+     ]
+    },
+    {
+     "part": "lower_tier_and_base",
+     "band_rect": [
+      913,
+      522,
+      525,
+      336
+     ],
+     "tight": [
+      913,
+      522,
+      525,
+      336
+     ],
+     "hit": [
+      913,
+      514,
+      527,
+      352
+     ]
+    },
+    {
+     "part": "photo_frames_on_top",
+     "tight": [
+      1043,
+      211,
+      214,
+      76
+     ],
+     "hit": [
+      1035,
+      203,
+      230,
+      92
+     ],
+     "pointer_only": true
+    }
+   ],
+   "coverage": {
+    "v1_single_box_plus_frames": {
+     "content_px": 266476,
+     "union_px": 362726,
+     "covered_content_frac": 1.0,
+     "empty_frac_of_union": 0.2654,
+     "uncovered_content_px": 0
+    },
+    "v2_tight_rects": {
+     "content_px": 266476,
+     "union_px": 279872,
+     "covered_content_frac": 0.9687,
+     "empty_frac_of_union": 0.0777,
+     "uncovered_content_px": 8353
+    },
+    "v2_hit_rects": {
+     "content_px": 266476,
+     "union_px": 293952,
+     "covered_content_frac": 0.9747,
+     "empty_frac_of_union": 0.1165,
+     "uncovered_content_px": 6755
+    },
+    "note": "content = shelf alpha + diorama bay + the three photo-frame rects"
+   },
+   "jersey_clearance": {
+    "jersey_tight": [
+     804,
+     142,
+     141,
+     214
+    ],
+    "jersey_hit": [
+     796,
+     134,
+     157,
+     230
+    ],
+    "any_bookshelf_hit_intersects_jersey_hit": false,
+    "min_x_gap_px_to_jersey_hit_among_rects_sharing_its_rows": 41
+   },
+   "hit_areas_ts_rects_xyxy": [
+    [
+     913,
+     514,
+     1440,
+     866
+    ],
+    [
+     951,
+     388,
+     1374,
+     530
+    ],
+    [
+     994,
+     268,
+     1329,
+     404
+    ],
+    [
+     1035,
+     203,
+     1265,
+     295
+    ]
+   ],
+   "role": "hit"
+  },
+  {
+   "id": "lego",
+   "tight": [
+    1047,
+    552,
+    331,
+    194
+   ],
+   "tight_xyxy": [
+    1047,
+    552,
+    1378,
+    746
+   ],
+   "hit": [
+    1047,
+    552,
+    331,
+    194
+   ],
+   "hit_xyxy": [
+    1047,
+    552,
+    1378,
+    746
+   ],
+   "hit_rule": "hit = tight (no padding; see hit_trims)",
+   "method": "pixel inspection at 2x: inner opening of the diorama bay (left wall edge x1047, lintel y552, right post x1377, front sill y745)",
+   "source": "V12 dusk plate (no per-object layer for the bay; LOCK_O7_DIORAMA_V7 BOX [1029,522,395,247] is the coarser bay incl. its frame)",
+   "notes": "The X-Wing diorama stands in for the Lego (/case-studies) per hit-areas.ts. X-Wing model alone given in sub_boxes (pixel inspection).",
+   "sub_boxes": {
+    "xwing_model": {
+     "tight": [
+      1132,
+      631,
+      128,
+      69
+     ],
+     "hit": [
+      1124,
+      623,
+      144,
+      85
+     ],
+     "method": "v2 re-measure, pixel inspection at 4x on V12: model only (nose x1133, starboard cannon tip x1259, top cannon y632, lower cannon y698), +1 px; stand pole and base EXCLUDED"
+    },
+    "o7_lock_BOX": [
+     1029,
+     522,
+     395,
+     247
+    ],
+    "xwing_model_v1": {
+     "tight": [
+      1132,
+      628,
+      130,
+      80
+     ],
+     "hit": [
+      1124,
+      620,
+      146,
+      96
+     ],
+     "method": "pixel inspection at 2x (wingtips, nose, stand base excluded)",
+     "role": "reference only (v1; its method text was wrong: the box INCLUDED the stand base)"
+    },
+    "xwing_with_stand": {
+     "tight": [
+      1132,
+      631,
+      128,
+      75
+     ],
+     "hit": [
+      1124,
+      623,
+      144,
+      91
+     ],
+     "method": "same, extended to the clear stand base bottom (y705)"
+    }
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 3.52,
+    "webp_p99": 14.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   },
+   "current_repo_rect_xyxy": [
+    1088,
+    555,
+    1372,
+    705
+   ],
+   "iou_tight_vs_current_repo": 0.663,
+   "role": "hit"
+  },
+  {
+   "id": "character",
+   "tight": [
+    197,
+    298,
+    346,
+    526
+   ],
+   "tight_xyxy": [
+    197,
+    298,
+    543,
+    824
+   ],
+   "hit": [
+    189,
+    290,
+    362,
+    542
+   ],
+   "hit_xyxy": [
+    189,
+    290,
+    551,
+    832
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "union over all 432 locked loop frames (v5_1 typing 216 + bounce 216) of per-frame character layer alpha>=128 minus the occluders drawn over it (backrest_near, chairbase_near_leftcalf, armrest D4)",
+   "source": "/workspace/portfolio-brain/designs/painted_char_typing_t959/v5_1/layers_per_frame/{typing,bounce}/NNN_character.png",
+   "notes": "No character trigger exists in PLAN_v3 \u00a73 yet (S1a/S1b/T2 have no trigger). Hits on hands/laptop and Stanley overlap; give desk props priority. The figure box also overlaps chair, armrest and laptop base.",
+   "hero_still_tight_raw": [
+    179,
+    299,
+    361,
+    525
+   ],
+   "hero_still_tight_visible": [
+    199,
+    299,
+    341,
+    525
+   ],
+   "loop_union_tight_raw": [
+    179,
+    298,
+    364,
+    526
+   ],
+   "loop_union_tight_visible": [
+    197,
+    298,
+    346,
+    526
+   ],
+   "pixels_visible_in_every_frame_tight": [
+    199,
+    299,
+    338,
+    525
+   ],
+   "e2_nod_union_raw": [
+    179,
+    297,
+    364,
+    527
+   ],
+   "e2_nod_frames": 168,
+   "sub_boxes": {
+    "head": {
+     "tight": [
+      248,
+      298,
+      123,
+      114
+     ],
+     "hit": [
+      240,
+      290,
+      139,
+      130
+     ],
+     "method": "per-frame character alpha above the hood-top row (auto: first row where the left edge jumps >20 px), union over 432 loop frames",
+     "hood_cut_rows_min_max": [
+      411,
+      412
+     ],
+     "still_head": [
+      248,
+      299,
+      122,
+      113
+     ],
+     "with_e2_nod_union": [
+      245,
+      297,
+      137,
+      115
+     ],
+     "typing_per_frame_x_y_range": {
+      "x_min": [
+       248,
+       248
+      ],
+      "y_top": [
+       298,
+       299
+      ]
+     }
+    },
+    "hands_keyboard": {
+     "tight": [
+      390,
+      531,
+      153,
+      69
+     ],
+     "hit": [
+      382,
+      523,
+      169,
+      85
+     ],
+     "method": "character alpha inside manual zone xyxy [390, 515, 640, 600] (both hands + sleeve ends on the keyboard), union over 432 frames",
+     "note": "near hand = anatomical RIGHT (black ring, front); far hand = LEFT (gold ring, watch). Overlaps laptop and the lower Stanley."
+    },
+    "left_leg_moving": {
+     "tight": [
+      330,
+      713,
+      114,
+      95
+     ],
+     "hit": [
+      322,
+      705,
+      130,
+      111
+     ],
+     "px": 1286,
+     "method": "v2: pixels differing (>8 levels max RGB) between the COMPOSITED typing and bounce frames (frames/typing vs frames/bounce, after chair/armrest occluders), over all 216 frames; identical to the f84-107 window. Confirms the reviewer's [330,713,114,95]."
+    },
+    "left_leg_foot_region": {
+     "tight": [
+      317,
+      682,
+      139,
+      136
+     ],
+     "hit": [
+      309,
+      674,
+      155,
+      152
+     ],
+     "method": "character alpha (any loop frame) inside the moving-pixel box dilated 12 px"
+    },
+    "left_leg_moving_prelayer_v1": {
+     "tight": [
+      329,
+      694,
+      115,
+      112
+     ],
+     "hit": [
+      321,
+      686,
+      131,
+      128
+     ],
+     "method": "pixels that differ (>8 levels) between bounce and typing tracks over the bounce window f84-107 (LEFT-leg shin + foot)",
+     "role": "reference only (v1 value; pre-occlusion character layers, top 19 px hidden behind armrest/chair)"
+    }
+   },
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 6.04,
+    "webp_p99": 44.0,
+    "png_source_vs_v12_px_gt2_outside_character": 11752,
+    "png_source_vs_v12_max": 95
+   },
+   "role": "reference (no trigger in PLAN_v3 \u00a73; not in the hit list)"
+  }
+ ],
+ "informational": [
+  {
+   "id": "jersey-frame",
+   "tight": [
+    804,
+    142,
+    141,
+    214
+   ],
+   "tight_xyxy": [
+    804,
+    142,
+    945,
+    356
+   ],
+   "hit": [
+    796,
+    134,
+    157,
+    230
+   ],
+   "hit_xyxy": [
+    796,
+    134,
+    953,
+    364
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "luminance<70 threshold of the dark walnut frame inside a manual search window (790-955, 130-370); checked at 2x",
+   "source": "V12 dusk plate",
+   "notes": "Not a hotspot in PLAN_v3 or hit-areas.ts. Kit sprite: LOCK_ROOM_M2_V12 kit_sprite.",
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 4.72,
+    "webp_p99": 22.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   }
+  },
+  {
+   "id": "bat-lamp",
+   "tight": [
+    1063,
+    72,
+    173,
+    89
+   ],
+   "tight_xyxy": [
+    1063,
+    72,
+    1236,
+    161
+   ],
+   "hit": [
+    1055,
+    64,
+    189,
+    105
+   ],
+   "hit_xyxy": [
+    1055,
+    64,
+    1244,
+    169
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "luminance<60 threshold of the black panel inside a manual window (1040-1250, 60-170); halo excluded",
+   "source": "V12 dusk plate",
+   "notes": "Not a hotspot. LOCK_BATLAMP_M2_V17B_B.",
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 4.42,
+    "webp_p99": 30.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   }
+  },
+  {
+   "id": "neon-logo",
+   "tight": [
+    1190,
+    305,
+    78,
+    86
+   ],
+   "tight_xyxy": [
+    1190,
+    305,
+    1268,
+    391
+   ],
+   "hit": [
+    1182,
+    297,
+    94,
+    102
+   ],
+   "hit_xyxy": [
+    1182,
+    297,
+    1276,
+    399
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "LOCK_D9_NEON_O2_V1 gate S1 tube_bbox",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d9_neon_logo/LOCK_D9_NEON_O2_V1.json",
+   "notes": "Inside bookshelf. Not a hotspot.",
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 7.66,
+    "webp_p99": 39.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   }
+  },
+  {
+   "id": "shelf-mug",
+   "tight": [
+    951,
+    550,
+    71,
+    76
+   ],
+   "tight_xyxy": [
+    951,
+    550,
+    1022,
+    626
+   ],
+   "hit": [
+    943,
+    542,
+    87,
+    92
+   ],
+   "hit_xyxy": [
+    943,
+    542,
+    1030,
+    634
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "pixel inspection at 4x (mug + both flags); mug body alone ~[969,581,47,45]",
+   "source": "V12 dusk plate",
+   "notes": "FREEDOM mug with Spain/US flags (O5, LOCK_ROOM_M2_V9_SHELFB). Inside bookshelf. Candidate only if S4 is meant to use a mug rather than the Stanley.",
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 6.08,
+    "webp_p99": 31.0,
+    "png_source_vs_v12_px_gt2_outside_character": 0,
+    "png_source_vs_v12_max": 0
+   }
+  },
+  {
+   "id": "chair",
+   "tight": [
+    32,
+    310,
+    400,
+    590
+   ],
+   "tight_xyxy": [
+    32,
+    310,
+    432,
+    900
+   ],
+   "hit": [
+    24,
+    302,
+    416,
+    598
+   ],
+   "hit_xyxy": [
+    24,
+    302,
+    440,
+    900
+   ],
+   "hit_rule": "tight + 8 px per side, min side 44 px, clamped to 1440x900",
+   "method": "layer alpha bbox, LOCK_D3_A placed DOWN dusk",
+   "source": "/workspace/portfolio-brain/scenes/home-office.desk.coding.dusk.clear/m2/variants/d3_chair/locked_A/placed/chair_A_down_dusk_graded.png",
+   "notes": "Not a hotspot; overlaps the character entirely.",
+   "still_vs_v12": {
+    "webp_vs_v12_mean_absmax_rgb_outside_character": 3.51,
+    "webp_p99": 18.0,
+    "png_source_vs_v12_px_gt2_outside_character": 1688,
+    "png_source_vs_v12_max": 90
+   }
+  }
+ ],
+ "overlaps": [
+  {
+   "a": "laptop",
+   "b": "phone",
+   "boxes": "hit",
+   "intersection": [
+    630,
+    469,
+    9,
+    129
+   ],
+   "area_px": 1161
+  },
+  {
+   "a": "laptop",
+   "b": "notebook",
+   "boxes": "tight",
+   "intersection": [
+    571,
+    584,
+    60,
+    16
+   ],
+   "area_px": 960
+  },
+  {
+   "a": "laptop",
+   "b": "notebook",
+   "boxes": "hit",
+   "intersection": [
+    563,
+    576,
+    76,
+    32
+   ],
+   "area_px": 2432
+  },
+  {
+   "a": "laptop",
+   "b": "speakers",
+   "boxes": "tight",
+   "intersection": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "area_px": 5166
+  },
+  {
+   "a": "laptop",
+   "b": "speakers",
+   "boxes": "hit",
+   "intersection": [
+    402,
+    429,
+    57,
+    142
+   ],
+   "area_px": 8094
+  },
+  {
+   "a": "laptop",
+   "b": "mug-sip",
+   "boxes": "tight",
+   "intersection": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "area_px": 5166
+  },
+  {
+   "a": "laptop",
+   "b": "mug-sip",
+   "boxes": "hit",
+   "intersection": [
+    402,
+    429,
+    57,
+    142
+   ],
+   "area_px": 8094
+  },
+  {
+   "a": "laptop",
+   "b": "character",
+   "boxes": "tight",
+   "intersection": [
+    347,
+    428,
+    196,
+    172
+   ],
+   "area_px": 33712
+  },
+  {
+   "a": "laptop",
+   "b": "character",
+   "boxes": "hit",
+   "intersection": [
+    339,
+    420,
+    212,
+    188
+   ],
+   "area_px": 39856
+  },
+  {
+   "a": "bookshelf",
+   "b": "lego",
+   "boxes": "tight",
+   "intersection": [
+    1047,
+    552,
+    331,
+    194
+   ],
+   "area_px": 64214
+  },
+  {
+   "a": "bookshelf",
+   "b": "lego",
+   "boxes": "hit",
+   "intersection": [
+    1039,
+    544,
+    347,
+    210
+   ],
+   "area_px": 72870
+  },
+  {
+   "a": "phone",
+   "b": "notebook",
+   "boxes": "tight",
+   "intersection": [
+    638,
+    584,
+    73,
+    6
+   ],
+   "area_px": 438
+  },
+  {
+   "a": "phone",
+   "b": "notebook",
+   "boxes": "hit",
+   "intersection": [
+    630,
+    576,
+    89,
+    22
+   ],
+   "area_px": 1958
+  },
+  {
+   "a": "speakers",
+   "b": "mug-sip",
+   "boxes": "tight",
+   "intersection": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "area_px": 5166
+  },
+  {
+   "a": "speakers",
+   "b": "mug-sip",
+   "boxes": "hit",
+   "intersection": [
+    402,
+    429,
+    57,
+    142
+   ],
+   "area_px": 8094
+  },
+  {
+   "a": "speakers",
+   "b": "character",
+   "boxes": "tight",
+   "intersection": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "area_px": 5166
+  },
+  {
+   "a": "speakers",
+   "b": "character",
+   "boxes": "hit",
+   "intersection": [
+    402,
+    429,
+    57,
+    142
+   ],
+   "area_px": 8094
+  },
+  {
+   "a": "mug-sip",
+   "b": "character",
+   "boxes": "tight",
+   "intersection": [
+    410,
+    437,
+    41,
+    126
+   ],
+   "area_px": 5166
+  },
+  {
+   "a": "mug-sip",
+   "b": "character",
+   "boxes": "hit",
+   "intersection": [
+    402,
+    429,
+    57,
+    142
+   ],
+   "area_px": 8094
+  }
+ ],
+ "v12_vs_hero_still": "Corrected v2 wording: the poster, bookshelf (all rects), lego, phone, jersey, bat-lamp, neon and shelf-mug boxes contain 0 px that differ (>2 levels) between V12 and the PNG source of the hero still; notebook 20 px (max 4 levels, screen spill). The laptop, speakers (Stanley) and character boxes DO differ: the character overlaps them and the screen shows code in the still. Box GEOMETRY is the same on both (taken from the same locked layers); the WebP adds only codec noise. Differences are confined to x198-619, y297-830 (reviewer).",
+ "version": 2,
+ "supersedes": {
+  "path": "/workspace/portfolio-brain/designs/HOTSPOT_BOXES_t995.json",
+  "sha256": "ad9ba36a9e43c274fbb7cb327c3800248dc088a8c57910477e1b1fbe0e4d5b4e",
+  "note": "v1 kept untouched"
+ },
+ "review": {
+  "path": "/workspace/portfolio-brain/designs/review_t995_hotspots/REVIEW.md",
+  "verdict": "PASS WITH NOTES (fresh independent reviewer)"
+ },
+ "decisions": {
+  "by": "Atlas (PM), accepting Dusk recommendations, Nov 17 2026",
+  "items": [
+   "T6 / speakers stays on the navy Stanley tumbler (no speaker exists in V12).",
+   "S4 mug-sip gets NO hit box: it is a 45 s timer trigger only. The mug-sip entry is reference geometry (role no_hit).",
+   "laptop hit area = laptop.screen_lid; the full laptop bbox is kept as reference only.",
+   "bookshelf = 3 cabinet rects + the photo-frame rect; jersey frame fully clear incl. padding.",
+   "stacking: phone above notebook; speakers/phone/notebook above laptop above character; lego above bookshelf."
+  ]
+ },
+ "hit_trims": [
+  {
+   "id": "lego",
+   "side": "all",
+   "from": [
+    1039,
+    544,
+    347,
+    210
+   ],
+   "to": [
+    1047,
+    552,
+    331,
+    194
+   ],
+   "why": "padding covered 8,459 px of bookshelf wood; bay is 331x194 so no padding is needed"
+  },
+  {
+   "id": "bookshelf.lower_tier_and_base",
+   "side": "left",
+   "from": [
+    905,
+    514,
+    535,
+    352
+   ],
+   "to": [
+    913,
+    514,
+    527,
+    352
+   ],
+   "why": "left padding fell on the desk tip"
+  },
+  {
+   "id": "phone",
+   "side": "bottom",
+   "from": [
+    630,
+    469,
+    93,
+    129
+   ],
+   "to": [
+    630,
+    469,
+    93,
+    115
+   ],
+   "why": "phone is above notebook; its bottom padding (and the stand foot, drawn UNDER the notebook z34) covered 879 notebook px"
+  },
+  {
+   "id": "notebook",
+   "side": "top",
+   "from": [
+    563,
+    576,
+    156,
+    53
+   ],
+   "to": [
+    563,
+    584,
+    156,
+    45
+   ],
+   "why": "notebook top padding covered 302 px of the laptop base corner (laptop is below notebook)"
+  },
+  {
+   "id": "notebook",
+   "side": "left",
+   "from": [
+    563,
+    584,
+    156,
+    45
+   ],
+   "to": [
+    571,
+    584,
+    148,
+    45
+   ],
+   "why": "notebook left padding covered laptop base-corner px (laptop below notebook)"
+  },
+  {
+   "id": "notebook",
+   "side": "right",
+   "from": [
+    571,
+    584,
+    148,
+    45
+   ],
+   "to": [
+    571,
+    584,
+    140,
+    45
+   ],
+   "why": "notebook right padding covered the visible phone-stand foot (x711-715), phone is above notebook"
+  },
+  {
+   "id": "speakers",
+   "side": "right",
+   "from": [
+    402,
+    429,
+    57,
+    142
+   ],
+   "to": [
+    402,
+    429,
+    49,
+    142
+   ],
+   "why": "speakers right padding covered 72 px of the laptop lid"
+  }
+ ],
+ "hit_order": {
+  "dom_order_later_wins": [
+   "bookshelf",
+   "lego",
+   "queen-poster",
+   "laptop",
+   "notebook",
+   "phone",
+   "speakers"
+  ],
+  "note": "Order for HIT_OBJECTS in app/scene/hit-areas.ts (later entries stack on top). Changes vs the repo today (laptop, queen-poster, bookshelf, lego, phone, notebook, speakers): notebook now BEFORE phone (phone wins), laptop moved after the wall objects (no overlap either way). character is not a hotspot; if a trigger is added later it must go FIRST (lowest). mug-sip has no entry.",
+  "entries": [
+   {
+    "id": "bookshelf",
+    "rects_xyxy": [
+     [
+      994,
+      268,
+      1329,
+      404
+     ],
+     [
+      951,
+      388,
+      1374,
+      530
+     ],
+     [
+      913,
+      514,
+      1440,
+      866
+     ],
+     [
+      1035,
+      203,
+      1265,
+      295
+     ]
+    ]
+   },
+   {
+    "id": "lego",
+    "rects_xyxy": [
+     [
+      1047,
+      552,
+      1378,
+      746
+     ]
+    ]
+   },
+   {
+    "id": "queen-poster",
+    "rects_xyxy": [
+     [
+      650,
+      76,
+      786,
+      420
+     ]
+    ]
+   },
+   {
+    "id": "laptop",
+    "rects_xyxy": [
+     [
+      442,
+      420,
+      639,
+      573
+     ]
+    ]
+   },
+   {
+    "id": "notebook",
+    "rects_xyxy": [
+     [
+      571,
+      584,
+      711,
+      629
+     ]
+    ]
+   },
+   {
+    "id": "phone",
+    "rects_xyxy": [
+     [
+      630,
+      469,
+      723,
+      584
+     ]
+    ]
+   },
+   {
+    "id": "speakers",
+    "rects_xyxy": [
+     [
+      402,
+      429,
+      451,
+      571
+     ]
+    ]
+   }
+  ]
+ },
+ "wrong_target_check": {
+  "method": "per-pixel owner map of the hero still (z order: shelf, frames, diorama bay=lego, poster quad, jersey, Stanley, phone stand, phone, notebook, laptop, visible character, armrest) vs the winning hit box under hit_order; counts pixels whose visible owner differs from the winning hit",
+  "before_trims_px": {
+   "bookshelf -> lego": 8459,
+   "character(no hotspot) -> laptop": 2044,
+   "character(no hotspot) -> speakers": 1716,
+   "notebook -> phone": 879,
+   "laptop -> notebook": 302,
+   "laptop -> speakers": 72
+  },
+  "after_trims_px_hero_still": {
+   "character(no hotspot) -> laptop": 2242,
+   "character(no hotspot) -> speakers": 1518,
+   "phone -> notebook": 118,
+   "laptop -> notebook": 10
+  },
+  "after_trims_px_loop_union_character": {
+   "character(no hotspot) -> laptop": 2733,
+   "character(no hotspot) -> speakers": 1545,
+   "phone -> notebook": 118,
+   "laptop -> notebook": 10
+  },
+  "hotspot_to_hotspot_wrong_px_after": {
+   "phone -> notebook": 118,
+   "laptop -> notebook": 10
+  },
+  "accepted": "character(no hotspot) -> laptop/speakers: hands and far wrist over the lid and the Stanley open Work/Podcast. Fine while the character has no trigger. jersey-frame: 0 px."
+ },
+ "overlaps_v2": [
+  {
+   "a": "bookshelf[2]",
+   "b": "lego[0]",
+   "intersection": [
+    1047,
+    552,
+    331,
+    194
+   ],
+   "area_px": 64214,
+   "winner": "lego"
+  },
+  {
+   "a": "laptop[0]",
+   "b": "phone[0]",
+   "intersection": [
+    630,
+    469,
+    9,
+    104
+   ],
+   "area_px": 936,
+   "winner": "phone"
+  },
+  {
+   "a": "laptop[0]",
+   "b": "speakers[0]",
+   "intersection": [
+    442,
+    429,
+    9,
+    142
+   ],
+   "area_px": 1278,
+   "winner": "speakers"
+  },
+  {
+   "check": "jersey-frame hit vs every hotspot hit",
+   "intersections": []
+  }
+ ]
+}

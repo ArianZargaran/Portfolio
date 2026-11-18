@@ -1,5 +1,7 @@
 import type { Breakpoint } from "~/scene/still";
 
+import { LAPTOP_HIT_ORDER, LAPTOP_RECTS } from "./hotspots/laptop.generated";
+
 /** [x1, y1, x2, y2] in the breakpoint's canvas px (see STILL_SOURCES). */
 export type Rect = [number, number, number, number];
 
@@ -25,20 +27,27 @@ export interface HitObject {
     cards. Shelf, books and collectibles are now separate entities. */
 export const LAYER06 = "layer06_bookshelf_v1";
 
+/** Measured laptop rects for a hotspot (Dusk's box file via the importer). */
+const measured = (id: string): Rect[] => {
+  const r = LAPTOP_RECTS[id];
+  if (!r?.length) throw new Error(`no measured laptop rects for "${id}"`);
+  return r;
+};
+
 /**
- * Laptop rects are hand estimates on the V12 dusk still (feat/hero-scene):
- * the room was re-laid out (poster beside the jersey, cabinet with an
- * X-Wing diorama instead of the Lego shelf, speaker left of the laptop), so
- * the v3.2 laptop boxes no longer applied. Every object is marked
- * `estimated` on laptop until Dusk supplies measured V12 boxes. The X-Wing
- * diorama stands in for the Lego (/case-studies). Tablet/mobile boxes still
- * belong to the v3.2 placeholder collages.
+ * Object → route map.
  *
- * Object → route map. DOM order = tab order and stacking
- * order: later entries sit on top, so Lego (inside the bookshelf box) comes
- * after the bookshelf and wins where they overlap.
- * Laptop boxes: layer alpha bounds (bookshelf and Lego: layer 6 entities). Tablet/mobile: layout json, except the
- * poster (the layout has no poster box, only the old framed_photo).
+ * Laptop rects are MEASURED on the V12 dusk still: they are generated from
+ * Dusk's HOTSPOT_BOXES_t995_v2.json by scripts/hotspots/import-hotspots.mjs
+ * (hotspots/laptop.generated.ts, decisions in hotspots/mapping.ts). The
+ * X-Wing diorama bay stands in for the Lego (/case-studies) and `speakers`
+ * is drawn on the navy Stanley (V12 has no speaker). Tablet/mobile boxes are
+ * unmeasured and still belong to the v3.2 placeholder collages.
+ *
+ * DOM order = tab order (and the zoom/deep-link lookup order). Stacking is
+ * per breakpoint (HIT_STACK, applied as z-index): later wins, so Lego
+ * (inside the bookshelf box) sits above the bookshelf and the phone above
+ * the notebook.
  */
 export const HIT_OBJECTS: HitObject[] = [
   {
@@ -46,34 +55,32 @@ export const HIT_OBJECTS: HitObject[] = [
     label: "Work",
     href: "/work",
     rects: {
-      laptop: [[452, 425, 632, 588]],
+      laptop: measured("laptop"),
       tablet: [[408, 803, 539, 937]],
       mobile: [[225, 636, 298, 710]],
     },
-    estimated: ["laptop"],
   },
   {
     id: "queen-poster",
     label: "About me",
     href: "/about",
     rects: {
-      laptop: [[656, 84, 780, 410]],
+      laptop: measured("queen-poster"),
       tablet: [[578, 506, 742, 808]],
       mobile: [[12, 22, 100, 187]],
     },
-    estimated: ["laptop", "tablet", "mobile"],
+    estimated: ["tablet", "mobile"],
   },
   {
     id: "bookshelf",
     label: "Resume",
     href: "/resume",
-    /* Laptop: layer 6 canvas_bbox of shelf.frame (clamped to the canvas)
-       plus the photo frames standing on top. Tablet/mobile: old layout json. */
+    /* Laptop: 3 cabinet boxes (lower tier + base first: focusable and the
+       zoom origin), then the photo frames on top. The jersey frame beside
+       the shelf is not part of it and opens nothing. Tablet/mobile: old
+       layout json. */
     rects: {
-      laptop: [
-        [883, 274, 1438, 858],
-        [1040, 210, 1255, 282],
-      ],
+      laptop: measured("bookshelf"),
       tablet: [
         [511, 84, 802, 417],
         [681, 760, 820, 1180],
@@ -98,58 +105,70 @@ export const HIT_OBJECTS: HitObject[] = [
       `${LAYER06}/item.photo_b`,
       `${LAYER06}/item.shelf_lamp`,
     ],
-    // Until Dusk delivers real boxes for the layer 6 entities.
-    estimated: ["laptop", "tablet", "mobile"],
+    estimated: ["tablet", "mobile"],
   },
   {
     id: "lego",
     label: "Case studies",
     href: "/case-studies",
-    /* Laptop: layer 6 canvas_bbox of item.lego. Tablet/mobile: old
-       layout json (drawn from the retired 50_hot_lego card). */
+    /* Laptop: the X-Wing diorama bay. Tablet/mobile: old layout json
+       (drawn from the retired 50_hot_lego card). */
     rects: {
-      laptop: [[1088, 555, 1372, 705]],
+      laptop: measured("lego"),
       tablet: [[762, 930, 805, 1004]],
       mobile: [[189, 370, 212, 411]],
     },
     entities: [`${LAYER06}/item.lego`],
-    // Until Dusk delivers real boxes for the layer 6 entities.
-    estimated: ["laptop", "tablet", "mobile"],
+    estimated: ["tablet", "mobile"],
   },
   {
     id: "phone",
     label: "Contact",
     href: "/contact",
     rects: {
-      laptop: [[640, 475, 708, 584]],
+      laptop: measured("phone"),
       tablet: [[266, 834, 312, 899]],
       mobile: [[147, 653, 172, 689]],
     },
-    estimated: ["laptop"],
   },
   {
     id: "notebook",
     label: "Notebook",
     href: "/articles",
     rects: {
-      laptop: [[568, 588, 706, 622]],
+      laptop: measured("notebook"),
       tablet: [[407, 927, 524, 971]],
       mobile: [[224, 705, 289, 728]],
     },
-    estimated: ["laptop"],
   },
   {
+    /* Drawn on the navy Stanley (V12 has no speaker); the id stays
+       "speakers" until Atlas rules on graph.yaml (hotspots/mapping.ts). */
     id: "speakers",
     label: "Podcast",
     href: "/podcast",
     rects: {
-      laptop: [[408, 445, 450, 540]],
+      laptop: measured("speakers"),
       tablet: [[593, 837, 662, 927]],
       mobile: [[327, 655, 366, 705]],
     },
-    estimated: ["laptop"],
   },
 ];
+
+/**
+ * Stacking order per breakpoint, later wins (rendered as z-index so the DOM
+ * and tab order stay HIT_OBJECTS). Laptop: the box file's hit order.
+ * Tablet/mobile: unchanged, the HIT_OBJECTS order.
+ */
+export const HIT_STACK: Record<Breakpoint, readonly string[]> = {
+  laptop: LAPTOP_HIT_ORDER,
+  tablet: HIT_OBJECTS.map((o) => o.id),
+  mobile: HIT_OBJECTS.map((o) => o.id),
+};
+
+/** z-index (1-based) of a hotspot on a breakpoint. */
+export const stackIndex = (bp: Breakpoint, id: string) =>
+  HIT_STACK[bp].indexOf(id) + 1;
 
 /** Rect → % box relative to a canvas, for absolutely positioned links. */
 export const rectToPercent = (

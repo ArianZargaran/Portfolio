@@ -131,5 +131,5 @@ and 10–20x larger.
 ## Gaps
 
 - **Tablet and mobile:** scene.spec.yaml has no tablet or mobile composition for the V12 room. Only the laptop composition (≥1025 px) gets motion. Tablet and mobile keep the v3.2 placeholder collages, with no media requested. Each needs its own spec-driven composition and clip crop, never a crop of the laptop one.
-- **Laptop hit areas** are hand estimates on the V12 still (V12 moved the poster, speaker and phone, and swapped the Lego shelf for the cabinet with the X-Wing diorama). All are marked `estimated`; Dusk should supply measured boxes.
+- **Laptop hit areas** are measured on the V12 still (Dusk's t995 v2 boxes, imported per [hotspots.md](./hotspots.md)).
 - **Monitor content:** the Harvey hold (typing f192–23) shows a real harvey.ai screenshot (`ref/harvey_home_1440x900.png`). It's fine for local preview only; it's on the launch checklist.
