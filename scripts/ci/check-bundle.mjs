@@ -9,6 +9,9 @@ delete budgets.$comment;
 // Lazy hero player chunk (M8): its own budget, since it's fetched on the
 // home page right after load.
 const HERO_CHUNK = /^hero-player-[\w-]+\.js$/;
+// Always-loaded scene route chunk (review N4): the shell, hit areas,
+// freeze, net gate and actions registry ship with the home page itself.
+const SCENE_CHUNK = /^scene-[\w-]+\.js$/;
 const dir = "build/client/assets";
 const files = readdirSync(dir)
   .filter((f) => !f.endsWith(".map"))
@@ -69,12 +72,23 @@ if (!hero.length) {
   );
   process.exit(1);
 }
+const scene = js.filter((x) => SCENE_CHUNK.test(x.f));
+if (!scene.length) {
+  console.error("No scene chunk in the build (renamed? update SCENE_CHUNK).");
+  process.exit(1);
+}
 const checks = [
   ["initial JS (entry + static imports)", initialJs, budgets.initialJsKb],
   ["total JS", sum(js), budgets.totalJsKb],
   ["total CSS", sum(css), budgets.totalCssKb],
   ["largest JS chunk", Math.max(...js.map((x) => x.gz)), budgets.maxChunkKb],
   ["hero player chunk (lazy)", sum(hero), budgets.heroChunkKb],
+  ["scene chunk (always loaded)", sum(scene), budgets.sceneChunkKb],
+  [
+    "hero JS total (scene + player)",
+    sum(scene) + sum(hero),
+    budgets.heroTotalKb,
+  ],
 ];
 let failed = false;
 for (const [name, size, limitKb] of checks) {
