@@ -9,6 +9,15 @@ import {
 } from "~/scene/hero/actions";
 import { createClock } from "~/scene/hero/clock";
 import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
+import { onHeroReaction } from "~/scene/hero/reaction-bus";
+import {
+  initialQueue,
+  request,
+  resolveState,
+  rotationBusyUntil,
+  setFrozen,
+  step,
+} from "~/scene/hero/reactions";
 import {
   decide,
   driftFrames,
@@ -95,6 +104,12 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     let prepared: ActionId | null = null;
     let ready = false;
     let dead = false;
+    // Reaction queue (M2): requests come from the bus, are applied here,
+    // and take effect on the next frame.
+    let queue = initialQueue(frozenRef.current);
+    const offReaction = onHeroReaction((id) => {
+      queue = request(queue, id, clock.now()).state;
+    });
 
     // The base loop is always visible; an action clip covers it while on.
     const setShown = (next: Shown) => {
@@ -134,7 +149,10 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     const tick = () => {
       raf = requestAnimationFrame(tick);
       if (dead || clock.paused || frozenRef.current) return;
-      const s = stateAt(clock.now());
+      const t = clock.now();
+      const rotation = stateAt(t);
+      queue = step(queue, t, rotation.abs, rotationBusyUntil(rotation));
+      const s = resolveState(rotation, queue);
 
       // Base loop: free-runs, re-seeked only on real drift.
       if (base.readyState >= 1) {
@@ -148,7 +166,16 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
           base.currentTime = frameTime(s.baseFrame, FPS);
       }
 
-      // Buffer the next action ahead of its cut-in window.
+      // Buffer a scheduled reaction, and the next rotation action, ahead of
+      // their cut-in windows.
+      const queued = queue.slot?.occ?.action;
+      if (queued) {
+        const v = actionRefs.current[queued.id];
+        if (v && v.preload !== "auto") {
+          v.preload = "auto";
+          v.load();
+        }
+      }
       const next = nextOccurrence(s.abs);
       if (
         next &&
@@ -191,6 +218,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     // pause where they are, so the visible frame (base or action) holds.
     // Playing again resumes the same clock, so the splice stays in sync.
     applyFreeze.current = (on: boolean) => {
+      queue = setFrozen(queue, on);
       if (dead) return;
       const action = prepared ? actionRefs.current[prepared] : undefined;
       if (on) {
@@ -230,6 +258,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     if (frozenRef.current) applyFreeze.current(true);
     return () => {
       applyFreeze.current = null;
+      offReaction();
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       base.removeEventListener("error", onError, true);

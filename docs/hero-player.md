@@ -45,3 +45,26 @@ The loop starts automatically, runs indefinitely and sits beside the page's link
 
 - **Without F4 or F5, the design "likely meets" 2.2.2:** pointer users get no visible hint.
 - **F5 is the cleanest full pass.**
+
+## Reactions (M2: state machine and queue)
+
+Reactions are one-shot actions triggered by the visitor. They're cut into the typing loop at the next **join point**.
+
+- **Join points** (`join-config.ts`): every 36 frames (3 s, on the head-sway cycle) of the decided 18 s loop: f0, f36, f72, f108, f144, f180.
+- **B1 hook:** the points come from `HERO_JOIN`, so the retouched loop (v5_2, pending Ari) drops in by adding its config and pointing `HERO_JOIN` at it.
+- **Today only some joins are usable:** `homePoseClean` is false for v5_1, so a reaction may only use joins its clip's own cut window covers. That's f72 for the bounce and f180 for the nod (`joinableKs`).
+
+`reactions.ts` is a pure machine; the player only feeds it the clock.
+
+| Rule       | Value                                                                                                                                                                             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Queue      | One slot. Higher priority replaces the queued request; equal priority: the newest wins; lower is refused                                                                          |
+| Scheduling | Earliest join point that has a variant, is ≥ `LEAD_FRAMES` (4) away, isn't inside a live rotation clip, and respects the cooldowns                                                |
+| Commit     | Locks `LEAD_FRAMES` before its join; a locked request can't be replaced. Leaving the hotspot never cancels (commit-on-dwell; the 250 ms dwell is checked by the event wiring, M5) |
+| Cooldowns  | The same reaction is refused for 30 s after its start. Any two starts are ≥ 6 s apart and ≤ 6 per minute (later starts move to a later join)                                      |
+| Freeze     | Requests are refused and the queued one is dropped. A reaction already on screen holds its frame and continues after play                                                         |
+| Rotation   | A scheduled or playing reaction suppresses an overlapping rotation occurrence. A rotation clip that's already live is never cut; the reaction waits                               |
+| E2 egg     | Not a queued reaction. It's armed outside the queue (M4), so it never blocks the speaker reaction                                                                                 |
+
+- **Registry:** `REACTIONS` holds the reactions with media: today only `bounce` (priority 1, joins at f72). The speaker (T6), phone (S5) and sip (S4) ids are typed and get entries when their clips are locked (design A: one baked variant per join point).
+- **Requests:** event sources call `requestHeroReaction(id)` (`reaction-bus.ts`). The handler only enqueues, which keeps INP cheap; video work happens on the player's next animation frame. Event wiring (hover/focus, idle, tab return) is M5 and not built yet.
