@@ -42,6 +42,7 @@ import {
   stateAt,
   type Shown,
 } from "~/scene/hero/schedule";
+import { wireTriggers } from "~/scene/hero/triggers";
 
 const FPS = BASE_LOOP.fps;
 /** Re-seek a clip only when it is this many frames off the clock. */
@@ -341,10 +342,14 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     );
     raf = requestAnimationFrame(tick);
     if (frozenRef.current) applyFreeze.current(true);
+    // Event wiring (M5): hotspot hover/focus, idle, tab return, back in view.
+    const frame = root.closest<HTMLElement>(".scene_frame");
+    const offTriggers = frame ? wireTriggers(frame) : null;
     return () => {
       applyFreeze.current = null;
       offReaction();
       offHotspot();
+      offTriggers?.();
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       base.removeEventListener("error", onError, true);
