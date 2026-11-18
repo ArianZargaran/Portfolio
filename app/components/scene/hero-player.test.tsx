@@ -91,3 +91,45 @@ describe("HeroPlayer E2 egg (M4)", () => {
     expect(fetched(container)).toEqual(["typing"]);
   });
 });
+
+describe("HeroPlayer rotation prefetch flag (FEATURE_HERO_ROTATION_PREFETCH)", () => {
+  let play: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: [
+        "performance",
+        "requestAnimationFrame",
+        "cancelAnimationFrame",
+        "setTimeout",
+        "clearTimeout",
+      ],
+    });
+    play = vi.fn(() => Promise.resolve());
+    HTMLMediaElement.prototype.play = play as () => Promise<void>;
+    HTMLMediaElement.prototype.pause = vi.fn();
+    HTMLMediaElement.prototype.load = vi.fn();
+  });
+  afterEach(() => vi.useRealTimers());
+
+  // Draft rotation [null, "nod", "bounce", null]: the nod's clip starts at
+  // about 32 s, so the 6 s look-ahead would fetch it from about 26 s.
+  it("off (default): the rotation never fetches or plays an unfetched clip", () => {
+    const { container } = render(<HeroPlayer />);
+    act(() => vi.advanceTimersByTime(40_000));
+    expect(fetched(container)).toEqual(["typing"]);
+    const nod = [...container.querySelectorAll("video")].find(
+      (v) =>
+        NAMES.get(v.querySelector("source")?.getAttribute("src") ?? "") ===
+        "nod",
+    )!;
+    expect(play.mock.contexts).not.toContain(nod);
+  });
+
+  it("on: the rotation buffers its next clip 6 s ahead", () => {
+    const { container } = render(<HeroPlayer rotationPrefetch />);
+    act(() => vi.advanceTimersByTime(25_000));
+    expect(fetched(container)).toEqual(["typing"]);
+    act(() => vi.advanceTimersByTime(3_000));
+    expect(fetched(container)).toEqual(["typing", "nod"]);
+  });
+});

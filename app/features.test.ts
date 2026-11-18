@@ -6,6 +6,7 @@ describe("readFeatures", () => {
       skillsChat: false,
       heroFreezeHint: false,
       heroPauseLink: false,
+      heroRotationPrefetch: false,
     });
     expect(DEFAULT_FEATURES).toEqual(readFeatures({}));
   });
@@ -27,5 +28,15 @@ describe("hero freeze hooks (F4/F5, pending Ari)", () => {
       heroFreezeHint: false,
       heroPauseLink: true,
     });
+  });
+});
+
+describe("hero rotation prefetch (pending Ari)", () => {
+  it("is off by default and read from FEATURE_HERO_ROTATION_PREFETCH", () => {
+    expect(DEFAULT_FEATURES.heroRotationPrefetch).toBe(false);
+    expect(
+      readFeatures({ FEATURE_HERO_ROTATION_PREFETCH: "1" })
+        .heroRotationPrefetch,
+    ).toBe(true);
   });
 });

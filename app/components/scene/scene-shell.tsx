@@ -97,7 +97,9 @@ export function SceneShell({
           />
         ) : null}
         <SceneStill decorative={decorative} priority={!decorative} />
-        {motion && !focused ? <HeroMount /> : null}
+        {motion && !focused ? (
+          <HeroMount rotationPrefetch={features.heroRotationPrefetch} />
+        ) : null}
         {STILL_SOURCES.map((s) => (
           <nav
             key={s.breakpoint}

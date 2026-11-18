@@ -36,7 +36,12 @@ function afterLoadAndIdle(cb: () => void): () => void {
  * changing (e.g. the user turns on reduced motion) and to the shared
  * freeze state (scene/hero/freeze.ts).
  */
-export function HeroMount() {
+export function HeroMount({
+  rotationPrefetch = false,
+}: {
+  /** FEATURE_HERO_ROTATION_PREFETCH (off by default). */
+  rotationPrefetch?: boolean;
+}) {
   const [ready, setReady] = useState(false);
   const allowed = useMotionAllowed();
   const { frozen } = useHeroFreeze();
@@ -54,7 +59,7 @@ export function HeroMount() {
   if (!show) return null;
   return (
     <Suspense fallback={null}>
-      <HeroPlayer frozen={frozen} />
+      <HeroPlayer frozen={frozen} rotationPrefetch={rotationPrefetch} />
     </Suspense>
   );
 }

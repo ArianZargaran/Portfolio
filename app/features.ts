@@ -8,11 +8,15 @@
  *                           the pointer enters the animated scene (pending Ari).
  *   FEATURE_HERO_PAUSE_LINK=1   F5: a "Pause animations" control below the scene
  *                           that toggles the same freeze state (pending Ari).
+ *   FEATURE_HERO_ROTATION_PREFETCH=1  Let the draft auto-rotation fetch its
+ *                           next clip 6 s ahead. Off: hero media is fetched
+ *                           only on intent or a trigger (rotation pending Ari).
  */
 export interface Features {
   skillsChat: boolean;
   heroFreezeHint: boolean;
   heroPauseLink: boolean;
+  heroRotationPrefetch: boolean;
 }
 
 const truthy = (v: string | undefined) =>
@@ -25,6 +29,7 @@ export function readFeatures(
     skillsChat: truthy(env.FEATURE_SKILLS_CHAT),
     heroFreezeHint: truthy(env.FEATURE_HERO_FREEZE_HINT),
     heroPauseLink: truthy(env.FEATURE_HERO_PAUSE_LINK),
+    heroRotationPrefetch: truthy(env.FEATURE_HERO_ROTATION_PREFETCH),
   };
 }
 
@@ -32,6 +37,7 @@ export const DEFAULT_FEATURES: Features = {
   skillsChat: false,
   heroFreezeHint: false,
   heroPauseLink: false,
+  heroRotationPrefetch: false,
 };
 
 /** 404 for a route whose feature is off (thrown from loaders/actions). */

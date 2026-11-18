@@ -104,8 +104,21 @@ function ClipVideo({
  * the pure schedule (stateAt/decide); this component only keeps the
  * <video> elements on the frames it asks for. Lazy chunk (see HeroMount).
  */
-export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
+export default function HeroPlayer({
+  frozen = false,
+  rotationPrefetch = false,
+}: {
+  frozen?: boolean;
+  /**
+   * FEATURE_HERO_ROTATION_PREFETCH: let the draft auto-rotation fetch its
+   * next clip 6 s ahead. Off (default): media is fetched only on intent or a
+   * trigger, and a rotation occurrence whose clip isn't buffered is skipped.
+   */
+  rotationPrefetch?: boolean;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const rotationPrefetchRef = useRef(rotationPrefetch);
+  rotationPrefetchRef.current = rotationPrefetch;
   const frozenRef = useRef(frozen);
   /** Set by the main effect: applies a freeze change to the running player. */
   const applyFreeze = useRef<((frozen: boolean) => void) | null>(null);
@@ -278,10 +291,11 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
       // A reaction rescheduled onto another variant needs that clip too.
       const queued = queue.slot?.occ?.action;
       if (queued && !fetchClip(queued)) queue = { ...queue, slot: undefined };
-      // The auto-rotation (a DRAFT for Ari, not a reaction) still buffers
-      // its next clip ahead of the cut-in, within the same budget.
+      // The auto-rotation (a DRAFT for Ari, not a reaction) buffers its next
+      // clip ahead of the cut-in only behind FEATURE_HERO_ROTATION_PREFETCH.
       const next = nextOccurrence(s.abs);
       if (
+        rotationPrefetchRef.current &&
         next &&
         next.start + next.action.clip.firstFrame - s.abs < PRELOAD_S * FPS
       )
@@ -301,7 +315,12 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
         const v = actionRefs.current[action.id] as
           | FrameCallbackVideo
           | undefined;
-        if (v && prepared !== action.id) {
+        // Never play() an element that wasn't fetched through fetchClip:
+        // play() on preload="none" would start a download outside the
+        // intent rule and the budget. That occurrence shows the base.
+        if (v && v.preload !== "auto") {
+          if (prepared) release();
+        } else if (v && prepared !== action.id) {
           release();
           prepared = action.id;
           warmed.delete(action.id);
