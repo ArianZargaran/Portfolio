@@ -11,12 +11,15 @@
  *   FEATURE_HERO_ROTATION_PREFETCH=1  Let the draft auto-rotation fetch its
  *                           next clip 6 s ahead. Off: hero media is fetched
  *                           only on intent or a trigger (rotation pending Ari).
+ *   FEATURE_HERO_ROTATION_NOD=1  Keep the nod (E2) in the draft auto-rotation.
+ *                           Off: PLAN §3 removed it (Ari, Q3). Review N1.
  */
 export interface Features {
   skillsChat: boolean;
   heroFreezeHint: boolean;
   heroPauseLink: boolean;
   heroRotationPrefetch: boolean;
+  heroRotationNod: boolean;
 }
 
 const truthy = (v: string | undefined) =>
@@ -30,6 +33,7 @@ export function readFeatures(
     heroFreezeHint: truthy(env.FEATURE_HERO_FREEZE_HINT),
     heroPauseLink: truthy(env.FEATURE_HERO_PAUSE_LINK),
     heroRotationPrefetch: truthy(env.FEATURE_HERO_ROTATION_PREFETCH),
+    heroRotationNod: truthy(env.FEATURE_HERO_ROTATION_NOD),
   };
 }
 
@@ -38,6 +42,7 @@ export const DEFAULT_FEATURES: Features = {
   heroFreezeHint: false,
   heroPauseLink: false,
   heroRotationPrefetch: false,
+  heroRotationNod: false,
 };
 
 /** 404 for a route whose feature is off (thrown from loaders/actions). */

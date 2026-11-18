@@ -21,6 +21,10 @@
  * - Reactions win over the auto-rotation: a rotation occurrence overlapping
  *   a scheduled or playing reaction is suppressed, but a rotation clip that
  *   is already live is never cut; the reaction waits for its end.
+ * - Rotation plays share the cooldown ledger (review N1): a rotation
+ *   occurrence plays only if its clip is fetched and the cooldowns allow a
+ *   start then (`gateRotation`); otherwise the base shows. Each play is
+ *   recorded like a reaction start, so reactions also wait for it.
  * - E2 (the poster -> speaker egg) is not a queued reaction: it is armed
  *   outside the queue (M4) so it can never block another reaction.
  */
@@ -94,8 +98,8 @@ export interface QueueState {
   frozen: boolean;
   slot?: Slot;
   playing?: { id: ReactionId; occ: Occurrence };
-  /** Clock time of each reaction's last start. */
-  lastStart: Partial<Record<ReactionId, number>>;
+  /** Clock time of each reaction's (or rotation action's) last start. */
+  lastStart: Partial<Record<string, number>>;
   /** Clock times of recent starts (last minute). */
   starts: number[];
 }
@@ -271,4 +275,68 @@ export function resolveState(
 export function rotationBusyUntil(rotation: ScheduleState): number {
   const a = rotation.action;
   return a && a.clipFrame >= 0 ? clipEndAbs(a.occurrence) : 0;
+}
+
+/** Decision for one rotation occurrence, made once when it first appears. */
+export interface RotationGate {
+  /** `start` of the decided occurrence. */
+  start?: number;
+  allowed: boolean;
+}
+
+export const initialRotationGate = (): RotationGate => ({ allowed: false });
+
+/** Whether the cooldowns allow `id` to start at clock time `t`. */
+export function cooldownAllows(q: QueueState, id: string, t: number): boolean {
+  const last = q.lastStart[id];
+  if (last !== undefined && t - last < COOLDOWNS.sameS) return false;
+  return earliestStart(q, t) <= t + 1e-9;
+}
+
+/**
+ * Cooldown gate for the auto-rotation (review N1, N2). The first time a
+ * rotation occurrence shows up it is decided once: it may play only if the
+ * queue is not frozen, no reaction is playing or locked, its clip is
+ * fetched, and the cooldowns allow a start at its first clip frame. An
+ * allowed play is recorded in the ledger; a refused one is removed from the
+ * schedule (the base shows and it doesn't count as busy time).
+ */
+export function gateRotation(
+  q: QueueState,
+  gate: RotationGate,
+  rotation: ScheduleState,
+  t: number,
+  fetched: (id: ActionDef["id"]) => boolean,
+  fps = BASE_LOOP.fps,
+): { queue: QueueState; gate: RotationGate; rotation: ScheduleState } {
+  const occ = rotation.action?.occurrence;
+  if (!occ) return { queue: q, gate, rotation };
+  const off = { ...rotation, action: undefined };
+  if (gate.start !== occ.start) {
+    // Not fetched yet but its clip hasn't started: wait (a prefetch may
+    // still land), showing the base meanwhile.
+    if (!fetched(occ.action.id) && rotation.action!.clipFrame < 0)
+      return { queue: q, gate, rotation: off };
+    const id = occ.action.id;
+    const startAbs = occ.start + occ.action.clip.firstFrame;
+    const tStart = t + (startAbs - rotation.abs) / fps;
+    const allowed =
+      !q.frozen &&
+      !q.playing &&
+      !q.slot?.locked &&
+      fetched(id) &&
+      cooldownAllows(q, id, tStart);
+    gate = { start: occ.start, allowed };
+    if (allowed)
+      q = {
+        ...q,
+        lastStart: { ...q.lastStart, [id]: tStart },
+        starts: [...q.starts.filter((x) => tStart - x < 60), tStart],
+      };
+  }
+  return {
+    queue: q,
+    gate,
+    rotation: gate.allowed ? rotation : off,
+  };
 }

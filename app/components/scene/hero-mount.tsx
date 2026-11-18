@@ -38,9 +38,12 @@ function afterLoadAndIdle(cb: () => void): () => void {
  */
 export function HeroMount({
   rotationPrefetch = false,
+  rotationNod = false,
 }: {
   /** FEATURE_HERO_ROTATION_PREFETCH (off by default). */
   rotationPrefetch?: boolean;
+  /** FEATURE_HERO_ROTATION_NOD (off by default). */
+  rotationNod?: boolean;
 }) {
   const [ready, setReady] = useState(false);
   const allowed = useMotionAllowed();
@@ -59,7 +62,11 @@ export function HeroMount({
   if (!show) return null;
   return (
     <Suspense fallback={null}>
-      <HeroPlayer frozen={frozen} rotationPrefetch={rotationPrefetch} />
+      <HeroPlayer
+        frozen={frozen}
+        rotationPrefetch={rotationPrefetch}
+        rotationNod={rotationNod}
+      />
     </Suspense>
   );
 }

@@ -7,6 +7,7 @@ describe("readFeatures", () => {
       heroFreezeHint: false,
       heroPauseLink: false,
       heroRotationPrefetch: false,
+      heroRotationNod: false,
     });
     expect(DEFAULT_FEATURES).toEqual(readFeatures({}));
   });
@@ -37,6 +38,16 @@ describe("hero rotation prefetch (pending Ari)", () => {
     expect(
       readFeatures({ FEATURE_HERO_ROTATION_PREFETCH: "1" })
         .heroRotationPrefetch,
+    ).toBe(true);
+  });
+});
+
+describe("hero rotation nod (review N1, pending Ari)", () => {
+  it("is off by default and read from FEATURE_HERO_ROTATION_NOD", () => {
+    expect(DEFAULT_FEATURES.heroRotationNod).toBe(false);
+    expect(readFeatures({}).heroRotationNod).toBe(false);
+    expect(
+      readFeatures({ FEATURE_HERO_ROTATION_NOD: "1" }).heroRotationNod,
     ).toBe(true);
   });
 });

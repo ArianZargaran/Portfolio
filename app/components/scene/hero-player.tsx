@@ -24,7 +24,9 @@ import {
 import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
 import { onHeroHotspot, onHeroReaction } from "~/scene/hero/reaction-bus";
 import {
+  gateRotation,
   initialQueue,
+  initialRotationGate,
   nextVariant,
   REACTIONS,
   request,
@@ -38,6 +40,7 @@ import {
   decide,
   driftFrames,
   frameTime,
+  heroRotation,
   nextOccurrence,
   stateAt,
   type Shown,
@@ -107,6 +110,7 @@ function ClipVideo({
 export default function HeroPlayer({
   frozen = false,
   rotationPrefetch = false,
+  rotationNod = false,
 }: {
   frozen?: boolean;
   /**
@@ -115,10 +119,14 @@ export default function HeroPlayer({
    * trigger, and a rotation occurrence whose clip isn't buffered is skipped.
    */
   rotationPrefetch?: boolean;
+  /** FEATURE_HERO_ROTATION_NOD: keep the nod's auto-rotation slot (off: PLAN §3). */
+  rotationNod?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const rotationPrefetchRef = useRef(rotationPrefetch);
   rotationPrefetchRef.current = rotationPrefetch;
+  const rotationRef = useRef(heroRotation(rotationNod));
+  rotationRef.current = heroRotation(rotationNod);
   const frozenRef = useRef(frozen);
   /** Set by the main effect: applies a freeze change to the running player. */
   const applyFreeze = useRef<((frozen: boolean) => void) | null>(null);
@@ -138,6 +146,10 @@ export default function HeroPlayer({
     // Reaction queue (M2): requests come from the bus, are applied here,
     // and take effect on the next frame.
     let queue = initialQueue(frozenRef.current);
+    // Every rotation play passes the cooldowns and needs a fetched clip (N1).
+    let rotGate = initialRotationGate();
+    const isFetched = (id: ActionId) =>
+      actionRefs.current[id]?.preload === "auto";
 
     // Per-visit byte budget (M3). The typing loop is always fetched; every
     // other clip goes through fetchClip, which refuses once over budget.
@@ -251,7 +263,16 @@ export default function HeroPlayer({
       raf = requestAnimationFrame(tick);
       if (dead || clock.paused || frozenRef.current) return;
       const t = clock.now();
-      const rotation = stateAt(t);
+      const gated = gateRotation(
+        queue,
+        rotGate,
+        stateAt(t, rotationRef.current),
+        t,
+        isFetched,
+      );
+      queue = gated.queue;
+      rotGate = gated.gate;
+      const rotation = gated.rotation;
       const abs = rotation.abs;
       queue = step(
         queue,
@@ -293,7 +314,7 @@ export default function HeroPlayer({
       if (queued && !fetchClip(queued)) queue = { ...queue, slot: undefined };
       // The auto-rotation (a DRAFT for Ari, not a reaction) buffers its next
       // clip ahead of the cut-in only behind FEATURE_HERO_ROTATION_PREFETCH.
-      const next = nextOccurrence(s.abs);
+      const next = nextOccurrence(s.abs, rotationRef.current);
       if (
         rotationPrefetchRef.current &&
         next &&
@@ -305,7 +326,7 @@ export default function HeroPlayer({
         warmTargets(s.abs, [
           queue.slot?.occ,
           egg.armed?.occ,
-          nextOccurrence(s.abs) ?? undefined,
+          nextOccurrence(s.abs, rotationRef.current) ?? undefined,
         ]),
       );
 

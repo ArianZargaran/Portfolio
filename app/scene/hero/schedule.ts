@@ -29,6 +29,15 @@ import { mod } from "./clock";
 export type Rotation = (ActionId | null)[];
 export const HERO_ROTATION: Rotation = [null, "nod", "bounce", null];
 
+/**
+ * The rotation the player runs. PLAN §3: E2 (the nod) is out of the
+ * auto-rotation (Ari, Q3), so its slot is empty unless
+ * FEATURE_HERO_ROTATION_NOD is on (review N1). Every rotation play still
+ * goes through the cooldown gate (reactions.ts `gateRotation`).
+ */
+export const heroRotation = (nod = false): Rotation =>
+  HERO_ROTATION.map((id) => (id === "nod" && !nod ? null : id));
+
 export interface Occurrence {
   action: ActionDef;
   /** Base cycle the action is scheduled in. */

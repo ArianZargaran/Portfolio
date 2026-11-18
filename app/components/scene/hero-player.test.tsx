@@ -125,11 +125,19 @@ describe("HeroPlayer rotation prefetch flag (FEATURE_HERO_ROTATION_PREFETCH)", (
     expect(play.mock.contexts).not.toContain(nod);
   });
 
-  it("on: the rotation buffers its next clip 6 s ahead", () => {
-    const { container } = render(<HeroPlayer rotationPrefetch />);
+  it("on, with the nod slot (FEATURE_HERO_ROTATION_NOD): the rotation buffers the nod 6 s ahead", () => {
+    const { container } = render(<HeroPlayer rotationPrefetch rotationNod />);
     act(() => vi.advanceTimersByTime(25_000));
     expect(fetched(container)).toEqual(["typing"]);
     act(() => vi.advanceTimersByTime(3_000));
     expect(fetched(container)).toEqual(["typing", "nod"]);
+  });
+
+  it("on, default rotation (no nod, review N1): only the bounce is ever buffered", () => {
+    const { container } = render(<HeroPlayer rotationPrefetch />);
+    act(() => vi.advanceTimersByTime(34_000));
+    expect(fetched(container)).toEqual(["typing"]);
+    act(() => vi.advanceTimersByTime(8_000));
+    expect(fetched(container)).toEqual(["typing", "bounce"]);
   });
 });
