@@ -18,6 +18,7 @@ import {
   GRAPH_PROPOSALS,
   GRAPH_ROUTE_OBJECTS,
   HOTSPOT_MAP,
+  LOCAL_EXTRA_RECTS,
   MUST_STAY_CLEAR,
   NO_HIT_BOXES,
   REFERENCE_BOXES,
@@ -36,6 +37,7 @@ const cfg: ImportConfig = {
   mustStayClear: MUST_STAY_CLEAR,
   stacking: STACKING_RULES,
   defaultOrder: DEFAULT_HIT_ORDER,
+  extraRects: LOCAL_EXTRA_RECTS,
 };
 
 const V2 = "HOTSPOT_BOXES_t995_v2.json";
@@ -83,12 +85,14 @@ describe("hotspot importer: t995 v2 fixture", () => {
       "bookshelf.middle_tier",
       "bookshelf.hutch",
       "bookshelf.photo_frames_on_top",
+      "bookshelf.left_plinth (local)",
     ]);
     expect(byId.bookshelf.rects).toEqual([
       [913, 514, 1440, 866],
       [951, 388, 1374, 530],
       [994, 268, 1329, 404],
       [1035, 203, 1265, 295],
+      [879, 672, 913, 817], // Dusk's optional 5th rect, approved by Atlas
     ]);
     expect(byId.bookshelf.route).toBe("/resume");
     const jersey = load(V2).informational!.find(
@@ -125,6 +129,8 @@ describe("hotspot importer: t995 v1 fixture (not wired)", () => {
     expect(res.ok).toBe(false);
     expect(res.errors).toEqual([
       expect.stringMatching(/^bookshelf: no rects\[\] split/),
+      // and the local plinth rect has no bookshelf to attach to
+      'bookshelf.left_plinth (local): no imported object "bookshelf"',
     ]);
   });
 
@@ -187,6 +193,47 @@ describe("hotspot importer: validation", () => {
     const errs = importHotspotBoxes(f, cfg).errors;
     expect(errs).toContain("phone: [630,469,660,584] has a side under 44 px");
     expect(errs).toContain("lego: [1047,552,1450,746] outside 1440x900");
+  });
+});
+
+describe("hotspot importer: local extra rects", () => {
+  it("the approved left-plinth rect sits 308 px below the jersey hit box", () => {
+    const jersey = load(V2).informational!.find(
+      (i) => i.id === "jersey-frame",
+    )!.hit_xyxy!;
+    const [x1, y1, x2] = LOCAL_EXTRA_RECTS[0].rect;
+    expect(x1 < jersey[2] && jersey[0] < x2).toBe(true); // shares columns
+    expect(y1 - jersey[3]).toBe(308);
+  });
+
+  it("rejects an extra rect that touches the jersey frame", () => {
+    const res = importHotspotBoxes(load(V2), {
+      ...cfg,
+      extraRects: [
+        {
+          id: "bookshelf",
+          rect: [879, 300, 913, 817],
+          name: "bad",
+          why: "test",
+          minSideExempt: true,
+        },
+      ],
+    });
+    expect(res.errors).toEqual([
+      expect.stringMatching(
+        /bookshelf\.bad \(local\): .* intersects jersey-frame/,
+      ),
+    ]);
+  });
+
+  it("enforces the 44 px minimum unless the extra is explicitly exempt", () => {
+    const res = importHotspotBoxes(load(V2), {
+      ...cfg,
+      extraRects: [{ ...LOCAL_EXTRA_RECTS[0], minSideExempt: false }],
+    });
+    expect(res.errors).toEqual([
+      "bookshelf.left_plinth (local): [879,672,913,817] has a side under 44 px",
+    ]);
   });
 });
 

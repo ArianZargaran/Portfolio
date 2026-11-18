@@ -76,7 +76,8 @@ export const HIT_OBJECTS: HitObject[] = [
     label: "Resume",
     href: "/resume",
     /* Laptop: 3 cabinet boxes (lower tier + base first: focusable and the
-       zoom origin), then the photo frames on top. The jersey frame beside
+       zoom origin), then the photo frames on top and the left-plinth sliver
+       (local override, hotspots/mapping.ts). The jersey frame beside
        the shelf is not part of it and opens nothing. Tablet/mobile: old
        layout json. */
     rects: {

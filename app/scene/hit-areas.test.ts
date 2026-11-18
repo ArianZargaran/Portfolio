@@ -255,7 +255,7 @@ describe("scene hit areas", () => {
 
   it("splits the laptop bookshelf into 3 cabinet boxes + the photo frames, clear of the jersey frame", () => {
     const shelf = HIT_OBJECTS.find((o) => o.id === "bookshelf")!;
-    expect(shelf.rects.laptop).toHaveLength(4);
+    expect(shelf.rects.laptop).toHaveLength(5); // + the local left-plinth rect
     const jersey = [796, 134, 953, 364];
     for (const [x1, y1, x2, y2] of HIT_OBJECTS.flatMap((o) => o.rects.laptop))
       expect(

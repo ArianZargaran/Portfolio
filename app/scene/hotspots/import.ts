@@ -7,7 +7,7 @@
  */
 import type { Rect } from "../hit-areas";
 
-import type { BoxSource, HotspotMapEntry } from "./mapping";
+import type { BoxSource, HotspotMapEntry, LocalExtraRect } from "./mapping";
 
 /** [x, y, w, h] in composition px. */
 export type Box = [number, number, number, number];
@@ -79,6 +79,8 @@ export interface ImportConfig {
   mustStayClear: readonly string[];
   stacking: readonly (readonly [string, string])[];
   defaultOrder: readonly string[];
+  /** Local pointer-only rects appended to an object (mapping.ts). */
+  extraRects?: readonly LocalExtraRect[];
 }
 
 export interface ImportResult {
@@ -216,6 +218,33 @@ export function importHotspotBoxes(
     });
     imported.set(e.id, { id: e.id, route: e.route, ...got });
   }
+  /** File-derived rect count per object (before local extras). */
+  const fileRectCount = new Map(
+    [...imported.values()].map((o) => [o.id, o.rects.length]),
+  );
+
+  // Local extras (pointer-only, appended after the file rects).
+  for (const x of cfg.extraRects ?? []) {
+    const o = imported.get(x.id);
+    const at = `${x.id}.${x.name} (local)`;
+    if (!o) {
+      errors.push(`${at}: no imported object "${x.id}"`);
+      continue;
+    }
+    const r = [...x.rect] as Rect;
+    const [x1, y1, x2, y2] = r;
+    if (!isNum4(r) || x2 <= x1 || y2 <= y1) errors.push(`${at}: [${r}] empty`);
+    else if (x1 < 0 || y1 < 0 || x2 > W || y2 > H)
+      errors.push(`${at}: [${r}] outside ${W}x${H}`);
+    else if (!x.minSideExempt && (x2 - x1 < minSide || y2 - y1 < minSide))
+      errors.push(`${at}: [${r}] has a side under ${minSide} px`);
+    if (o.rects.some((q) => sameRect(q, r)))
+      warnings.push(`${at}: already in the file; local override is redundant`);
+    else {
+      o.rects.push(r);
+      o.from.push(at);
+    }
+  }
 
   // Must-stay-clear boxes (the jersey).
   for (const id of cfg.mustStayClear) {
@@ -253,11 +282,15 @@ export function importHotspotBoxes(
         errors.push(`hit_order entry "${entry.id}" is unmapped`);
       continue;
     }
-    const a = o.rects.map(key).sort().join("|");
+    // Compare the file-derived rects only (local extras come on top).
+    const fromFile = o.rects.slice(0, fileRectCount.get(o.id));
+    const a = fromFile.map(key).sort().join("|");
     const b = entry.rects_xyxy.map(key).sort().join("|");
     if (a !== b)
       errors.push(`${entry.id}: hit_order rects differ from the derived rects`);
-    else if (o.rects.map(key).join("|") !== entry.rects_xyxy.map(key).join("|"))
+    else if (
+      fromFile.map(key).join("|") !== entry.rects_xyxy.map(key).join("|")
+    )
       warnings.push(
         `${entry.id}: hit_order lists the same rects in another order; using the mapping order (first = focusable: ${o.from[0]})`,
       );

@@ -48,6 +48,7 @@ const cfg = {
   mustStayClear: M.MUST_STAY_CLEAR,
   stacking: M.STACKING_RULES,
   defaultOrder: M.DEFAULT_HIT_ORDER,
+  extraRects: M.LOCAL_EXTRA_RECTS,
 };
 
 const raw = readFileSync(resolve(input));

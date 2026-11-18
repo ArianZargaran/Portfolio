@@ -99,6 +99,36 @@ export const HOTSPOT_MAP: readonly HotspotMapEntry[] = [
   },
 ];
 
+/**
+ * Local rects added on top of a box file (not in Dusk's JSON). Appended after
+ * the object's file rects, always pointer-only (aria-hidden, tabIndex -1).
+ * `minSideExempt`: the 44 px minimum is a target-size rule for focusable
+ * hit areas; a pointer-only sliver attached to a large object may be thinner.
+ */
+export interface LocalExtraRect {
+  id: string;
+  /** [x1, y1, x2, y2] exclusive, 1440x900 composition px. */
+  rect: readonly [number, number, number, number];
+  name: string;
+  why: string;
+  minSideExempt?: boolean;
+}
+
+export const LOCAL_EXTRA_RECTS: readonly LocalExtraRect[] = [
+  {
+    id: "bookshelf",
+    // Dusk's optional 5th rect from HOTSPOT_BOXES_t995_v2 / review_t995_hotspots_v2
+    // item 1, given there as [x, y, w, h] = [879, 672, 34, 145]. Approved by
+    // Atlas (Nov 17 2026) as x1,y1,x2,y2 [879, 672, 913, 817]. Covers the
+    // left-projecting plinth corner and left leg (part of the 6,755 px of
+    // shelf content outside the v2 union). 308 px below the jersey hit box.
+    rect: [879, 672, 913, 817],
+    name: "left_plinth",
+    why: "Dusk's optional 5th bookshelf rect, approved by Atlas",
+    minSideExempt: true,
+  },
+];
+
 /** Box-file hotspots that must NOT get a hit area (decision 2: S4 is timer-only). */
 export const NO_HIT_BOXES = ["mug-sip"] as const;
 

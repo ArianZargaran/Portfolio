@@ -37,6 +37,14 @@ Then point the sha/fixture name in `import.test.ts` at the new file and run the 
 3. Phone above notebook.
 4. Bookshelf = 3 cabinet boxes (lower tier and base first: focusable and the zoom origin; middle tier; hutch) plus the photo frames on top (pointer-only). The jersey frame opens nothing. `/resume` stays on the bookshelf.
 
+## Local overrides (`LOCAL_EXTRA_RECTS` in `mapping.ts`)
+
+Rects that are not in Dusk's file but are approved for the app. They are appended after the object's file rects, are always pointer-only, go through the same canvas and jersey checks, and are left out of the `hit_order.entries` comparison. The 44 px minimum applies unless the entry is marked `minSideExempt` (a thin pointer-only sliver attached to a large object).
+
+| Object              | Rect (x1,y1,x2,y2)                 | Origin                                                                                                                                                          | Jersey gap                                                                            |
+| ------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| bookshelf (/resume) | [879, 672, 913, 817] `left_plinth` | Dusk's optional 5th rect (t995 v2 review item 1, given as x,y,w,h [879,672,34,145]); approved by Atlas, Nov 17 2026. Covers the left plinth corner and left leg | 308 px below the jersey hit box (316 px below its tight box); shares columns x879–913 |
+
 ## Stacking vs tab order
 
 DOM order (= tab order, deep-link lookup) stays the `HIT_OBJECTS` order. Stacking is per breakpoint (`HIT_STACK`, rendered as `z-index` inside each `.scene_hits` stacking context): laptop uses the box file's hit order, tablet/mobile keep the old array order, so their behaviour is unchanged.
