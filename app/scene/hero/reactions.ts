@@ -1,0 +1,257 @@
+/**
+ * Reactions: one-shot actions triggered by the visitor (hover a hotspot,
+ * idle, return to the tab), cut into the typing loop at the next join point
+ * (join-config.ts). Pure state machine; the player feeds it the clock and
+ * shows whatever `resolveState` says. PLAN v3.3 §3:
+ *
+ * - One queue slot. A new request replaces the queued one if its priority
+ *   is higher, or equal (newest wins). Commit-on-dwell: once a request is
+ *   queued it is never cancelled by the pointer leaving (the 250 ms dwell
+ *   that confirms intent is checked by the event wiring, M5).
+ * - A queued request is scheduled at the earliest join point that has a
+ *   variant for it, is at least LEAD_FRAMES away (time to seek and decode),
+ *   and respects the cooldowns. It locks LEAD_FRAMES before its join; a
+ *   locked request can no longer be replaced.
+ * - Cooldowns: the same reaction at most once per 30 s (later requests are
+ *   rejected), any two reactions at least 6 s apart and at most 6 per
+ *   minute (later starts are pushed to a later join).
+ * - Frozen (WCAG 2.2.2 pause): requests are rejected and the queued one is
+ *   dropped; a reaction already on screen stays on its held frame and
+ *   continues when the visitor plays again.
+ * - Reactions win over the auto-rotation: a rotation occurrence overlapping
+ *   a scheduled or playing reaction is suppressed, but a rotation clip that
+ *   is already live is never cut; the reaction waits for its end.
+ * - E2 (the poster -> speaker egg) is not a queued reaction: it is armed
+ *   outside the queue (M4) so it can never block another reaction.
+ */
+import { ACTIONS, BASE_LOOP, cutWindows, type ActionDef } from "./actions";
+import { mod } from "./clock";
+import { HERO_JOIN, nextJoinAbs, type JoinConfig } from "./join-config";
+import {
+  clipEndAbs,
+  occurrenceState,
+  type Occurrence,
+  type ScheduleState,
+} from "./schedule";
+
+/** Reaction ids (PLAN §3). Only `bounce` has media today; T6/S5/S4 are planned. */
+export type ReactionId = "bounce" | "speaker" | "phone" | "sip";
+
+export interface ReactionDef {
+  id: ReactionId;
+  /** Higher wins the queue slot (PLAN §3: bounce 1, sip 2, speaker/phone 3). */
+  priority: number;
+  /**
+   * Clip to cut in at each join point (base frame k). Design A: one baked
+   * variant per entry; today's clips cover a single join each.
+   */
+  variants: Partial<Record<number, ActionDef>>;
+}
+
+/** Action frame shown at base frame k (inverse of the splice mapping). */
+export const actionFrameAtBase = (
+  a: ActionDef,
+  k: number,
+  loopFrames = BASE_LOOP.frames,
+): number => mod(k - a.spliceOffset, loopFrames);
+
+/** Join points where `a` can cut in without a pop (its enter cut window). */
+export function joinableKs(
+  a: ActionDef,
+  cfg: JoinConfig = HERO_JOIN,
+): number[] {
+  const { enter } = cutWindows(a);
+  return cfg.points.filter((k) => {
+    const i = actionFrameAtBase(a, k, cfg.loopFrames);
+    return i >= enter[0] && i <= enter[1] && i < a.frames;
+  });
+}
+
+const variantsFor = (a: ActionDef, cfg: JoinConfig = HERO_JOIN) =>
+  Object.fromEntries(joinableKs(a, cfg).map((k) => [k, a]));
+
+/** Registry. With the v5_1 loop only the bounce has a clean join (f72). */
+export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {
+  bounce: { id: "bounce", priority: 1, variants: variantsFor(ACTIONS.bounce) },
+};
+
+export const COOLDOWNS = { sameS: 30, gapS: 6, perMinute: 6 } as const;
+/** Frames between locking a join and cutting in (seek + first decoded frame). */
+export const LEAD_FRAMES = 4;
+
+export interface Slot {
+  id: ReactionId;
+  priority: number;
+  /** Clock time of the request. */
+  at: number;
+  /** Set once scheduled; recomputed each step until locked. */
+  occ?: Occurrence;
+  join?: number;
+  locked: boolean;
+}
+
+export interface QueueState {
+  frozen: boolean;
+  slot?: Slot;
+  playing?: { id: ReactionId; occ: Occurrence };
+  /** Clock time of each reaction's last start. */
+  lastStart: Partial<Record<ReactionId, number>>;
+  /** Clock times of recent starts (last minute). */
+  starts: number[];
+}
+
+export const initialQueue = (frozen = false): QueueState => ({
+  frozen,
+  lastStart: {},
+  starts: [],
+});
+
+export type RequestResult =
+  | { accepted: true; state: QueueState }
+  | {
+      accepted: false;
+      state: QueueState;
+      reason: "frozen" | "unknown" | "cooldown" | "outranked" | "locked";
+    };
+
+export interface QueueEnv {
+  reactions?: Partial<Record<ReactionId, ReactionDef>>;
+  cfg?: JoinConfig;
+}
+
+/** A visitor-triggered request (already dwell-confirmed). */
+export function request(
+  q: QueueState,
+  id: ReactionId,
+  t: number,
+  env: QueueEnv = {},
+): RequestResult {
+  const def = (env.reactions ?? REACTIONS)[id];
+  if (q.frozen) return { accepted: false, state: q, reason: "frozen" };
+  if (!def || !Object.keys(def.variants).length)
+    return { accepted: false, state: q, reason: "unknown" };
+  const last = q.lastStart[id];
+  if (last !== undefined && t - last < COOLDOWNS.sameS)
+    return { accepted: false, state: q, reason: "cooldown" };
+  if (q.playing?.id === id)
+    return { accepted: false, state: q, reason: "cooldown" };
+  if (q.slot) {
+    if (q.slot.locked) return { accepted: false, state: q, reason: "locked" };
+    if (def.priority < q.slot.priority)
+      return { accepted: false, state: q, reason: "outranked" };
+  }
+  return {
+    accepted: true,
+    state: { ...q, slot: { id, priority: def.priority, at: t, locked: false } },
+  };
+}
+
+/** Freeze on/off. Freezing drops the queued request (even a locked one). */
+export function setFrozen(q: QueueState, frozen: boolean): QueueState {
+  if (frozen === q.frozen) return q;
+  return frozen ? { ...q, frozen, slot: undefined } : { ...q, frozen };
+}
+
+/** Earliest clock time the cooldowns allow the next start. */
+export function earliestStart(q: QueueState, t: number): number {
+  let e = t;
+  const lastAny = q.starts[q.starts.length - 1];
+  if (lastAny !== undefined) e = Math.max(e, lastAny + COOLDOWNS.gapS);
+  const recent = q.starts.filter((s) => t - s < 60);
+  if (recent.length >= COOLDOWNS.perMinute)
+    e = Math.max(e, recent[recent.length - COOLDOWNS.perMinute] + 60);
+  return e;
+}
+
+/**
+ * One step at clock time t / absolute frame abs. `busyUntil` is the absolute
+ * frame where a live rotation clip ends (0 if none), so a reaction never
+ * cuts a clip that is already on screen.
+ */
+export function step(
+  q: QueueState,
+  t: number,
+  abs: number,
+  busyUntil = 0,
+  env: QueueEnv = {},
+): QueueState {
+  if (q.frozen) return q;
+  const cfg = env.cfg ?? HERO_JOIN;
+  let next = q;
+  if (next.playing && abs >= clipEndAbs(next.playing.occ))
+    next = { ...next, playing: undefined };
+
+  const slot = next.slot;
+  if (!slot) return next;
+  const def = (env.reactions ?? REACTIONS)[slot.id];
+  if (!def) return { ...next, slot: undefined };
+
+  if (!slot.locked && slot.join !== undefined && abs >= slot.join - LEAD_FRAMES)
+    next = { ...next, slot: { ...slot, locked: true } };
+  else if (!slot.locked) {
+    const fps = cfg.fps;
+    const from = Math.max(
+      abs + LEAD_FRAMES,
+      busyUntil,
+      next.playing ? clipEndAbs(next.playing.occ) : 0,
+      Math.ceil(earliestStart(next, t) * fps - (t * fps - abs)),
+    );
+    const ks = Object.keys(def.variants).map(Number);
+    const join = nextJoinAbs(from, ks, cfg.loopFrames);
+    if (join === undefined) return { ...next, slot: undefined };
+    const action = def.variants[mod(join, cfg.loopFrames)]!;
+    const occ: Occurrence = {
+      action,
+      cycle: Math.floor(join / cfg.loopFrames),
+      start: join - actionFrameAtBase(action, join, cfg.loopFrames),
+    };
+    // Locks immediately when the only valid join is already within the lead.
+    const locked = abs >= join - LEAD_FRAMES;
+    next = { ...next, slot: { ...slot, occ, join, locked } };
+  }
+
+  const s = next.slot!;
+  if (s.join !== undefined && s.occ && abs >= s.join) {
+    next = {
+      ...next,
+      slot: undefined,
+      playing: { id: s.id, occ: s.occ },
+      lastStart: { ...next.lastStart, [s.id]: t },
+      starts: [...next.starts.filter((x) => t - x < 60), t],
+    };
+  }
+  return next;
+}
+
+/** The occurrence that owns the frames from its start to its clip end, if any. */
+function reserved(q: QueueState): Occurrence | undefined {
+  return q.playing?.occ ?? (q.slot?.locked ? q.slot.occ : undefined);
+}
+
+/**
+ * Final schedule for the player: a playing (or locked) reaction wins; a
+ * rotation occurrence overlapping it is suppressed (base shows instead).
+ */
+export function resolveState(
+  rotation: ScheduleState,
+  q: QueueState,
+): ScheduleState {
+  const occ = reserved(q);
+  if (!occ) return rotation;
+  const action = occurrenceState(rotation.abs, occ);
+  if (action && action.clipFrame >= 0) return { ...rotation, action };
+  const rot = rotation.action?.occurrence;
+  if (rot) {
+    const rotFrom = rot.start + rot.action.clip.firstFrame;
+    const resFrom = occ.start + occ.action.clip.firstFrame;
+    const overlaps = rotFrom < clipEndAbs(occ) && resFrom < clipEndAbs(rot);
+    if (overlaps) return { ...rotation, action: undefined };
+  }
+  return rotation;
+}
+
+/** Absolute frame where the live rotation clip ends, or 0 (for `step`). */
+export function rotationBusyUntil(rotation: ScheduleState): number {
+  const a = rotation.action;
+  return a && a.clipFrame >= 0 ? clipEndAbs(a.occurrence) : 0;
+}

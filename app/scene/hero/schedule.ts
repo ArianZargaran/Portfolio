@@ -109,20 +109,35 @@ export function stateAt(
   for (let c = cycle; c >= cycle - lookback; c--) {
     const occ = occurrenceIn(c, rotation, base, actions);
     if (!occ) continue;
-    const i = abs - occ.start;
-    if (i < 0 || i >= occ.action.frames) continue;
-    const cf = i - occ.action.clip.firstFrame;
-    const inClip = cf >= 0 && cf < occ.action.clip.frames;
-    if (state.action && (state.action.clipFrame >= 0 || !inClip)) continue;
-    state.action = {
-      occurrence: occ,
-      frame: i,
-      clipFrame: inClip ? cf : -1,
-      phase: phaseOf(occ.action, i),
-    };
+    const a = occurrenceState(abs, occ);
+    if (!a) continue;
+    if (state.action && (state.action.clipFrame >= 0 || a.clipFrame < 0))
+      continue;
+    state.action = a;
   }
   return state;
 }
+
+/** Where absolute frame `abs` falls inside one occurrence (rotation or reaction). */
+export function occurrenceState(
+  abs: number,
+  occ: Occurrence,
+): ScheduleState["action"] {
+  const i = abs - occ.start;
+  if (i < 0 || i >= occ.action.frames) return undefined;
+  const cf = i - occ.action.clip.firstFrame;
+  const inClip = cf >= 0 && cf < occ.action.clip.frames;
+  return {
+    occurrence: occ,
+    frame: i,
+    clipFrame: inClip ? cf : -1,
+    phase: phaseOf(occ.action, i),
+  };
+}
+
+/** Absolute frame just after an occurrence's encoded clip ends. */
+export const clipEndAbs = (occ: Occurrence): number =>
+  occ.start + occ.action.clip.firstFrame + occ.action.clip.frames;
 
 /** Next occurrence whose clip starts after absolute frame `abs` (for preloading). */
 export function nextOccurrence(
