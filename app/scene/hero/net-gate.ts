@@ -16,8 +16,8 @@
  *    budget; otherwise "still". The measured verdict is remembered for
  *    7 days.
  * 5. Inconclusive (the still or document came from cache with
- *    transferSize 0, no Resource Timing, or a cross-origin still without
- *    Timing-Allow-Origin): reuse the last measured verdict if it is at most
+ *    transferSize 0 or was revalidated with a 304, no Resource Timing, or
+ *    a cross-origin still without Timing-Allow-Origin): reuse the last measured verdict if it is at most
  *    7 days old; otherwise "frozen": the scene starts paused on the still
  *    (not persisted) and activating it plays (WCAG 2.2.2 controls).
  *
@@ -140,7 +140,19 @@ export interface TimingEntry {
   startTime: number;
   responseEnd: number;
   transferSize?: number;
+  encodedBodySize?: number;
 }
+
+/**
+ * Downloaded over the network just now: transferSize covers the headers
+ * plus the whole body. A cache hit reports 0, and a revalidated 304 reports
+ * only the headers (transferSize < encodedBodySize). Neither says anything
+ * about throughput.
+ */
+const fresh = (e: TimingEntry) =>
+  (e.transferSize ?? 0) > 0 &&
+  (e.encodedBodySize === undefined ||
+    (e.transferSize ?? 0) >= e.encodedBodySize);
 
 const COUNTED = new Set(["navigation", "link", "css", "script", "img"]);
 
@@ -158,7 +170,7 @@ export function measureThroughput(
     (e) => e.entryType === "resource" && e.name === stillUrl,
   );
   const nav = entries.find((e) => e.entryType === "navigation");
-  if (!still || !still.transferSize || !nav?.transferSize) return undefined;
+  if (!still || !fresh(still) || !nav || !fresh(nav)) return undefined;
   const counted = entries.filter(
     (e) =>
       e === nav ||
@@ -166,7 +178,7 @@ export function measureThroughput(
       (e.entryType === "resource" &&
         COUNTED.has(e.initiatorType ?? "") &&
         /\.(css|js|mjs)(\?|$)/.test(e.name) &&
-        (e.transferSize ?? 0) > 0),
+        fresh(e)),
   );
   const bytes = counted.reduce((a, e) => a + (e.transferSize ?? 0), 0);
   const from = Math.min(...counted.map((e) => e.startTime));

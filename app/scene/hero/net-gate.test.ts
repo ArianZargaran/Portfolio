@@ -162,6 +162,23 @@ describe("network gate (M7): throughput measurement", () => {
     ).toBeUndefined();
   });
 
+  it("is inconclusive when the still was revalidated (304: headers only)", () => {
+    // Found by the gate smoke test: a reload revalidated the still, which
+    // reported ~300 B over a few ms and read as a "slow" network.
+    const revalidated = {
+      ...still,
+      transferSize: 300,
+      encodedBodySize: 119_700,
+    };
+    expect(measureThroughput([nav, revalidated], still.name)).toBeUndefined();
+    // a 304'd script is left out of the sum instead of skewing it
+    const js304 = { ...js, transferSize: 300, encodedBodySize: 49_700 };
+    expect(measureThroughput([nav, js304, still], still.name)).toEqual({
+      bytes: 140_000,
+      ms: 1_000,
+    });
+  });
+
   it("is inconclusive without the still entry or URL (no Resource Timing, cross-origin)", () => {
     expect(measureThroughput([nav, css], still.name)).toBeUndefined();
     expect(measureThroughput([nav, still], undefined)).toBeUndefined();
