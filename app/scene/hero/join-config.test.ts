@@ -1,7 +1,10 @@
 import { BASE_LOOP } from "./actions";
 import {
   HERO_JOIN,
+  HERO_JOIN_VERSION,
+  JOIN_CONFIGS,
   JOIN_V5_1,
+  JOIN_V5_2,
   joinPointsEvery,
   nextJoinAbs,
   validateJoinConfig,
@@ -34,6 +37,32 @@ describe("join points (3 s home pose, 18 s loop)", () => {
       "step 50 does not divide the loop",
     );
     expect(joinPointsEvery(36, 288)).toHaveLength(8);
+  });
+
+  it("v5_2 (provisional): joins every 36 frames, home pose clean, valid", () => {
+    expect(JOIN_V5_2.points).toEqual([0, 36, 72, 108, 144, 180]);
+    expect(JOIN_V5_2.step).toBe(36);
+    expect(JOIN_V5_2.homePoseClean).toBe(true);
+    expect(JOIN_V5_2.provisional).toBe(true);
+    expect(validateJoinConfig(JOIN_V5_2)).toEqual([]);
+    expect(JOIN_CONFIGS).toEqual({ v5_1: JOIN_V5_1, v5_2: JOIN_V5_2 });
+  });
+
+  it("the default build stays on v5_1 until Ari locks v5_2", () => {
+    expect(HERO_JOIN_VERSION).toBe("v5_1");
+    expect(HERO_JOIN).toBe(JOIN_V5_1);
+    expect(HERO_JOIN.loop).toBe("LOCK_PAINTED_CHAR_TYPING_LOOP_V5_1");
+  });
+
+  it("the active config is never provisional (flip the switch only after the lock)", () => {
+    expect(HERO_JOIN.provisional).toBeUndefined();
+    expect(HERO_JOIN.loop).toMatch(/^LOCK_/);
+  });
+
+  it("rejects points off the step grid", () => {
+    expect(
+      validateJoinConfig({ ...JOIN_V5_2, points: [0, 36, 70, 108, 144, 180] }),
+    ).toContain("points not on the 36-frame grid");
   });
 
   it("nextJoinAbs finds the earliest allowed join, wrapping to the next cycle", () => {

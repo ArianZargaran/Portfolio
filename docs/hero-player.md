@@ -53,7 +53,8 @@ Ari skipped F4 and F5 (Nov 17 2026). Both flags stay **off** in every environmen
 Reactions are one-shot actions triggered by the visitor. They're cut into the typing loop at the next **join point**.
 
 - **Join points** (`join-config.ts`): every 36 frames (3 s, on the head-sway cycle) of the decided 18 s loop: f0, f36, f72, f108, f144, f180.
-- **B1 (approved by Ari, Nov 17 2026; media not landed):** Dusk is building the v5_2 hand retouch. `HERO_JOIN` stays `JOIN_V5_1` until the v5_2 media exists. Then add `JOIN_V5_2` (every 36 frames, `homePoseClean: true`) and point `HERO_JOIN` at it. Don't switch before the media is in.
+- **B1 (v5_2 landed as a candidate, not locked):** `JOIN_V5_2` (every 36 frames: f0/36/72/108/144/180, `homePoseClean: true`, `provisional: true`) sits beside `JOIN_V5_1`. The default build stays on v5*1 through one switch line, `HERO_JOIN_VERSION = "v5_1"` in `join-config.ts`. It's a build-time constant, not an env flag, because the join points have to match the bundled typing clip. `join-config.test.ts` fails if the active config is provisional or doesn't name a `LOCK*` record.
+  - **To install once Ari locks v5_2** (one commit): set `JOIN_V5_2.loop` to the lock record, remove `provisional`, set `HERO_JOIN_VERSION = "v5_2"`, and ship the v5_2 media with it (typing loop, nod v4, bounce v2, per-entry variants, `CLIP_BYTES`, `hero-media.build.json`, `REACTIONS` entries). Don't flip the switch before the media is in.
 - **Today only some joins are usable:** `homePoseClean` is false for v5_1, so a reaction may only use joins its clip's own cut window covers. That's f72 for the bounce and f180 for the nod (`joinableKs`).
 
 `reactions.ts` is a pure machine; the player only feeds it the clock.
