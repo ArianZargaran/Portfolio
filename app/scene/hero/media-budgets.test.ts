@@ -43,7 +43,7 @@ describe("check-media (M8)", () => {
     it("counts one variant per action toward the worst-case visit", () => {
       clip("typing.av1.mp4", 330_000);
       for (const k of [0, 36, 72, 108, 144, 180])
-        clip(`speaker.k${k}.av1.mp4`, 110_000);
+        clip(`speaker.k${k}.${String(k).padStart(8, "0")}.av1.mp4`, 110_000);
       const r = run("--dir", dir, "--no-manifest");
       expect(r.stdout).toMatch(/worst-case av1 visit .*: 440\.0 kB/);
       expect(r.status).toBe(0);

@@ -165,3 +165,11 @@ The gate runs once per page, after the `load` event (`net-gate.ts` decides, `net
 - name: Hero media budgets
   run: node scripts/ci/check-media.mjs
 ```
+
+## Media pipeline, early half (M9a)
+
+`scripts/hero/variants.py` builds design A's entry variants: one baked clip per join point, rendered from the per-frame layers, proven, encoded and content-hashed. Details are in `scripts/hero/README.md` (step 8).
+
+- **Dry run (v5_1 + E2 v3):** the native nod variant (k=180) passes both splice proofs (max diff 4 levels, 0 px over 8). Re-encoded, it reproduces the shipped `nod.av1.mp4` / `nod.h264.mp4` byte for byte (164,081 / 217,147 B, ±0 %).
+- **Other joins:** the five other nod joins fail the proof (p99.9 ≥ 100 levels at the cut-in). That's expected: their head/hand entry art is Track B (B2/B3). The proof is the gate that keeps them from shipping.
+- **Still to come (M9b, after the art locks):** run it on v5_2 + the locked T6/S5/S4 art, then install the passing variants into `app/scene/hero/media/` as `<action>.k<join>.<codec>.mp4`, together with their `REACTIONS` entries, `CLIP_BYTES` and the manifest. `check:media` then enforces the caps.

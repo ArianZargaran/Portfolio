@@ -42,7 +42,8 @@ if (!files.length) {
 }
 // Worst case per codec: the largest file of each action group.
 const worst = { av1: new Map(), h264: new Map() };
-const groupOf = (name) => name.replace(/[._-]k\d+$/, "");
+// Variant names: <action>.k<join>[.<sha8>] (variants.py adds the content hash).
+const groupOf = (name) => name.replace(/[._-]k\d+(\.[0-9a-f]{8})?$/, "");
 for (const f of files.sort()) {
   const [, name, codec] = f.match(/^(.+)\.(av1|h264)\.mp4$/);
   const bytes = statSync(path.join(dir, f)).size;

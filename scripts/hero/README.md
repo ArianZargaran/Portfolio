@@ -25,4 +25,14 @@ The repo root comes from the script's own location, so any clone works. Example:
 | 6. Side-by-side 3x crops                                                    | `crops.py`            | `crops/SIDEBYSIDE_*.png`                                                         |
 | 7. Shipped clips                                                            | `build_web_media.py`  | `app/scene/hero/media/*.mp4` + `scripts/hero/hero-media.build.json` (not served) |
 
+| 8. Entry variants + splice proofs (M9a, design A) | `variants.py <action>` | `pipeline/frames/<action>/k<join>/`, `pipeline/enc/<action>.k<join>.<sha8>.<codec>.mp4`, `pipeline/pipeline_report_<action>.json`, `pipeline/SPLICE_PROOFS_<action>.md` |
+
+`variants.py` renders one variant per join point (f0/36/72/108/144/180) from the per-frame layers. Action frame `i` sits over base frame `(k − entry + i) mod 216`, so the layers the action doesn't paint (screen, key spill, contact shadow) keep typing. It then:
+
+- proves both cuts at full res against the locked base frame (pass = p99.9 ≤ 4 levels and 0 px over 8);
+- encodes with the shipped settings (AV1 crf 30 g72, H.264 crf 20 g72);
+- names the files by content hash.
+
+Outputs go to `$HERO_REPORT/pipeline/`, never into the repo. Acceptance dry run: `python3 scripts/hero/variants.py nod --dry-run-against app/scene/hero/media/nod`. The native k=180 variant must match the shipped bytes within ±2 % (it currently matches byte for byte). The other joins fail the proof until their entry art exists (B2/B3): that's what the proof is for. Adding T6/S5/S4 means one `ACTIONS` entry each (layers dir, frames, entry, native join, clip range).
+
 Smoke test of a running build: `BASE_URL=http://localhost:3000 OUT=… node scripts/hero-smoke.mjs`.
