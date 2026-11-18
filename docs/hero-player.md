@@ -173,3 +173,25 @@ The gate runs once per page, after the `load` event (`net-gate.ts` decides, `net
 - **Dry run (v5_1 + E2 v3):** the native nod variant (k=180) passes both splice proofs (max diff 4 levels, 0 px over 8). Re-encoded, it reproduces the shipped `nod.av1.mp4` / `nod.h264.mp4` byte for byte (164,081 / 217,147 B, ±0 %).
 - **Other joins:** the five other nod joins fail the proof (p99.9 ≥ 100 levels at the cut-in). That's expected: their head/hand entry art is Track B (B2/B3). The proof is the gate that keeps them from shipping.
 - **Still to come (M9b, after the art locks):** run it on v5_2 + the locked T6/S5/S4 art, then install the passing variants into `app/scene/hero/media/` as `<action>.k<join>.<codec>.mp4`, together with their `REACTIONS` entries, `CLIP_BYTES` and the manifest. `check:media` then enforces the caps.
+
+## Tests (M10a)
+
+- **Vitest (unit and component):**
+  - freeze: `freeze.test.ts`, `scene-freeze.test.tsx`
+  - queue and joins: `reactions.test.ts`, `join-config.test.ts`
+  - bus: `reaction-bus.test.ts`
+  - E2: `egg.test.ts`
+  - triggers: `triggers.test.ts`
+  - warm pool: `warm.test.ts`
+  - budget: `budget.test.ts`, plus intent fetch and the rotation flag in `hero-player.test.tsx`
+  - gate: `net-gate.test.ts`, plus mount behaviour per verdict in `hero-mount.test.tsx`
+  - media caps: `media-budgets.test.ts`
+- **Cypress, stub clips (`cypress/e2e/hero.cy.ts`):** every `.mp4` is answered with `cypress/fixtures/hero-stub.av1.mp4`, a 7 kB solid-colour test fixture (not art), so the spec checks behaviour and requests only.
+  - 4G plays, with only `typing` requested before intent.
+  - E2 intent fetches the nod within the budget.
+  - Save-Data and 3G give the still with no media.
+  - No connection API and no timing starts frozen without persisting it, and plays on Enter.
+  - No connection API on a fast network plays and remembers the verdict.
+  - Esc freezes and persists.
+- **Run it:** `npm run test:e2e:hero` (build first). Or serve on a spare port and run `PORT=<port> npx cypress run --spec cypress/e2e/hero.cy.ts`.
+- **Final pass (M10b):** after the art locks, the same specs run against the real clips, plus latency within ±5 % of the sim.
