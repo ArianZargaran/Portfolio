@@ -27,6 +27,10 @@ export interface ClipSource {
   type: MediaType;
   /** `codecs` parameter for canPlayType/<source type>, e.g. avc1.640020. */
   codecs: string;
+  /** Codec family, for the per-visit byte budget (budget.ts). */
+  codec: "av1" | "h264";
+  /** File size in bytes (checked against hero-media.build.json in tests). */
+  bytes: number;
 }
 
 export interface Clip {
@@ -75,6 +79,14 @@ const CLIP_URLS = {
   bounce: { av1: bounceAv1, h264: bounceH264 },
 } as const;
 
+/* File sizes, so the per-visit budget can be checked before a fetch
+   (media-files.test.ts keeps them equal to hero-media.build.json). */
+const CLIP_BYTES = {
+  typing: { av1: 333_271, h264: 445_269 },
+  nod: { av1: 164_081, h264: 217_147 },
+  bounce: { av1: 92_800, h264: 115_915 },
+} as const;
+
 /* AV1 first (about 25% smaller at the same quality; Chrome, Edge, Firefox,
    Safari on AV1 hardware), H.264 High as the universal fallback. Both are
    opaque crops of the full composite (see docs/hero-encoding.md). */
@@ -83,11 +95,15 @@ const sources = (name: keyof typeof CLIP_URLS): ClipSource[] => [
     src: CLIP_URLS[name].av1,
     type: "video/mp4",
     codecs: "av01.0.01M.08",
+    codec: "av1",
+    bytes: CLIP_BYTES[name].av1,
   },
   {
     src: CLIP_URLS[name].h264,
     type: "video/mp4",
     codecs: "avc1.640020",
+    codec: "h264",
+    bytes: CLIP_BYTES[name].h264,
   },
 ];
 

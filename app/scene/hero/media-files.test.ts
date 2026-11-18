@@ -29,6 +29,8 @@ describe("shipped hero clips match the registry", () => {
       expect(m.first_frame).toBe(c.firstFrame);
       expect(m.frames).toBe(c.frames);
       expect(m.fps).toBe(BASE_LOOP.fps);
+      expect(s.bytes).toBe(m.bytes); // the budget's size table
+      expect(name).toContain(s.codec === "av1" ? ".av1." : ".h264.");
     },
   );
 

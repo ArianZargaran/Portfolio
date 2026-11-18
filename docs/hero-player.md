@@ -68,3 +68,15 @@ Reactions are one-shot actions triggered by the visitor. They're cut into the ty
 
 - **Registry:** `REACTIONS` holds the reactions with media: today only `bounce` (priority 1, joins at f72). The speaker (T6), phone (S5) and sip (S4) ids are typed and get entries when their clips are locked (design A: one baked variant per join point).
 - **Requests:** event sources call `requestHeroReaction(id)` (`reaction-bus.ts`). The handler only enqueues, which keeps INP cheap; video work happens on the player's next animation frame. Event wiring (hover/focus, idle, tab return) is M5 and not built yet.
+
+## Fetching and the byte budget (M3)
+
+Decided (PLAN v3.3 §4): reaction media is fetched **on hover/focus intent only**. There is no idle prefetch.
+
+- **What loads at mount:** only the typing loop (`preload="auto"`). Every action `<video>` starts at `preload="none"` and has no request on the wire.
+- **Intent:** when hover or focus starts on something that can trigger a reaction, the event source calls `intentHeroReaction(id)`. The player then fetches the clip for that reaction's next reachable join (`nextVariant`) and nothing else. The 250 ms dwell then calls `requestHeroReaction(id)`, which enqueues it. Leaving before the dwell cancels the request, not the fetch: the bytes are already counted.
+- **Auto-rotation:** the draft rotation (`HERO_ROTATION`, pending Ari) still buffers its next clip 6 s ahead of the cut-in, because it isn't a reaction. It's charged to the same budget. Setting the rotation to all `null` leaves intent as the only fetch path.
+- **Budget** (`budget.ts`): 750 KiB per visit with AV1, or 970 KiB with H.264. This covers the typing loop and every clip the visit fetches. Sizes are in the registry (`ClipSource.bytes`; `media-files.test.ts` keeps them equal to `hero-media.build.json`). So a clip is checked before it's fetched, and it's charged once. The codec is read from the base `<video>`'s `currentSrc` once metadata loads; until then the larger H.264 sizes count.
+- **Over budget:** the clip isn't fetched (`data-budget="full"` on the player root) and its reaction is dropped. The still and the loop carry on.
+- **Today's full visit** (typing + nod + bounce): 576 KiB with AV1, 760 KiB with H.264.
+- **Debugging:** the player root carries `data-bytes`, the bytes charged so far.

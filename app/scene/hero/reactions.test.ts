@@ -7,6 +7,7 @@ import {
   initialQueue,
   joinableKs,
   LEAD_FRAMES,
+  nextVariant,
   REACTIONS,
   request,
   resolveState,
@@ -200,5 +201,21 @@ describe("reactions vs the auto-rotation", () => {
     expect(clipEndAbs(q.playing!.occ)).toBe(120);
     const s = resolveState(stateAt(tOf(80) + 1e-6), q);
     expect(s.action?.clipFrame).toBe(8);
+  });
+});
+
+describe("nextVariant (intent fetch target)", () => {
+  it("is the clip for the next reachable join", () => {
+    const def = REACTIONS.bounce!;
+    expect(nextVariant(def, 0)).toBe(ACTIONS.bounce);
+    // design A: a variant per join, the nearest one past the lead wins
+    const multi = {
+      ...def,
+      variants: { 72: ACTIONS.bounce, 180: ACTIONS.nod },
+    };
+    expect(nextVariant(multi, 60)).toBe(ACTIONS.bounce);
+    expect(nextVariant(multi, 70)).toBe(ACTIONS.nod); // 72 is inside the lead
+    expect(nextVariant(multi, 200)).toBe(ACTIONS.bounce); // wraps to next cycle
+    expect(nextVariant({ ...def, variants: {} }, 0)).toBeUndefined();
   });
 });

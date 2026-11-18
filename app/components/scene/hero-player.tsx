@@ -4,14 +4,18 @@ import { useEffect, useRef } from "react";
 import {
   ACTIONS,
   BASE_LOOP,
+  type ActionDef,
   type ActionId,
   type Clip,
 } from "~/scene/hero/actions";
+import { codecOfCurrentSrc, createBudget } from "~/scene/hero/budget";
 import { createClock } from "~/scene/hero/clock";
 import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
 import { onHeroReaction } from "~/scene/hero/reaction-bus";
 import {
   initialQueue,
+  nextVariant,
+  REACTIONS,
   request,
   resolveState,
   rotationBusyUntil,
@@ -107,8 +111,39 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     // Reaction queue (M2): requests come from the bus, are applied here,
     // and take effect on the next frame.
     let queue = initialQueue(frozenRef.current);
-    const offReaction = onHeroReaction((id) => {
-      queue = request(queue, id, clock.now()).state;
+
+    // Per-visit byte budget (M3). The typing loop is always fetched; every
+    // other clip goes through fetchClip, which refuses once over budget.
+    const budget = createBudget();
+    budget.charge(BASE_LOOP.clip);
+    const syncBudget = () => {
+      if (base.currentSrc)
+        budget.setCodec(codecOfCurrentSrc(BASE_LOOP.clip, base.currentSrc));
+      root.dataset.bytes = String(budget.spent);
+    };
+    /** Starts buffering an action clip if the budget allows. */
+    const fetchClip = (a: ActionDef): boolean => {
+      const v = actionRefs.current[a.id];
+      if (!v) return false;
+      if (v.preload === "auto") return true;
+      if (!budget.charge(a.clip)) {
+        root.dataset.budget = "full";
+        return false;
+      }
+      v.preload = "auto";
+      v.load();
+      root.dataset.bytes = String(budget.spent);
+      return true;
+    };
+    // Intent (hover/focus start) fetches the clip the reaction would play
+    // next; the dwell-confirmed request then enqueues it. A request whose
+    // clip cannot be fetched (over budget) is dropped: the loop carries on.
+    const offReaction = onHeroReaction((id, kind) => {
+      if (dead || frozenRef.current || document.hidden) return;
+      const def = REACTIONS[id];
+      const a = def && nextVariant(def, stateAt(clock.now()).abs);
+      if (a && !fetchClip(a)) return;
+      if (kind === "request") queue = request(queue, id, clock.now()).state;
     });
 
     // The base loop is always visible; an action clip covers it while on.
@@ -166,27 +201,17 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
           base.currentTime = frameTime(s.baseFrame, FPS);
       }
 
-      // Buffer a scheduled reaction, and the next rotation action, ahead of
-      // their cut-in windows.
+      // A reaction rescheduled onto another variant needs that clip too.
       const queued = queue.slot?.occ?.action;
-      if (queued) {
-        const v = actionRefs.current[queued.id];
-        if (v && v.preload !== "auto") {
-          v.preload = "auto";
-          v.load();
-        }
-      }
+      if (queued && !fetchClip(queued)) queue = { ...queue, slot: undefined };
+      // The auto-rotation (a DRAFT for Ari, not a reaction) still buffers
+      // its next clip ahead of the cut-in, within the same budget.
       const next = nextOccurrence(s.abs);
       if (
         next &&
         next.start + next.action.clip.firstFrame - s.abs < PRELOAD_S * FPS
-      ) {
-        const v = actionRefs.current[next.action.id];
-        if (v && v.preload !== "auto") {
-          v.preload = "auto";
-          v.load();
-        }
-      }
+      )
+        fetchClip(next.action);
 
       const d = decide(s, shown, ready);
       if (d.prepare) {
@@ -245,6 +270,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     };
 
     base.addEventListener("error", onError, true);
+    base.addEventListener("loadedmetadata", syncBudget);
     document.addEventListener("visibilitychange", onVisibility);
     base.currentTime = frameTime(stateAt(clock.now()).baseFrame, FPS);
     base.play().then(
@@ -262,6 +288,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       base.removeEventListener("error", onError, true);
+      base.removeEventListener("loadedmetadata", syncBudget);
       base.pause();
       release();
     };

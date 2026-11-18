@@ -223,6 +223,23 @@ export function step(
   return next;
 }
 
+/**
+ * The variant a request made now would most likely play: the one for the
+ * next join reachable from abs + LEAD_FRAMES. Intent fetch (M3) loads only
+ * this clip, not every variant.
+ */
+export function nextVariant(
+  def: ReactionDef,
+  abs: number,
+  cfg: JoinConfig = HERO_JOIN,
+): ActionDef | undefined {
+  const ks = Object.keys(def.variants).map(Number);
+  const join = nextJoinAbs(abs + LEAD_FRAMES, ks, cfg.loopFrames);
+  return join === undefined
+    ? undefined
+    : def.variants[mod(join, cfg.loopFrames)];
+}
+
 /** The occurrence that owns the frames from its start to its clip end, if any. */
 function reserved(q: QueueState): Occurrence | undefined {
   return q.playing?.occ ?? (q.slot?.locked ? q.slot.occ : undefined);
