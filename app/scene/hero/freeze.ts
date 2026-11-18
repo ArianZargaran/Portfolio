@@ -105,9 +105,32 @@ export function isBackgroundActivation(
   return !own || !scene.contains(own);
 }
 
-/** Esc must not steal the key from an open dialog or menu. */
+/** Esc must not steal the key from an open dialog, menu or popup. */
 export function overlayOpen(doc: Document): boolean {
   return !!doc.querySelector(
-    "dialog[open], [aria-modal='true'], [role='menu']:not([hidden])",
+    "dialog[open], [aria-modal='true'], [role='menu']:not([hidden]), [role='listbox']:not([hidden]), [aria-expanded='true']",
   );
+}
+
+/** Focus targets that own Esc themselves (form controls and composite widgets). */
+export const ESC_OWNER_SELECTOR =
+  "input, select, textarea, [contenteditable]:not([contenteditable='false']), dialog, [role='dialog'], [role='alertdialog'], [role='combobox'], [role='listbox'], [role='menu'], [role='menubar'], [role='menuitem'], [role='option'], [role='textbox'], [role='searchbox'], [role='slider'], [role='spinbutton'], [role='grid'], [role='tree'], [role='tablist'], [role='tab'], [aria-modal='true']";
+
+/**
+ * Esc pauses the scene only when the scene or the page itself has focus
+ * (review N7): focus on the body, inside the scene (frame, hotspots, F1), or
+ * on a plain link or button elsewhere. Never while focus is in a form
+ * control, dialog or other widget, or while any overlay is open.
+ */
+export function escAppliesToScene(
+  doc: Document,
+  scene: Element | null,
+): boolean {
+  if (overlayOpen(doc)) return false;
+  const active = doc.activeElement;
+  if (!active || active === doc.body || active === doc.documentElement)
+    return true;
+  if (active.closest(ESC_OWNER_SELECTOR)) return false;
+  if (scene?.parentElement?.contains(active)) return true;
+  return active.matches("a[href], button");
 }

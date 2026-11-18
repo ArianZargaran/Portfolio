@@ -2,6 +2,7 @@ import {
   createFreezeStore,
   FREEZE_STORAGE_KEY,
   isBackgroundActivation,
+  escAppliesToScene,
   overlayOpen,
 } from "./freeze";
 
@@ -110,5 +111,77 @@ describe("overlayOpen", () => {
     document.body.append(d);
     expect(overlayOpen(document)).toBe(true);
     d.remove();
+  });
+});
+
+describe("escAppliesToScene (review N7)", () => {
+  const setup = () => {
+    const stage = document.createElement("div");
+    const scene = document.createElement("div");
+    scene.tabIndex = 0;
+    const hotspot = document.createElement("a");
+    hotspot.href = "/about";
+    scene.append(hotspot);
+    stage.append(scene);
+    document.body.append(stage);
+    return { stage, scene, hotspot };
+  };
+
+  it("applies on the body, the scene, its hotspots and plain page links", () => {
+    const { stage, scene, hotspot } = setup();
+    const link = document.createElement("a");
+    link.href = "/work";
+    document.body.append(link);
+    (document.activeElement as HTMLElement | null)?.blur();
+    expect(escAppliesToScene(document, scene)).toBe(true);
+    for (const el of [scene, hotspot, link]) {
+      el.focus();
+      expect(escAppliesToScene(document, scene)).toBe(true);
+    }
+    stage.remove();
+    link.remove();
+  });
+
+  it.each([
+    ["input", () => document.createElement("input")],
+    ["textarea", () => document.createElement("textarea")],
+    [
+      "combobox",
+      () => {
+        const d = document.createElement("div");
+        d.setAttribute("role", "combobox");
+        d.tabIndex = 0;
+        return d;
+      },
+    ],
+    [
+      "button in a dialog",
+      () => {
+        const d = document.createElement("div");
+        d.setAttribute("role", "dialog");
+        d.append(document.createElement("button"));
+        return d;
+      },
+    ],
+  ])("leaves Esc to a focused %s", (_, make) => {
+    const { stage, scene } = setup();
+    const el = make();
+    document.body.append(el);
+    const target = (el.querySelector("button") ?? el) as HTMLElement;
+    target.focus();
+    expect(escAppliesToScene(document, scene)).toBe(false);
+    el.remove();
+    stage.remove();
+  });
+
+  it("leaves Esc to an open listbox or expanded popup", () => {
+    const { stage, scene } = setup();
+    const t = document.createElement("button");
+    t.setAttribute("aria-expanded", "true");
+    document.body.append(t);
+    expect(overlayOpen(document)).toBe(true);
+    expect(escAppliesToScene(document, scene)).toBe(false);
+    t.remove();
+    stage.remove();
   });
 });

@@ -132,6 +132,63 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
     expect(heroFreeze().get()).toBe(true);
   });
 
+  it("F1's accessible name stays 'Pause animation' when pressed (review N5)", async () => {
+    mockMatchMedia(LAPTOP);
+    await mountHome();
+    const btn = await screen.findByRole("button", { name: "Pause animation" });
+    fireEvent.click(btn);
+    expect(btn).toHaveAttribute("aria-pressed", "true");
+    expect(btn).toHaveAccessibleName("Pause animation");
+    expect(btn).toHaveTextContent("Pause animation (paused)"); // visual only
+  });
+
+  it("puts F1 before the scene group in the tab order (review N6)", async () => {
+    mockMatchMedia(LAPTOP);
+    await mountHome();
+    const btn = await screen.findByRole("button", { name: "Pause animation" });
+    const group = screen.getByRole("group");
+    expect(group).not.toContainElement(btn);
+    expect(
+      btn.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("Esc pauses only when the page or the scene has focus (review N7)", async () => {
+    mockMatchMedia(LAPTOP);
+    await mountHome();
+    const group = await screen.findByRole("group");
+    const input = document.createElement("input");
+    const combo = document.createElement("div");
+    combo.setAttribute("role", "combobox");
+    combo.tabIndex = 0;
+    const popup = document.createElement("div");
+    popup.setAttribute("role", "listbox");
+    document.body.append(input, combo);
+    for (const el of [input, combo]) {
+      el.focus();
+      fireEvent.keyDown(el, { key: "Escape" });
+      expect(heroFreeze().get()).toBe(false);
+    }
+    document.body.append(popup); // an open popup anywhere
+    group.focus();
+    fireEvent.keyDown(group, { key: "Escape" });
+    expect(heroFreeze().get()).toBe(false);
+    popup.remove();
+    fireEvent.keyDown(group, { key: "Escape" });
+    expect(heroFreeze().get()).toBe(true);
+    input.remove();
+    combo.remove();
+  });
+
+  it("Esc on the page body pauses", async () => {
+    mockMatchMedia(LAPTOP);
+    await mountHome();
+    await screen.findByRole("group");
+    (document.activeElement as HTMLElement | null)?.blur();
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(heroFreeze().get()).toBe(true);
+  });
+
   it("F3: persists across reloads", async () => {
     mockMatchMedia(LAPTOP);
     const first = await mountHome();

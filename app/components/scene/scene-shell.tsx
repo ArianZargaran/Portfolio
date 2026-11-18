@@ -79,19 +79,9 @@ export function SceneShell({
       data-focus={focused?.id}
       style={zoomVars as CSSProperties | undefined}
     >
-      <div
-        ref={frameRef}
-        className="scene_frame"
-        {...(animated
-          ? {
-              role: "group",
-              tabIndex: 0,
-              "aria-label": sceneLabel(frozen),
-              "aria-describedby": FREEZE_HINT_ID,
-              "data-frozen": frozen ? "" : undefined,
-            }
-          : {})}
-      >
+      <div className="scene_stage">
+        {/* F1 sits before the group in the DOM, so it is the first Tab stop
+          of the hero (review N6); the group (Enter/Space) comes next. */}
         {animated ? (
           <SceneFreezeControls
             frozen={frozen}
@@ -101,41 +91,55 @@ export function SceneShell({
             onToggle={() => announce(heroFreeze().toggle())}
           />
         ) : null}
-        <SceneStill decorative={decorative} priority={!decorative} />
-        {motion && !focused ? (
-          <HeroMount
-            rotationPrefetch={features.heroRotationPrefetch}
-            rotationNod={features.heroRotationNod}
-          />
-        ) : null}
-        {STILL_SOURCES.map((s) => (
-          <nav
-            key={s.breakpoint}
-            className={`scene_hits scene_hits--${s.breakpoint}`}
-            aria-label="Scene"
-          >
-            {HIT_OBJECTS.map((o) =>
-              o.rects[s.breakpoint].map((r, i) => (
-                <Link
-                  key={`${o.id}-${i}`}
-                  to={o.href}
-                  className="scene_hit"
-                  data-object={o.id}
-                  aria-current={focus === o.id ? "page" : undefined}
-                  style={
-                    {
-                      ...rectToPercent(r, s.width, s.height),
-                      zIndex: stackIndex(s.breakpoint, o.id),
-                    } as CSSProperties
-                  }
-                  {...(i > 0 ? { "aria-hidden": true, tabIndex: -1 } : {})}
-                >
-                  <span className="scene_hit-label">{o.label}</span>
-                </Link>
-              )),
-            )}
-          </nav>
-        ))}
+        <div
+          ref={frameRef}
+          className="scene_frame"
+          {...(animated
+            ? {
+                role: "group",
+                tabIndex: 0,
+                "aria-label": sceneLabel(frozen),
+                "aria-describedby": FREEZE_HINT_ID,
+                "data-frozen": frozen ? "" : undefined,
+              }
+            : {})}
+        >
+          <SceneStill decorative={decorative} priority={!decorative} />
+          {motion && !focused ? (
+            <HeroMount
+              rotationPrefetch={features.heroRotationPrefetch}
+              rotationNod={features.heroRotationNod}
+            />
+          ) : null}
+          {STILL_SOURCES.map((s) => (
+            <nav
+              key={s.breakpoint}
+              className={`scene_hits scene_hits--${s.breakpoint}`}
+              aria-label="Scene"
+            >
+              {HIT_OBJECTS.map((o) =>
+                o.rects[s.breakpoint].map((r, i) => (
+                  <Link
+                    key={`${o.id}-${i}`}
+                    to={o.href}
+                    className="scene_hit"
+                    data-object={o.id}
+                    aria-current={focus === o.id ? "page" : undefined}
+                    style={
+                      {
+                        ...rectToPercent(r, s.width, s.height),
+                        zIndex: stackIndex(s.breakpoint, o.id),
+                      } as CSSProperties
+                    }
+                    {...(i > 0 ? { "aria-hidden": true, tabIndex: -1 } : {})}
+                  >
+                    <span className="scene_hit-label">{o.label}</span>
+                  </Link>
+                )),
+              )}
+            </nav>
+          ))}
+        </div>
       </div>
       {children}
     </div>

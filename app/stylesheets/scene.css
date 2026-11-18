@@ -3,6 +3,14 @@
   min-height: 100vh;
 }
 
+/* Positions the F1 pause button and the F4 hint over the frame while
+   keeping them outside it in the DOM (tab order, review N6). */
+.scene_stage {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
 .scene_frame {
   position: relative;
   max-width: 1440px;
@@ -233,8 +241,13 @@
   color: #fff;
   outline: 3px solid #ffd27a;
 }
-.scene_pause[aria-pressed="true"]::after {
-  content: " (paused)";
+/* Visual state only: aria-hidden, so the accessible name stays "Pause
+   animation" and aria-pressed carries the state (review N5). */
+.scene_pause-state {
+  display: none;
+}
+.scene_pause[aria-pressed="true"] .scene_pause-state {
+  display: inline;
 }
 /* F4 (flag, off by default): brief first-hover caption. */
 .scene_freeze-hint {

@@ -5,7 +5,7 @@ import { useHeroFreeze } from "~/components/scene/use-hero-freeze";
 import {
   heroFreeze,
   isBackgroundActivation,
-  overlayOpen,
+  escAppliesToScene,
 } from "~/scene/hero/freeze";
 
 export const FREEZE_HINT_ID = "scene-freeze-hint";
@@ -53,7 +53,7 @@ export function useSceneFreezeHandlers(
     };
     const onEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
-      if (overlayOpen(document) || heroFreeze().get()) return;
+      if (heroFreeze().get() || !escAppliesToScene(document, frame)) return;
       setFrozen(true);
       cb.current(true);
     };
@@ -103,6 +103,10 @@ export function SceneFreezeControls({
         onClick={onToggle}
       >
         Pause animation
+        <span className="scene_pause-state" aria-hidden="true">
+          {" "}
+          (paused)
+        </span>
       </button>
       <span id={FREEZE_HINT_ID} className="visually-hidden">
         Click the scene background or press Esc to pause the animation; click it
