@@ -10,10 +10,11 @@
  *
  * Sources:
  * - Hover (pointer devices that can hover: HOVER_MQ) and keyboard focus on
- *   a hotspot: "intent" at once (the player fetches the clip), then after
- *   DWELL_MS still on it the hotspot "visit" and, if the hotspot has a
- *   reaction, the request. Leaving before the dwell cancels the request
- *   only. Touch never hovers; a tap navigates.
+ *   a hotspot: after DWELL_MS still on it, "intent" (the player fetches the
+ *   clip), the hotspot "visit" and, if the hotspot has a reaction, the
+ *   request, in that order. Leaving before the dwell sends nothing, so a
+ *   quick swipe fetches nothing (review N3). Touch never hovers; a tap
+ *   navigates.
  * - Idle 20 s (no pointer, key, wheel or scroll on the page): bounce, once
  *   per idle period.
  * - 45 s on the page: sip, once.
@@ -118,10 +119,12 @@ export function wireTriggers(
     if (current?.id === id) return;
     cancel();
     const r = hotspots[id];
-    sink.hotspot(id, "intent");
-    if (r) sink.intent(r);
+    // Intent (and so any clip fetch) only once the dwell confirms it, so a
+    // quick swipe across a hotspot pulls no media (review N3, PLAN §4).
     const timer = win.setTimeout(() => {
       current = null;
+      sink.hotspot(id, "intent");
+      if (r) sink.intent(r);
       sink.hotspot(id, "visit");
       if (r) sink.request(r);
     }, TRIGGERS.dwellMs);

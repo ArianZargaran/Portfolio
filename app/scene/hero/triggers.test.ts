@@ -33,20 +33,29 @@ describe("hero triggers (M5)", () => {
     for (const id of Object.keys(HOTSPOT_REACTIONS)) expect(ids).toContain(id);
   });
 
-  it("hover: intent at once, request after the 250 ms dwell", () => {
+  it("hover: intent, visit and request only after the 250 ms dwell (review N3)", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: true });
     over(hit("speakers").querySelector("span")!);
-    expect(s.intent).toHaveBeenCalledWith("speaker");
-    expect(s.hotspot).toHaveBeenCalledWith("speakers", "intent");
+    vi.advanceTimersByTime(TRIGGERS.dwellMs - 1);
+    expect(s.intent).not.toHaveBeenCalled();
+    expect(s.hotspot).not.toHaveBeenCalled();
     expect(s.request).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(TRIGGERS.dwellMs);
+    vi.advanceTimersByTime(1);
+    expect(s.intent).toHaveBeenCalledWith("speaker");
     expect(s.request).toHaveBeenCalledWith("speaker");
-    expect(s.hotspot).toHaveBeenCalledWith("speakers", "visit");
+    expect(s.hotspot.mock.calls).toEqual([
+      ["speakers", "intent"],
+      ["speakers", "visit"],
+    ]);
+    // Intent (the fetch) comes before the request that enqueues it.
+    expect(s.intent.mock.invocationCallOrder[0]).toBeLessThan(
+      s.request.mock.invocationCallOrder[0],
+    );
     off();
   });
 
-  it("leaving before the dwell cancels the request, not the intent", () => {
+  it("a quick swipe (leaving before the dwell) sends no intent and no request", () => {
     const s = sink();
     const frame = scene();
     const off = wireTriggers(frame, s, { hoverOK: true });
@@ -54,7 +63,8 @@ describe("hero triggers (M5)", () => {
     vi.advanceTimersByTime(100);
     over(frame); // onto the background
     vi.advanceTimersByTime(500);
-    expect(s.intent).toHaveBeenCalledTimes(1);
+    expect(s.intent).not.toHaveBeenCalled();
+    expect(s.hotspot).not.toHaveBeenCalledWith("speakers", "intent");
     expect(s.request).not.toHaveBeenCalled();
     off();
   });
@@ -87,8 +97,9 @@ describe("hero triggers (M5)", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: false });
     hit("speakers").focus();
-    expect(s.intent).toHaveBeenCalledWith("speaker");
+    expect(s.intent).not.toHaveBeenCalled();
     vi.advanceTimersByTime(TRIGGERS.dwellMs);
+    expect(s.intent).toHaveBeenCalledWith("speaker");
     expect(s.request).toHaveBeenCalledWith("speaker");
     off();
   });
