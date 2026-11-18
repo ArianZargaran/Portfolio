@@ -80,3 +80,16 @@ Decided (PLAN v3.3 §4): reaction media is fetched **on hover/focus intent only*
 - **Over budget:** the clip isn't fetched (`data-budget="full"` on the player root) and its reaction is dropped. The still and the loop carry on.
 - **Today's full visit** (typing + nod + bounce): 576 KiB with AV1, 760 KiB with H.264.
 - **Debugging:** the player root carries `data-bytes`, the bytes charged so far.
+
+## E2 egg (M4)
+
+`egg.ts` is a pure scheduler; the player feeds it hotspot visits and the clock.
+
+- **Sequence:** a dwell-confirmed visit to `queen-poster`, then `speakers`, within 10 s. The speakers hotspot queues the speaker reaction (T6) through the normal queue. Completing the sequence also **arms a nod** at the next join the nod can use, after T6 ends. That's f180 on v5_1. Today the speaker reaction has no clip, so the nod is armed at the next f180.
+- **Outside the queue:** the armed nod never takes the queue slot, so it can't block or delay another reaction.
+  - Until it commits (`LEAD_FRAMES` before its clip starts), any other reaction or rotation clip that overlaps it disarms it.
+  - Once committed it isn't cut: the player passes `eggBusyUntil` to the queue as busy time, and an overlapping rotation occurrence is suppressed (`applyEgg`, applied before `resolveState`).
+  - If the rotation happens to play the very same nod, the egg stands down.
+- **Disarm:** leaving the hero scene, the tab going hidden, and freezing all drop the sequence and the armed nod. A nod already on screen finishes (or holds, if frozen).
+- **Fetch:** the nod clip is fetched on intent only. That happens when hover or focus starts on the speakers while the poster visit is still inside the window, or at the latest when the sequence completes. It's within the byte budget; over budget, the egg isn't armed.
+- **Messages:** hotspot sources call `heroHotspot(id, "intent" | "visit" | "leave")` (`reaction-bus.ts`).

@@ -4,7 +4,7 @@
 import { act, render } from "@testing-library/react";
 
 import { ACTIONS, BASE_LOOP } from "~/scene/hero/actions";
-import { intentHeroReaction } from "~/scene/hero/reaction-bus";
+import { heroHotspot, intentHeroReaction } from "~/scene/hero/reaction-bus";
 
 import HeroPlayer from "./hero-player";
 
@@ -60,5 +60,34 @@ describe("HeroPlayer intent fetch (M3)", () => {
     act(() => intentHeroReaction("bounce"));
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
+  });
+});
+
+describe("HeroPlayer E2 egg (M4)", () => {
+  let load: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    HTMLMediaElement.prototype.pause = vi.fn();
+    load = vi.fn();
+    HTMLMediaElement.prototype.load = load as () => void;
+  });
+
+  it("fetches the nod only once the poster -> speakers sequence is under way", () => {
+    const { container } = render(<HeroPlayer />);
+    act(() => heroHotspot("speakers", "intent")); // no poster visit yet
+    expect(fetched(container)).toEqual(["typing"]);
+    act(() => heroHotspot("queen-poster", "visit"));
+    expect(fetched(container)).toEqual(["typing"]);
+    act(() => heroHotspot("speakers", "intent"));
+    expect(fetched(container)).toEqual(["typing", "nod"]);
+  });
+
+  it("does nothing after leaving the hero", () => {
+    const { container } = render(<HeroPlayer />);
+    act(() => heroHotspot("queen-poster", "visit"));
+    act(() => heroHotspot("", "leave"));
+    act(() => heroHotspot("speakers", "intent"));
+    act(() => heroHotspot("speakers", "visit"));
+    expect(fetched(container)).toEqual(["typing"]);
   });
 });

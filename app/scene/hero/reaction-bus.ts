@@ -30,3 +30,21 @@ export function onHeroReaction(l: Listener): () => void {
   listeners.add(l);
   return () => listeners.delete(l);
 }
+
+/**
+ * Hotspot visits, for sequences that span hotspots (the E2 egg, M4):
+ * "intent" when hover/focus starts, "visit" once the dwell confirms, and
+ * "leave" when the pointer or focus leaves the hero scene.
+ */
+export type HotspotMessage = "intent" | "visit" | "leave";
+type HotspotListener = (id: string, kind: HotspotMessage) => void;
+const hotspotListeners = new Set<HotspotListener>();
+
+export function heroHotspot(id: string, kind: HotspotMessage): void {
+  hotspotListeners.forEach((l) => l(id, kind));
+}
+
+export function onHeroHotspot(l: HotspotListener): () => void {
+  hotspotListeners.add(l);
+  return () => hotspotListeners.delete(l);
+}

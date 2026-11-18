@@ -10,8 +10,19 @@ import {
 } from "~/scene/hero/actions";
 import { codecOfCurrentSrc, createBudget } from "~/scene/hero/budget";
 import { createClock } from "~/scene/hero/clock";
+import {
+  applyEgg,
+  armEgg,
+  disarmEgg,
+  EGG,
+  eggBusyUntil,
+  eggVisit,
+  eggWouldComplete,
+  initialEgg,
+  stepEgg,
+} from "~/scene/hero/egg";
 import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
-import { onHeroReaction } from "~/scene/hero/reaction-bus";
+import { onHeroHotspot, onHeroReaction } from "~/scene/hero/reaction-bus";
 import {
   initialQueue,
   nextVariant,
@@ -23,6 +34,7 @@ import {
   step,
 } from "~/scene/hero/reactions";
 import {
+  clipEndAbs,
   decide,
   driftFrames,
   frameTime,
@@ -138,6 +150,30 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     // Intent (hover/focus start) fetches the clip the reaction would play
     // next; the dwell-confirmed request then enqueues it. A request whose
     // clip cannot be fetched (over budget) is dropped: the loop carries on.
+    // E2 egg (M4), outside the queue. Hotspot visits come from the event
+    // wiring (M5); a completed sequence arms the nod on the next frame,
+    // once the queue has scheduled T6 (so the nod waits for its end).
+    let egg = initialEgg();
+    let eggPending = false;
+    const hotspotIntent = (id: string) => {
+      if (eggWouldComplete(egg, id, clock.now())) fetchClip(EGG.action);
+    };
+    const hotspotVisit = (id: string) => {
+      if (dead || frozenRef.current) return;
+      const r = eggVisit(egg, id, clock.now());
+      egg = r.state;
+      if (r.completed && fetchClip(EGG.action)) eggPending = true;
+    };
+    const leaveHero = () => {
+      egg = disarmEgg(egg);
+      eggPending = false;
+    };
+    const offHotspot = onHeroHotspot((id, kind) => {
+      if (kind === "intent") hotspotIntent(id);
+      else if (kind === "visit") hotspotVisit(id);
+      else leaveHero();
+    });
+
     const offReaction = onHeroReaction((id, kind) => {
       if (dead || frozenRef.current || document.hidden) return;
       const def = REACTIONS[id];
@@ -186,8 +222,29 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
       if (dead || clock.paused || frozenRef.current) return;
       const t = clock.now();
       const rotation = stateAt(t);
-      queue = step(queue, t, rotation.abs, rotationBusyUntil(rotation));
-      const s = resolveState(rotation, queue);
+      const abs = rotation.abs;
+      queue = step(
+        queue,
+        t,
+        abs,
+        Math.max(rotationBusyUntil(rotation), eggBusyUntil(egg, abs)),
+      );
+      if (eggPending) {
+        eggPending = false;
+        const t6 =
+          queue.playing?.id === EGG.reaction
+            ? queue.playing.occ
+            : queue.slot?.id === EGG.reaction
+              ? queue.slot.occ
+              : undefined;
+        egg = armEgg(egg, abs, t6 ? clipEndAbs(t6) : 0);
+      }
+      egg = stepEgg(egg, abs, [
+        queue.slot?.occ,
+        queue.playing?.occ,
+        rotation.action?.occurrence,
+      ]);
+      const s = resolveState(applyEgg(rotation, egg), queue);
 
       // Base loop: free-runs, re-seeked only on real drift.
       if (base.readyState >= 1) {
@@ -244,6 +301,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     // Playing again resumes the same clock, so the splice stays in sync.
     applyFreeze.current = (on: boolean) => {
       queue = setFrozen(queue, on);
+      if (on) leaveHero();
       if (dead) return;
       const action = prepared ? actionRefs.current[prepared] : undefined;
       if (on) {
@@ -259,6 +317,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
 
     const onVisibility = () => {
       if (document.hidden) {
+        leaveHero();
         clock.pause();
         base.pause();
         release();
@@ -285,6 +344,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
     return () => {
       applyFreeze.current = null;
       offReaction();
+      offHotspot();
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       base.removeEventListener("error", onError, true);
