@@ -22,6 +22,19 @@ Usage:
   python3 scripts/hero/variants.py nod --joins 180 --dry-run-against app/scene/hero/media/nod
       (the M9a acceptance: the native variant must reproduce the shipped bytes within ±2 %)
 Flags --brain / --report as in paths.py. Needs ffmpeg 7.1 with libsvtav1 + libx264.
+
+M9b on the B1 candidate (v5_2, provisional until Ari locks it):
+  python3 scripts/hero/variants.py nod_v4 --loop v5_2 --out pipeline/m9b-dryrun-v5_2
+  (same for bounce_v2, s1a, s1b, t2; plus `typing` to encode the base loop itself.)
+  --loop v5_2 swaps the base loop (frames + layers) the variants are rendered and proven against.
+  Two kinds of action source:
+    layers  rendered per entry from the action's per-frame layers over the loop's layers at the
+            base frame (design A "the screen keeps typing"), e.g. nod_v4;
+    baked   frames the art team already baked (per entry `{k}` and/or per frame `{i}`; full-frame
+            1440x900 is cropped to RECT, a 464x576 crop is used as is), e.g. the t995 S1a/S1b/T2
+            per-entry variants and the bounce track.
+  `joins` limits an action to the entries its art allows (T2 and the nod v4 sub-clip: f180 only);
+  --joins may only narrow that further unless --force-joins is given (proof-only evidence).
 """
 import argparse, hashlib, json, os, shutil, subprocess, sys
 from multiprocessing import Pool
@@ -32,7 +45,9 @@ from PIL import Image
 from paths import BRAIN as B, REPORT as R
 
 S = f"{B}/scenes/home-office.desk.coding.dusk.clear"
-T = f"{B}/designs/painted_char_typing_t959/v5_1"
+LOOPS = {"v5_1": f"{B}/designs/painted_char_typing_t959/v5_1",
+         "v5_2": f"{B}/designs/painted_char_typing_t995/v5_2"}  # v5_2: B1 candidate, NOT locked
+T = LOOPS["v5_1"]
 PLATE = f"{S}/m2/variants/room_v12/locked_room_m2_v12/frames/ROOM_V12_dusk_clean_fullroom.png"
 ARM = f"{S}/m2/variants/d4_armrest/locked/placed/armrest_front_down_dusk_graded.png"
 CS = f"{B}/designs/painted_char_footrest_t956/v2/layers/CONTACT_SHADOW_deck_dusk_1440x900_RGBA_v2.png"
@@ -40,7 +55,7 @@ ORDER = ["contact_shadow", "arm_shadow", "screen", "spill_keys", "character", "s
          "backrest_near", "chairbase_near_leftcalf"]
 RECT = (176, 272, 464, 576); X, Y, W, H = RECT; BOX = (X, Y, X + W, Y + H)
 LOOP = 216; FPS = 12
-JOINS = [0, 36, 72, 108, 144, 180]  # join-config.ts JOIN_V5_1 (B1: v5_2 config replaces this)
+JOINS = [0, 36, 72, 108, 144, 180]  # join-config.ts JOIN_V5_1 and JOIN_V5_2 (same points)
 PROOF = {"p999_max": 4, "over": 8, "over_max_px": 0}
 
 # Action registry (mirrors app/scene/hero/actions.ts). entry = action frame that lands on the join;
@@ -48,6 +63,25 @@ PROOF = {"p999_max": 4, "over": 8, "over_max_px": 0}
 ACTIONS = {
     "nod": {"layers": f"{B}/designs/painted_char_action_E2_headbang_t960/v3/layers_per_frame",
             "frames": 168, "entry": 60, "native": 180, "clip": (48, 74)},
+    # ---- t995 candidates on the v5_2 loop (provisional; use with --loop v5_2) ----
+    # Base loop itself, encoded the same way (for the visit budget and the manifest).
+    "typing": {"baked": "{T}/frames/typing/typing_{i:03d}.png", "frames": 216, "entry": 0,
+               "native": 0, "clip": (0, 216), "joins": [0], "role": "base"},
+    # E2 nod v4 home-pose sub-clip i60-131: i60 = home pose (lands on the join), i131 = loop f35 at
+    # the native entry, returns at the next join. Its art (screen-lit spill on the character) is
+    # clean only when entered at f180 (nod v4 README / REVIEW t995 B1 section 2).
+    "nod_v4": {"layers": f"{B}/designs/painted_char_action_E2_nod_t995/v4/layers_per_frame",
+               "frames": 168, "entry": 60, "native": 180, "clip": (60, 72), "joins": [180]},
+    # Bounce track of v5_2 (bounce v2): equals typing outside f84-107; spliced at f72, single entry.
+    "bounce_v2": {"baked": "{T}/frames/bounce/bounce_{i:03d}.png", "frames": 216, "entry": 72,
+                  "native": 72, "clip": (72, 48), "joins": [72]},
+    # t995 v2 per-entry baked variants: clip i = loop (k + i) mod 216 plus the action, 36 frames.
+    "s1a": {"baked": f"{B}/designs/painted_char_action_S1a_glance_up_t995/v2/variants/H{{k:03d}}_k{{k:03d}}/frames/S1a_{{i:03d}}.png",
+            "frames": 36, "entry": 0, "native": 180, "clip": (0, 36), "joins": JOINS},
+    "s1b": {"baked": f"{B}/designs/painted_char_action_S1b_bounce_strong_t995/v2/variants/H{{k:03d}}_k{{k:03d}}/frames/S1b_{{i:03d}}.png",
+            "frames": 36, "entry": 0, "native": 180, "clip": (0, 36), "joins": JOINS},
+    "t2": {"baked": f"{B}/designs/painted_char_action_T2_doze_t995/v2/variants/H{{k:03d}}_k{{k:03d}}/frames/T2_{{i:03d}}.png",
+           "frames": 36, "entry": 0, "native": 180, "clip": (0, 36), "joins": [180]},
 }
 ENC = {
     "av1": ["-c:v", "libsvtav1", "-preset", "4", "-crf", "30", "-g", "72", "-pix_fmt", "yuv420p",
@@ -64,6 +98,8 @@ def sha(p, n=None):
 
 
 def base_index(a, k, i):
+    # Action frame i over base frame (k - entry + i). The bounce track's frames are loop frames
+    # (i = base frame), so its "entry" is its own frame number at the join.
     return (k - a["entry"] + i) % LOOP
 
 
@@ -78,10 +114,23 @@ def layer_paths(name, k, i):
     return ps
 
 
+def _init_worker(loop_dir, out_dir):
+    # Workers may be spawned (forkserver/spawn), so pass the --loop/--out choices explicitly.
+    global T, OUT
+    T, OUT = loop_dir, out_dir
+
+
 def render_job(args):
     name, k, i = args
     out = f"{OUT}/frames/{name}/k{k:03d}/{i:03d}.png"
     if os.path.exists(out): return out
+    a = ACTIONS[name]
+    if "baked" in a:
+        src = Image.open(a["baked"].format(T=T, k=k, i=i)).convert("RGB")
+        im = src.crop(BOX) if src.size == (1440, 900) else src
+        assert im.size == (W, H), (name, k, i, im.size)
+        im.save(out + ".tmp.png"); os.replace(out + ".tmp.png", out)
+        return out
     im = Image.open(PLATE).convert("RGBA")
     for p in layer_paths(name, k, i):
         if p: im = Image.alpha_composite(im, Image.open(p).convert("RGBA"))
@@ -130,16 +179,29 @@ def main():
     ap.add_argument("--joins", type=int, nargs="*", default=JOINS)
     ap.add_argument("--dry-run-against", help="shipped clip path prefix, e.g. app/scene/hero/media/nod")
     ap.add_argument("--no-encode", action="store_true")
+    ap.add_argument("--loop", choices=sorted(LOOPS), default="v5_1", help="base loop (v5_2 = B1 candidate)")
+    ap.add_argument("--out", help="output folder, relative to --report (default: pipeline)")
+    ap.add_argument("--force-joins", action="store_true",
+                    help="allow joins outside the action's `joins` (proof evidence only)")
     o = ap.parse_args()
+    global T, OUT
+    T = LOOPS[o.loop]
+    if o.out: OUT = o.out if os.path.isabs(o.out) else f"{R}/{o.out}"
     a = ACTIONS[o.action]; first, n = a["clip"]
+    allowed = a.get("joins", JOINS)
+    if o.joins is JOINS: o.joins = allowed
+    bad = [k for k in o.joins if k not in allowed]
+    if bad and not o.force_joins:
+        sys.exit(f"{o.action}: joins {bad} are outside its allowed entries {allowed} (--force-joins for evidence)")
     for k in o.joins: os.makedirs(f"{OUT}/frames/{o.action}/k{k:03d}", exist_ok=True)
     os.makedirs(f"{OUT}/enc", exist_ok=True)
     jobs = [(o.action, k, i) for k in o.joins for i in range(first, first + n)]
-    with Pool(min(8, os.cpu_count() or 1)) as p: p.map(render_job, jobs, chunksize=4)
-    report = {"action": o.action, "entry": a["entry"], "native": a["native"], "clip": a["clip"],
+    with Pool(min(8, os.cpu_count() or 1), initializer=_init_worker, initargs=(T, OUT)) as p: p.map(render_job, jobs, chunksize=4)
+    report = {"action": o.action, "loop": o.loop, "loop_dir": T, "entry": a["entry"], "native": a["native"],
+              "clip": a["clip"], "allowed_joins": allowed, "role": a.get("role", "reaction"),
               "proof_rule": PROOF, "rect_xywh": RECT, "variants": {}}
     for k in o.joins:
-        v = {"proof": proof(o.action, k)}
+        v = {"proof": proof(o.action, k), "allowed": k in allowed}
         if not o.no_encode: v["encodes"] = encode(o.action, k)
         report["variants"][str(k)] = v
         print(f"k{k}: proof {'PASS' if v['proof']['ok'] else 'FAIL'}",

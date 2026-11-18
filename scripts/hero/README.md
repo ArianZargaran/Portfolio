@@ -35,4 +35,6 @@ The repo root comes from the script's own location, so any clone works. Example:
 
 Outputs go to `$HERO_REPORT/pipeline/`, never into the repo. Acceptance dry run: `python3 scripts/hero/variants.py nod --dry-run-against app/scene/hero/media/nod`. The native k=180 variant must match the shipped bytes within ±2 % (it currently matches byte for byte). The other joins fail the proof until their entry art exists (B2/B3): that's what the proof is for. Adding T6/S5/S4 means one `ACTIONS` entry each (layers dir, frames, entry, native join, clip range).
 
+**M9b on the v5_2 candidate (provisional until Ari locks it):** `--loop v5_2` renders and proves against `painted_char_typing_t995/v5_2`, and `--out` picks the output folder (relative to `$HERO_REPORT`). The t995 entries are `typing` (the base loop itself), `nod_v4` (the E2 v4 home-pose sub-clip i60–131, f180 only), `bounce_v2`, and `s1a`/`s1b`/`t2`. The last three are Dusk's per-entry baked crops: six entries each for S1a/S1b, f180 only for T2. Each action's `joins` limits it to the entries its art allows. `--force-joins` builds other entries as proof-only evidence. Example: `python3 scripts/hero/variants.py s1a --loop v5_2 --out pipeline/m9b-dryrun-v5_2`.
+
 Smoke test of a running build: `BASE_URL=http://localhost:3000 OUT=… node scripts/hero-smoke.mjs`.
