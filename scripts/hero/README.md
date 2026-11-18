@@ -30,7 +30,7 @@ The repo root comes from the script's own location, so any clone works. Example:
 `variants.py` renders one variant per join point (f0/36/72/108/144/180) from the per-frame layers. Action frame `i` sits over base frame `(k − entry + i) mod 216`, so the layers the action doesn't paint (screen, key spill, contact shadow) keep typing. It then:
 
 - proves both cuts at full res against the locked base frame (pass = p99.9 ≤ 4 levels and 0 px over 8);
-- encodes with the shipped settings (AV1 crf 30 g72, H.264 crf 20 g72);
+- encodes with the shipped settings (AV1 crf 30 g72, H.264 crf 20 g72), unless the action sets a per-clip `crf` override in `ACTIONS`. Today only `nod_v4` has one: AV1 crf 32 and H.264 crf 21 (116.0 / 147.6 kB, under the 120 / 160 kB reaction cap; at crf 30 / 20 it's 128.3 / 162.8 kB). The settings used are recorded per encode in `pipeline_report_<action>.json` (`ffmpeg_args`);
 - names the files by content hash.
 
 Outputs go to `$HERO_REPORT/pipeline/`, never into the repo. Acceptance dry run: `python3 scripts/hero/variants.py nod --dry-run-against app/scene/hero/media/nod`. The native k=180 variant must match the shipped bytes within ±2 % (it currently matches byte for byte). The other joins fail the proof until their entry art exists (B2/B3): that's what the proof is for. Adding T6/S5/S4 means one `ACTIONS` entry each (layers dir, frames, entry, native join, clip range).

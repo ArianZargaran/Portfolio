@@ -13,7 +13,9 @@ $HERO_REPORT/pipeline/, never into the repo):
               the locked base frame at the same clock position, at full res: pass = p99.9 of the
               per-pixel max channel diff <= 4 levels AND 0 px over 8
   3. encode   AV1 (svt-av1 preset 4, crf 30, g 72) + H.264 (x264 veryslow, crf 20, g 72), the same
-              settings as build_web_media.py                               -> enc/<action>.k<k>.<sha8>.<codec>.mp4
+              settings as build_web_media.py, unless the action sets a per-clip `crf` override
+              (today only nod_v4: AV1 crf 32, H.264 crf 21, to fit the reaction cap)
+                                                                           -> enc/<action>.k<k>.<sha8>.<codec>.mp4
   4. report   pipeline_report.json + SPLICE_PROOFS.md
 
 Usage:
@@ -71,7 +73,12 @@ ACTIONS = {
     # the native entry, returns at the next join. Its art (screen-lit spill on the character) is
     # clean only when entered at f180 (nod v4 README / REVIEW t995 B1 section 2).
     "nod_v4": {"layers": f"{B}/designs/painted_char_action_E2_nod_t995/v4/layers_per_frame",
-               "frames": 168, "entry": 60, "native": 180, "clip": (60, 72), "joins": [180]},
+               "frames": 168, "entry": 60, "native": 180, "clip": (60, 72), "joins": [180],
+               # Per-clip encode settings (Atlas, t995 M9b): at the shipped crf 30/20 the 72-frame
+               # sub-clip is 128.3 / 162.8 kB, over the 120 / 160 kB reaction cap. crf 32 / 21 gives
+               # 116.0 / 147.6 kB (full-frame PSNR 48.5 / 47.8 dB vs 49.1 / 48.6), so the nod needs no
+               # over-cap exception once installed.
+               "crf": {"av1": 32, "h264": 21}},
     # Bounce track of v5_2 (bounce v2): equals typing outside f84-107; spliced at f72, single entry.
     "bounce_v2": {"baked": "{T}/frames/bounce/bounce_{i:03d}.png", "frames": 216, "entry": 72,
                   "native": 72, "clip": (72, 48), "joins": [72]},
@@ -160,16 +167,25 @@ def proof(name, k):
     return res
 
 
+def enc_args(a, codec):
+    """Shipped settings (ENC), with the action's per-clip overrides (`crf`) applied."""
+    args = list(ENC[codec]); crf = a.get("crf", {}).get(codec)
+    if crf is not None: args[args.index("-crf") + 1] = str(crf)
+    return args
+
+
 def encode(name, k):
     a = ACTIONS[name]; first, n = a["clip"]; outs = {}
-    for codec, args in ENC.items():
+    for codec in ENC:
+        args = enc_args(a, codec)
         tmp = f"{OUT}/enc/{name}.k{k:03d}.{codec}.part.mp4"
         subprocess.run(["ffmpeg", "-y", "-v", "error", "-framerate", str(FPS), "-start_number", str(first),
                         "-i", f"{OUT}/frames/{name}/k{k:03d}/%03d.png", "-frames:v", str(n), *args, "-an", tmp],
                        check=True)
         final = f"{OUT}/enc/{name}.k{k}.{sha(tmp, 8)}.{codec}.mp4"
         os.replace(tmp, final)
-        outs[codec] = {"file": os.path.basename(final), "bytes": os.path.getsize(final), "sha256": sha(final)}
+        outs[codec] = {"file": os.path.basename(final), "bytes": os.path.getsize(final), "sha256": sha(final),
+                       "ffmpeg_args": args}
     return outs
 
 
