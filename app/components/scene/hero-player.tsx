@@ -77,8 +77,11 @@ function ClipVideo({
  * the pure schedule (stateAt/decide); this component only keeps the
  * <video> elements on the frames it asks for. Lazy chunk (see HeroMount).
  */
-export default function HeroPlayer() {
+export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const frozenRef = useRef(frozen);
+  /** Set by the main effect: applies a freeze change to the running player. */
+  const applyFreeze = useRef<((frozen: boolean) => void) | null>(null);
   const baseRef = useRef<HTMLVideoElement | null>(null);
   const actionRefs = useRef<Partial<Record<ActionId, HTMLVideoElement>>>({});
 
@@ -113,6 +116,13 @@ export default function HeroPlayer() {
       dead = true;
       root.dataset.state = "failed"; // the still underneath stays
     };
+    // A play() interrupted by pause() (freeze, tab hidden) rejects with
+    // AbortError; that is not a media failure.
+    const playFailed = (e: unknown) => {
+      if (frozenRef.current || (e as Error | undefined)?.name === "AbortError")
+        return;
+      fail();
+    };
     // A failed <source> is not fatal: the browser moves on to the next one
     // (AV1 -> H.264). Only the last source failing, or a media error on the
     // element itself, means no clip can play.
@@ -123,7 +133,7 @@ export default function HeroPlayer() {
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
-      if (dead || clock.paused) return;
+      if (dead || clock.paused || frozenRef.current) return;
       const s = stateAt(clock.now());
 
       // Base loop: free-runs, re-seeked only on real drift.
@@ -177,15 +187,32 @@ export default function HeroPlayer() {
       setShown(d.show);
     };
 
+    // Freeze (WCAG 2.2.2) is an instant stop: the clock and every <video>
+    // pause where they are, so the visible frame (base or action) holds.
+    // Playing again resumes the same clock, so the splice stays in sync.
+    applyFreeze.current = (on: boolean) => {
+      if (dead) return;
+      const action = prepared ? actionRefs.current[prepared] : undefined;
+      if (on) {
+        clock.pause();
+        base.pause();
+        action?.pause();
+      } else if (!document.hidden) {
+        clock.resume();
+        void base.play().catch(playFailed);
+        if (action && ready) void action.play().catch(() => release());
+      }
+    };
+
     const onVisibility = () => {
       if (document.hidden) {
         clock.pause();
         base.pause();
         release();
         setShown("base");
-      } else {
+      } else if (!frozenRef.current) {
         clock.resume();
-        void base.play().catch(fail);
+        void base.play().catch(playFailed);
       }
     };
 
@@ -197,10 +224,12 @@ export default function HeroPlayer() {
         onFirstFrame(base, () => {
           if (!dead) root.dataset.state = "live";
         }),
-      fail,
+      playFailed,
     );
     raf = requestAnimationFrame(tick);
+    if (frozenRef.current) applyFreeze.current(true);
     return () => {
+      applyFreeze.current = null;
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       base.removeEventListener("error", onError, true);
@@ -208,6 +237,12 @@ export default function HeroPlayer() {
       release();
     };
   }, []);
+
+  useEffect(() => {
+    if (frozenRef.current === frozen) return;
+    frozenRef.current = frozen;
+    applyFreeze.current?.(frozen);
+  }, [frozen]);
 
   const feather = {
     "--hero-feather-x": `${((HERO_FEATHER_PX / HERO_RECT.w) * 100).toFixed(3)}%`,
@@ -219,6 +254,7 @@ export default function HeroPlayer() {
       className="hero"
       data-state="loading"
       data-shown="base"
+      data-frozen={frozen ? "" : undefined}
       aria-hidden="true"
       style={{ ...heroBoxPercent(), ...feather } as CSSProperties}
     >

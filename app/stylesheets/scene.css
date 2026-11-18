@@ -198,3 +198,65 @@
     display: block;
   }
 }
+
+/* WCAG 2.2.2 pause mechanisms (scene-freeze.tsx). No visible chrome at
+   rest: the pause button (F1) is visually hidden until it has keyboard
+   focus, like a skip link; the frame shows a focus ring when it is the
+   focused group. */
+.scene_frame[role="group"]:focus-visible {
+  outline: 3px solid #ffd27a;
+  outline-offset: -3px;
+}
+.scene_pause {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.scene_pause:focus-visible {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 8px 14px;
+  clip: auto;
+  overflow: visible;
+  border-radius: 6px;
+  background: #1b1622;
+  color: #fff;
+  outline: 3px solid #ffd27a;
+}
+.scene_pause[aria-pressed="true"]::after {
+  content: " (paused)";
+}
+/* F4 (flag, off by default): brief first-hover caption. */
+.scene_freeze-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgb(27 22 34 / 85%);
+  color: #fff;
+  pointer-events: none;
+}
+/* F5 (flag, off by default): text-style control below the scene. */
+.scene_pause-link {
+  display: block;
+  margin: 8px auto;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

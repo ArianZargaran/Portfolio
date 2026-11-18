@@ -1,8 +1,18 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Link } from "react-router";
+import { useCallback, useRef, useState } from "react";
+import { Link, useRouteLoaderData } from "react-router";
 
 import { HeroMount } from "~/components/scene/hero-mount";
+import {
+  FREEZE_HINT_ID,
+  SceneFreezeControls,
+  sceneLabel,
+  useSceneFreezeHandlers,
+} from "~/components/scene/scene-freeze";
 import { SceneStill } from "~/components/scene/scene-still";
+import { useMotionAllowed } from "~/components/scene/use-motion-allowed";
+import { DEFAULT_FEATURES, type Features } from "~/features";
+import { heroFreeze } from "~/scene/hero/freeze";
 import { HIT_OBJECTS, rectToPercent, zoomOrigin } from "~/scene/hit-areas";
 import { STILL_SOURCES } from "~/scene/still";
 
@@ -11,6 +21,11 @@ import { STILL_SOURCES } from "~/scene/still";
  * object, one overlay set per breakpoint (CSS media queries pick the one that
  * matches the visible composition). Needs no JS and has no motion, so it is
  * also the reduced-motion and no-JS version of the scene.
+ *
+ * When the hero motion can run, the frame becomes a focusable
+ * role="group" whose name says how to pause (WCAG 2.2.2; see
+ * scene-freeze.tsx and docs/hero-player.md). It is a group, not a button,
+ * so the hotspot links inside stay links for screen readers.
  */
 export function SceneShell({
   focus,
@@ -27,6 +42,21 @@ export function SceneShell({
   children?: ReactNode;
 }) {
   const focused = HIT_OBJECTS.find((o) => o.id === focus);
+  const features =
+    useRouteLoaderData<{ features: Features }>("root")?.features ??
+    DEFAULT_FEATURES;
+  const allowed = useMotionAllowed();
+  const animated = motion && !focused && allowed;
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const announce = useCallback(
+    (frozen: boolean) =>
+      setAnnouncement(
+        frozen ? "Scene animation paused" : "Scene animation playing",
+      ),
+    [],
+  );
+  const frozen = useSceneFreezeHandlers(frameRef, animated, announce);
   /* One origin per breakpoint as CSS vars; scene.css picks the matching one
      with the same media queries as the <picture> sources. Static transform,
      no transition: deep links land already zoomed, motion-free. */
@@ -44,7 +74,28 @@ export function SceneShell({
       data-focus={focused?.id}
       style={zoomVars as CSSProperties | undefined}
     >
-      <div className="scene_frame">
+      <div
+        ref={frameRef}
+        className="scene_frame"
+        {...(animated
+          ? {
+              role: "group",
+              tabIndex: 0,
+              "aria-label": sceneLabel(frozen),
+              "aria-describedby": FREEZE_HINT_ID,
+              "data-frozen": frozen ? "" : undefined,
+            }
+          : {})}
+      >
+        {animated ? (
+          <SceneFreezeControls
+            frozen={frozen}
+            announcement={announcement}
+            frameRef={frameRef}
+            hint={features.heroFreezeHint}
+            onToggle={() => announce(heroFreeze().toggle())}
+          />
+        ) : null}
         <SceneStill decorative={decorative} priority={!decorative} />
         {motion && !focused ? <HeroMount /> : null}
         {STILL_SOURCES.map((s) => (

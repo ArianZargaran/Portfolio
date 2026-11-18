@@ -1,26 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 
-import { motionAllowed } from "~/scene/hero/media";
+import { useHeroFreeze } from "~/components/scene/use-hero-freeze";
+import { useMotionAllowed } from "~/components/scene/use-motion-allowed";
 
 const HeroPlayer = lazy(() => import("./hero-player"));
-
-const LAPTOP_MQ = "(min-width: 1025px)";
-const REDUCE_MQ = "(prefers-reduced-motion: reduce)";
-
-interface NetInfo {
-  saveData?: boolean;
-  effectiveType?: string;
-}
-
-function readEnv() {
-  const conn = (navigator as Navigator & { connection?: NetInfo }).connection;
-  return {
-    laptop: window.matchMedia(LAPTOP_MQ).matches,
-    reducedMotion: window.matchMedia(REDUCE_MQ).matches,
-    saveData: conn?.saveData,
-    effectiveType: conn?.effectiveType,
-  };
-}
 
 /** Resolves after the window load event, then an idle slot (or 1.5 s). */
 function afterLoadAndIdle(cb: () => void): () => void {
@@ -50,26 +33,28 @@ function afterLoadAndIdle(cb: () => void): () => void {
  * paint and the load event. Nothing is fetched (no JS chunk, no media) for
  * reduced motion, Save-Data/2G, or the tablet/mobile compositions; the
  * still and its hit areas stay as they are. Reacts to the media queries
- * changing (e.g. the user turns on reduced motion).
+ * changing (e.g. the user turns on reduced motion) and to the shared
+ * freeze state (scene/hero/freeze.ts).
  */
 export function HeroMount() {
   const [ready, setReady] = useState(false);
-  const [allowed, setAllowed] = useState(false);
+  const allowed = useMotionAllowed();
+  const { frozen } = useHeroFreeze();
+  // F3: a visitor who froze the scene earlier gets the still only, and no
+  // player chunk or media, until they press play. Freezing a running player
+  // keeps it mounted and holds its current frame (instant stop).
+  const [mounted, setMounted] = useState(false);
+  const show = ready && allowed && (!frozen || mounted);
 
   useEffect(() => afterLoadAndIdle(() => setReady(true)), []);
-
   useEffect(() => {
-    const update = () => setAllowed(motionAllowed(readEnv()));
-    update();
-    const mqs = [LAPTOP_MQ, REDUCE_MQ].map((q) => window.matchMedia(q));
-    mqs.forEach((m) => m.addEventListener("change", update));
-    return () => mqs.forEach((m) => m.removeEventListener("change", update));
-  }, []);
+    if (show) setMounted(true);
+  }, [show]);
 
-  if (!ready || !allowed) return null;
+  if (!show) return null;
   return (
     <Suspense fallback={null}>
-      <HeroPlayer />
+      <HeroPlayer frozen={frozen} />
     </Suspense>
   );
 }
