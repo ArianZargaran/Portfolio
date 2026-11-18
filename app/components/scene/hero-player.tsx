@@ -43,6 +43,7 @@ import {
   type Shown,
 } from "~/scene/hero/schedule";
 import { wireTriggers } from "~/scene/hero/triggers";
+import { warmTargets } from "~/scene/hero/warm";
 
 const FPS = BASE_LOOP.fps;
 /** Re-seek a clip only when it is this many frames off the clock. */
@@ -193,6 +194,21 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
       shown = next;
       root.dataset.shown = next;
     };
+    // Warm pool (M6): action elements seeked to their first clip frame and
+    // held paused just before they cut in (at most 2, plus the base).
+    const warmed = new Set<ActionId>();
+    const warm = (targets: ReturnType<typeof warmTargets>) => {
+      const want = new Set(targets.map((w) => w.action.id));
+      warmed.forEach((id) => !want.has(id) && warmed.delete(id));
+      for (const { action } of targets) {
+        const v = actionRefs.current[action.id];
+        if (!v || warmed.has(action.id) || prepared === action.id) continue;
+        if (v.preload !== "auto" || v.readyState < 1) continue; // not fetched yet
+        v.pause();
+        v.currentTime = frameTime(0, FPS);
+        warmed.add(action.id);
+      }
+    };
     const release = () => {
       if (!prepared) return;
       actionRefs.current[prepared]?.pause();
@@ -271,6 +287,14 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
       )
         fetchClip(next.action);
 
+      warm(
+        warmTargets(s.abs, [
+          queue.slot?.occ,
+          egg.armed?.occ,
+          nextOccurrence(s.abs) ?? undefined,
+        ]),
+      );
+
       const d = decide(s, shown, ready);
       if (d.prepare) {
         const { action, clipFrame } = d.prepare;
@@ -280,6 +304,7 @@ export default function HeroPlayer({ frozen = false }: { frozen?: boolean }) {
         if (v && prepared !== action.id) {
           release();
           prepared = action.id;
+          warmed.delete(action.id);
           v.currentTime = frameTime(clipFrame, FPS);
           v.play().then(
             () =>

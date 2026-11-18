@@ -112,3 +112,15 @@ Decided (PLAN v3.3 §4): reaction media is fetched **on hover/focus intent only*
 - **Missing clips:** the speaker, phone and sip reactions have no clips yet, so the queue refuses them as `unknown` and nothing is fetched for them. They start working once their clips are registered in `REACTIONS`. Today the reachable reactions are the idle and return bounces, plus the egg nod.
 - **Dependency, not a blocker (Track B4):** hotspots are matched by their `data-object` id, never by geometry. The boxes in `HIT_OBJECTS` (`app/scene/hit-areas.ts`) are still the hand estimates marked `estimated`. Dusk's measured hotspot boxes aren't in the brain yet. When they land, only the `rects` data in `hit-areas.ts` changes: this wiring, the reaction map and the tests stay as they are.
 - **Fetch timing for non-hover triggers:** an idle, time-on-page or return trigger is itself the intent. Its clip is fetched when the trigger fires (the bounce is 90.6 KiB with AV1), then cut in at the next join. That isn't the rejected "idle prefetch", which meant speculatively fetching hover variants before any intent (PLAN v3.3 §4).
+
+## Warm hidden videos (M6)
+
+`warm.ts` handles the switch latency.
+
+- **When:** up to 12 frames (1 s) before a scheduled clip's first frame. That covers a queued reaction, an armed egg nod and the next rotation occurrence.
+- **What happens:** the player seeks that clip's already-fetched `<video>` to clip frame 0 and leaves it paused, so the decoder has the frame ready. At the cut-in, `decide` only has to `play()` it, with no cold seek-and-decode on the visible path.
+- **Fetching:** warming never fetches. A clip that hasn't been fetched (no intent yet, or over budget) isn't warmed; it falls back to the cold path, where the base keeps showing until a frame is up.
+- **Pool:** the base loop plus at most 2 action elements (`WARM_MAX_ACTIONS`) are warm at once, so 3 in total. One per element, nearest first.
+- **Elements:** every clip is `muted`, `playsinline`, `aria-hidden`, and `preload="none"` until fetched (the base is `auto`). That keeps inline playback working on iOS Safari.
+- **Not yet checked on Safari (PLAN v3.3 §4):** whether idle decoders get suspended. If Safari drops them, fall back to "seek on intent", which costs about one cold switch. This needs an Apple device.
+- **Byte budget:** same per visit (M3). Warming adds no bytes.
