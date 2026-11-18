@@ -146,3 +146,22 @@ The gate runs once per page, after the `load` event (`net-gate.ts` decides, `net
   - **TCP slow start:** the measurement spans document + CSS + JS + the still rather than one small image, and it's a lower bound. A low reading errs toward the still.
   - **iOS Low Power Mode / autoplay blocked:** `play()` rejects with `NotAllowedError`, the player marks itself `failed`, and the still stays. Every clip is `muted playsinline` so inline autoplay is allowed when it can be.
   - **Unverified without an Apple device:** Safari's `transferSize` values, warm-decoder suspension and Low Power behaviour. See the M11a checklist (`docs/safari-checklist.md`).
+
+## Budgets enforced locally (M8)
+
+| Check                  | Command                 | Budget                                                                                                                                                                                                          |
+| ---------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lazy hero player chunk | `npm run check:bundle`  | ≤ 8 kB gzip (`heroChunkKb` in `bundle-budgets.json`), next to the existing initial / total / CSS / largest-chunk budgets. Fails if the `hero-player-*.js` chunk disappears (e.g. it got inlined into the entry) |
+| Hero media per clip    | `npm run check:media`   | Reaction clips ≤ 120 kB AV1 / 160 kB H.264. Typing loop ≤ 340 / 455 kB. 1 kB = 1000 B (`media-budgets.json`)                                                                                                    |
+| Exceptions             | `npm run check:media`   | Each is explicit, with a reason and a tight cap. Today only the E2 v3 nod (164.1 / 217.1 kB, capped at 165 / 218 kB) is listed, until it's re-encoded in M9b                                                    |
+| Manifest               | `npm run check:media`   | Every clip's size equals `hero-media.build.json`, which the player's budget table is tested against                                                                                                             |
+| Worst-case visit       | `npm run check:media`   | Base + one variant per action ≤ 750 KiB AV1 / 970 KiB H.264. Variants are named `<action>.k<join>.<codec>.mp4`                                                                                                  |
+| Both                   | `npm run check:budgets` | `check:bundle` (needs `npm run build` first), then `check:media` (no build needed)                                                                                                                              |
+
+- **Tests:** `media-budgets.test.ts` runs the media check on the shipped clips (pass) and on oversize fixtures (fail).
+- **CI wiring isn't committed.** The workflows weren't changed, because verifying them would need a push. When a push is approved, the proposed change is one step in `.github/workflows/quality.yml`, right after the existing bundle step:
+
+```yaml
+- name: Hero media budgets
+  run: node scripts/ci/check-media.mjs
+```

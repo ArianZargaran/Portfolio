@@ -6,6 +6,9 @@ import { gzipSync } from "node:zlib";
 
 const budgets = JSON.parse(readFileSync("bundle-budgets.json", "utf8"));
 delete budgets.$comment;
+// Lazy hero player chunk (M8): its own budget, since it's fetched on the
+// home page right after load.
+const HERO_CHUNK = /^hero-player-[\w-]+\.js$/;
 const dir = "build/client/assets";
 const files = readdirSync(dir)
   .filter((f) => !f.endsWith(".map"))
@@ -59,11 +62,19 @@ if (!initialFiles.length) {
 }
 const initialJs = sum(js.filter((x) => initialFiles.includes(x.f)));
 
+const hero = js.filter((x) => HERO_CHUNK.test(x.f));
+if (!hero.length) {
+  console.error(
+    "No hero-player chunk in the build (renamed? update HERO_CHUNK).",
+  );
+  process.exit(1);
+}
 const checks = [
   ["initial JS (entry + static imports)", initialJs, budgets.initialJsKb],
   ["total JS", sum(js), budgets.totalJsKb],
   ["total CSS", sum(css), budgets.totalCssKb],
   ["largest JS chunk", Math.max(...js.map((x) => x.gz)), budgets.maxChunkKb],
+  ["hero player chunk (lazy)", sum(hero), budgets.heroChunkKb],
 ];
 let failed = false;
 for (const [name, size, limitKb] of checks) {
