@@ -20,6 +20,20 @@ import { networkInterfaces } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+const USAGE = `Safari / real-device hero probe (M11a)
+
+  npm run probe:safari                         Mac Safari: open http://localhost:4173/
+  PROBE_HOST=0.0.0.0 npm run probe:safari      iPhone on the same Wi-Fi: http://<mac-lan-ip>:4173/
+  PROBE_PORT=5000 npm run probe:safari         other ports (PORT and PORT+1)
+  npm run probe:safari -- --check              dry start: check the files, print the URLs, exit
+
+Results are saved by the page's "Save on the Mac" button to
+scripts/hero/safari-probe/results/run-<time>.json. Needs Node >= 20.`;
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(USAGE);
+  process.exit(0);
+}
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "../../..");
 const media = path.join(repo, "app/scene/hero/media");
@@ -102,6 +116,21 @@ function route(req, res, crossOrigin) {
     return;
   }
   res.writeHead(404).end("not found");
+}
+
+if (process.argv.includes("--check")) {
+  const clips = existsSync(media)
+    ? readdirSync(media).filter((f) => f.endsWith(".mp4"))
+    : [];
+  const ok =
+    clips.length > 0 && !!still && existsSync(path.join(here, "probe.html"));
+  console.log(
+    `probe check: ${clips.length} clips in app/scene/hero/media, still ${still ? path.relative(repo, still) : "MISSING"}, probe.html ${existsSync(path.join(here, "probe.html")) ? "ok" : "MISSING"}`,
+  );
+  console.log(
+    `would serve http://${HOST === "0.0.0.0" ? "<lan-ip>" : "localhost"}:${PORT}/ (+ :${XPORT})`,
+  );
+  process.exit(ok ? 0 : 1);
 }
 
 createServer((q, s) => route(q, s, false)).listen(PORT, HOST);

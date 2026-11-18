@@ -9,6 +9,8 @@ From the repo root on the Mac (Node 20+):
 ```sh
 npm run probe:safari                    # Mac only: loopback, http://localhost:4173/
 PROBE_HOST=0.0.0.0 npm run probe:safari # also reachable from the iPhone on the same Wi-Fi
+npm run probe:safari -- --check         # dry start: checks the clips/still, prints the URL, exits
+npm run probe:safari -- --help          # usage
 ```
 
 1. **Mac:** open `http://localhost:4173/` in Safari. Pick "Low Power Mode: off" and "Idle: 60 s", press **Run all checks**, and wait about 3 minutes. Keep the tab in front; the page reloads itself once at the end. Then press **Save**.
