@@ -10,6 +10,7 @@ import {
   heroFreeze,
   resetHeroFreezeForTests,
 } from "~/scene/hero/freeze";
+import { resetHeroGateForTests } from "~/scene/hero/net-gate-store";
 
 import HeroPlayer from "./hero-player";
 import { PauseAnimationsControl } from "./scene-freeze";
@@ -41,12 +42,19 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
   beforeEach(() => {
     window.localStorage.clear();
     resetHeroFreezeForTests();
+    // The network gate (M7) passes on a reported 4G connection.
+    resetHeroGateForTests();
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: { effectiveType: "4g" },
+    });
     HTMLMediaElement.prototype.play = () =>
       Promise.reject(new Error("no media"));
     HTMLMediaElement.prototype.pause = vi.fn();
   });
   afterEach(() => {
     window.matchMedia = original;
+    Reflect.deleteProperty(navigator, "connection");
   });
 
   it("makes the frame a named, focusable group (not a button) with the hint", async () => {

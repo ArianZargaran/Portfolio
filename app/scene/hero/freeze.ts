@@ -16,6 +16,11 @@ export const FREEZE_STORAGE_KEY = "hero:frozen";
 export interface FreezeStore {
   get(): boolean;
   set(frozen: boolean): void;
+  /**
+   * Freeze for this page only, without writing storage (the network gate's
+   * "inconclusive -> start frozen", M7). Playing afterwards clears it.
+   */
+  freezeForPage(): void;
   toggle(): boolean;
   /** Returns an unsubscribe function. */
   subscribe(listener: () => void): () => void;
@@ -52,6 +57,11 @@ export function createFreezeStore(
       } catch {
         /* in-memory only */
       }
+      listeners.forEach((l) => l());
+    },
+    freezeForPage() {
+      if (frozen) return;
+      frozen = true;
       listeners.forEach((l) => l());
     },
     toggle() {
