@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hero Safari probe (M11a)</title>
+    <style>
+      body {
+        font:
+          15px/1.45 -apple-system,
+          system-ui,
+          sans-serif;
+        margin: 1rem auto;
+        max-width: 52rem;
+        padding: 0 1rem;
+      }
+      button,
+      select {
+        font: inherit;
+        padding: 0.45rem 0.8rem;
+        margin: 0.2rem 0.3rem 0.2rem 0;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 0.8rem;
+        overflow: auto;
+        font-size: 12px;
+        max-height: 50vh;
+      }
+      .vids {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .vids video {
+        width: 116px;
+        height: 144px;
+        background: #222;
+      }
+      #status {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hero Safari / device probe</h1>
+    <p>
+      Runs the M11a checks from <code>docs/safari-checklist.md</code> on this
+      device. With the 60 s idle it takes about 3 minutes. Keep the tab in front
+      and the screen awake. Results stay on this page; <b>Save</b> writes them
+      to <code>scripts/hero/safari-probe/results/</code> on the Mac running the
+      probe server (nothing is sent anywhere else).
+    </p>
+    <label
+      >Low Power Mode on this run:
+      <select id="lpm">
+        <option value="unknown">unknown</option>
+        <option value="off">off</option>
+        <option value="on">on</option>
+      </select></label
+    >
+    <label
+      >Idle before warm play:
+      <select id="idle">
+        <option value="60">60 s</option>
+        <option value="10">10 s (quick)</option>
+        <option value="0">0 s</option>
+      </select></label
+    >
+    <br />
+    <button id="run">Run all checks</button>
+    <button id="save">Save on the Mac</button>
+    <p id="status">Ready.</p>
+    <div class="vids" id="vids"></div>
+    <pre id="out">{}</pre>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id);
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const R = { started: new Date().toISOString(), ua: navigator.userAgent };
+      const show = () => ($("out").textContent = JSON.stringify(R, null, 2));
+      const status = (s) => ($("status").textContent = s);
+      const XO = `${location.protocol}//${location.hostname}:${Number(location.port || 80) + 1}`;
+      const CLIPS = ["typing", "nod", "bounce"];
+      const AV1 = 'video/mp4; codecs="av01.0.01M.08"',
+        H264 = 'video/mp4; codecs="avc1.640020"';
+      const pct = (xs, p) => {
+        const s = [...xs].sort((a, b) => a - b);
+        return s.length
+          ? +s[Math.min(s.length - 1, Math.floor(p * s.length))].toFixed(1)
+          : null;
+      };
+
+      function env() {
+        const c = navigator.connection;
+        R.env = {
+          connectionApi: !!c,
+          effectiveType: c?.effectiveType ?? null,
+          saveData: c?.saveData ?? null,
+          prefersReducedDataSupported:
+            matchMedia("(prefers-reduced-data: reduce)").media !== "not all",
+          prefersReducedData: matchMedia("(prefers-reduced-data: reduce)")
+            .matches,
+          batteryApi: typeof navigator.getBattery === "function",
+          requestVideoFrameCallback:
+            "requestVideoFrameCallback" in HTMLVideoElement.prototype,
+          anyHoverFine: matchMedia("(any-hover: hover) and (any-pointer: fine)")
+            .matches,
+          reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
+          lowPowerModeReported: $("lpm").value,
+          viewport: [innerWidth, innerHeight, devicePixelRatio],
+        };
+      }
+
+      function makeVideo(clip, { preload = "auto", cache = 1 } = {}) {
+        const v = document.createElement("video");
+        v.muted = true;
+        v.defaultMuted = true;
+        v.playsInline = true;
+        v.setAttribute("muted", "");
+        v.setAttribute("playsinline", "");
+        v.preload = preload;
+        v.loop = clip === "typing";
+        for (const [codec, type] of [
+          ["av1", AV1],
+          ["h264", H264],
+        ]) {
+          const s = document.createElement("source");
+          s.src = `/media/${clip}.${codec}.mp4?cache=${cache}&r=${Math.random().toString(36).slice(2, 7)}`;
+          s.type = type;
+          v.append(s);
+        }
+        $("vids").append(v);
+        return v;
+      }
+      const once = (el, ev, ms = 15000) =>
+        new Promise((res, rej) => {
+          const t = setTimeout(() => rej(new Error(`timeout ${ev}`)), ms);
+          el.addEventListener(
+            ev,
+            () => {
+              clearTimeout(t);
+              res();
+            },
+            { once: true },
+          );
+          el.addEventListener(
+            "error",
+            () => {
+              clearTimeout(t);
+              rej(new Error("media error"));
+            },
+            { once: true },
+          );
+        });
+      function firstFrame(v) {
+        return new Promise((res) => {
+          if (v.requestVideoFrameCallback)
+            v.requestVideoFrameCallback(() => res("rvfc"));
+          else
+            v.addEventListener("timeupdate", () => res("timeupdate"), {
+              once: true,
+            });
+        });
+      }
+      async function timedPlay(v) {
+        const t0 = performance.now();
+        const ff = firstFrame(v);
+        await v.play();
+        const how = await ff;
+        return { ms: performance.now() - t0, how };
+      }
+
+      async function codecs() {
+        const probe = document.createElement("video");
+        R.codecs = {
+          canPlayAv1: probe.canPlayType(AV1),
+          canPlayH264: probe.canPlayType(H264),
+        };
+        const v = makeVideo("bounce");
+        try {
+          await once(v, "loadeddata");
+          R.codecs.picked = v.currentSrc.includes(".av1.")
+            ? "av1"
+            : v.currentSrc.includes(".h264.")
+              ? "h264"
+              : v.currentSrc;
+        } catch (e) {
+          R.codecs.error = String(e);
+        }
+      }
+
+      async function autoplay() {
+        const v = makeVideo("bounce");
+        try {
+          await v.play();
+          R.autoplay = { mutedPlaysinline: "ok" };
+          v.pause();
+        } catch (e) {
+          R.autoplay = {
+            mutedPlaysinline: e.name || String(e),
+            note: "NotAllowedError = autoplay blocked (e.g. Low Power Mode): the site keeps the still",
+          };
+        }
+      }
+
+      function entryFor(url) {
+        return performance.getEntriesByName(url).slice(-1)[0];
+      }
+      function loadImg(url) {
+        return new Promise((res) => {
+          const i = new Image();
+          i.onload = i.onerror = () => res();
+          i.src = url;
+        });
+      }
+      const te = (e) =>
+        e && {
+          transferSize: e.transferSize,
+          encodedBodySize: e.encodedBodySize,
+          durationMs: +e.duration.toFixed(1),
+          mbps:
+            e.transferSize && e.duration
+              ? +((e.transferSize * 8) / e.duration / 1000).toFixed(2)
+              : null,
+        };
+
+      async function timing() {
+        const tag = Math.random().toString(36).slice(2, 8);
+        const same = new URL(`/still.webp?cache=1&t=${tag}`, location.href)
+          .href;
+        await loadImg(same);
+        const xNo = `${XO}/still.webp?cache=0&t=${tag}`,
+          xTao = `${XO}/still.webp?cache=0&tao=1&t=${tag}`;
+        await loadImg(xNo);
+        await loadImg(xTao);
+        R.timing = {
+          sameOriginFirstLoad: te(entryFor(same)),
+          crossOriginNoTAO: te(entryFor(xNo)),
+          crossOriginWithTAO: te(entryFor(xTao)),
+          navigation: te(performance.getEntriesByType("navigation")[0]),
+          cachedReload: null,
+        };
+        sessionStorage.setItem("probe:cachedUrl", same);
+      }
+
+      async function warmVsCold(idleS) {
+        const out = { idleS, cold: [], warm: [] };
+        for (let round = 0; round < 2; round++) {
+          for (const clip of CLIPS) {
+            status(`cold ${clip} (${round + 1}/2)`);
+            const v = makeVideo(clip, { cache: 0 });
+            try {
+              await once(v, "canplaythrough", 20000);
+              v.currentTime = 0.04;
+              await once(v, "seeked");
+              out.cold.push((await timedPlay(v)).ms);
+            } catch (e) {
+              out.coldError = String(e);
+            }
+            v.pause();
+            v.remove();
+          }
+        }
+        for (let round = 0; round < 2; round++) {
+          const vs = CLIPS.map((c) => makeVideo(c, { cache: 0 }));
+          try {
+            await Promise.all(vs.map((v) => once(v, "canplaythrough", 20000)));
+            for (const v of vs) {
+              v.pause();
+              v.currentTime = 0.04;
+              await once(v, "seeked");
+            }
+            for (let s = idleS; s > 0; s--) {
+              status(
+                `warm round ${round + 1}/2: idle ${s} s (3 warm elements held paused)`,
+              );
+              await sleep(1000);
+            }
+            for (const v of vs) {
+              out.warm.push((await timedPlay(v)).ms);
+              v.pause();
+            }
+          } catch (e) {
+            out.warmError = String(e);
+          }
+          vs.forEach((v) => v.remove());
+        }
+        out.coldP50 = pct(out.cold, 0.5);
+        out.coldP95 = pct(out.cold, 0.95);
+        out.warmP50 = pct(out.warm, 0.5);
+        out.warmP95 = pct(out.warm, 0.95);
+        out.verdict =
+          out.warmP95 == null
+            ? "inconclusive"
+            : out.warmP95 <= 67
+              ? "warm elements hold (<= 67 ms p95)"
+              : out.warmP95 < (out.coldP95 ?? Infinity) * 0.7
+                ? "warm helps but over 67 ms p95"
+                : "decoders look suspended: use seek-on-intent";
+        R.warm = out;
+      }
+
+      function gateVerdict() {
+        const e = R.env,
+          t = R.timing?.sameOriginFirstLoad;
+        if (e.saveData || e.prefersReducedData) return "still (save-data)";
+        if (e.effectiveType)
+          return e.effectiveType === "4g"
+            ? "play (connection 4g)"
+            : "still (connection slow)";
+        if (t?.transferSize > 0 && t.mbps != null)
+          return t.mbps >= 1.5
+            ? `play (${t.mbps} Mbps, single image)`
+            : `still (${t.mbps} Mbps, single image)`;
+        return "frozen (inconclusive) unless a remembered verdict exists";
+      }
+
+      $("run").onclick = async () => {
+        $("run").disabled = true;
+        try {
+          env();
+          show();
+          status("codecs");
+          await codecs();
+          show();
+          status("autoplay");
+          await autoplay();
+          show();
+          status("resource timing");
+          await timing();
+          show();
+          await warmVsCold(Number($("idle").value));
+          show();
+          R.gateWouldSay = gateVerdict();
+          R.finished = new Date().toISOString();
+          sessionStorage.setItem("probe:result", JSON.stringify(R));
+          status("reloading once for the cached transferSize check...");
+          await sleep(500);
+          location.reload();
+        } catch (e) {
+          R.error = String(e);
+          show();
+          status("error");
+          $("run").disabled = false;
+        }
+      };
+      // After the self-reload: the same still URL again, which should come from cache.
+      (async () => {
+        const prev = sessionStorage.getItem("probe:result"),
+          url = sessionStorage.getItem("probe:cachedUrl");
+        if (!prev || !url) return;
+        Object.assign(R, JSON.parse(prev));
+        sessionStorage.removeItem("probe:result");
+        await loadImg(url);
+        R.timing.cachedReload = te(entryFor(url));
+        R.timing.cachedNote =
+          "cachedReload transferSize 0 = served from cache (the gate treats it as inconclusive)";
+        window.__probeDone = true;
+        show();
+        status(
+          "Done. Press Save, then send the saved file to Forge via Atlas.",
+        );
+      })();
+      $("save").onclick = async () => {
+        const r = await fetch("/results", {
+          method: "POST",
+          body: JSON.stringify(R, null, 2),
+        });
+        status(
+          r.ok
+            ? `Saved: ${(await r.json()).saved}`
+            : `Save failed (${r.status})`,
+        );
+      };
+      show();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+# Safari and real-device checklist (M11a, first pass)
+
+The box has no WebKit, so the code track can't verify these. Everything below is ready to run on Ari's Mac (Safari) and iPhone. It uses the shipped clips, with no deploy and no push. It takes about 10 minutes per device. Results replace the "untested" notes in PLAN v3.3 §4/§7 and `docs/hero-player.md`.
+
+## 1. Run the probe page
+
+From the repo root on the Mac (Node 20+):
+
+```sh
+npm run probe:safari                    # Mac only: loopback, http://localhost:4173/
+PROBE_HOST=0.0.0.0 npm run probe:safari # also reachable from the iPhone on the same Wi-Fi
+```
+
+1. **Mac:** open `http://localhost:4173/` in Safari. Pick "Low Power Mode: off" and "Idle: 60 s", press **Run all checks**, and wait about 3 minutes. Keep the tab in front; the page reloads itself once at the end. Then press **Save**.
+2. **iPhone:** open the `http://<mac-ip>:4173/` URL the server prints, in Safari. Run it once with Low Power Mode **off**, then turn it **on** (Settings → Battery) and run again. Press **Save** after each run.
+3. Results land in `scripts/hero/safari-probe/results/run-*.json` on the Mac (gitignored). Send those files to Forge via Atlas. They hold only the browser's user agent and the measurements.
+4. Stop the server with Ctrl-C.
+
+The probe serves the shipped `app/scene/hero/media/*.mp4` with HTTP Range (Safari needs 206 responses for `<video>`) and the laptop still. A second port (+1) acts as a cross-origin host, with and without `Timing-Allow-Origin`.
+
+## 2. What it measures and what decides
+
+| #   | Check                            | Probe field                                     | Pass / decision                                                                                                                                                                   |
+| --- | -------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | AV1 → H.264 fallback             | `codecs.canPlayAv1`, `codecs.picked`            | Macs/iPhones without AV1 hardware must pick `h264` and play. A media error means the `<source>` order or the `codecs=` strings need a fix                                         |
+| 2   | iOS `muted playsinline` autoplay | `autoplay.mutedPlaysinline`                     | `ok` with Low Power Mode off. With it on, `NotAllowedError` is expected: the site's player then marks itself `failed` and the still stays. Confirm there's no broken or black box |
+| 3   | `transferSize`, first load       | `timing.sameOriginFirstLoad`                    | Non-zero on a same-origin first load, otherwise the throughput path can never say "play". If it's 0, the gate must fall back to the remembered verdict or "frozen"; record it     |
+| 4   | `transferSize`, cached           | `timing.cachedReload`                           | 0 expected. The gate treats it as inconclusive and reuses the last verdict (≤ 7 days)                                                                                             |
+| 5   | Cross-origin without / with TAO  | `timing.crossOriginNoTAO`, `crossOriginWithTAO` | 0 without TAO, non-zero with it. Confirms the rule "add `Timing-Allow-Origin` if media ever moves to another origin"                                                              |
+| 6   | Connection API                   | `env.connectionApi`                             | `false` on Safari, so the gate always takes the throughput path                                                                                                                   |
+| 7   | Warm elements after 60 s idle    | `warm.warmP95` vs `warm.coldP95`                | ≤ 67 ms p95 keeps the warm pool (M6). If warm ≈ cold, Safari dropped the decoders: switch the player to seek-on-intent (seek when intent arrives, not 1 s before the cut-in)      |
+| 8   | `requestVideoFrameCallback`      | `env.requestVideoFrameCallback`                 | Safari 15.4+ has it. Without it the probe and the player fall back to `timeupdate` (coarser)                                                                                      |
+| 9   | Hover capability                 | `env.anyHoverFine`                              | `true` on the Mac, `false` on the iPhone: hover intent off, focus and triggers only                                                                                               |
+
+## 3. By hand on the real site (after a local build, Mac Safari)
+
+Run `npm run build && PORT=3150 node scripts/serve.mjs`, then open `http://localhost:3150/` in Safari at a laptop-width window (≥ 1025 px):
+
+- [ ] The still paints first; the hero fades in over it after load. There's no seam at the feathered edge.
+- [ ] `document.documentElement.dataset.heroGate` (Develop → Show JavaScript Console) reads `play:throughput-ok` on a first visit. On a reload it reads `play:stored`, the remembered verdict, because cached files report 0.
+- [ ] With Develop → Network → throttling at 3G or "Edge" on a fresh profile (clear website data), it reads `still:throughput-slow`, and no `.mp4` request appears in the Network tab.
+- [ ] After clearing website data and with the cache served (Disable Caches off, second load), if nothing is measurable it reads `frozen:inconclusive`: the scene is paused, and Enter or a click plays it.
+- [ ] Esc freezes instantly; reloading stays frozen with no `.mp4` requests.
+- [ ] Hovering the poster, then the speakers, requests `nod.*.mp4` (Network tab) and nothing before that.
+- [ ] Leave the tab for 60 s and come back: no black frame on the next cut.
+
+## 4. Record
+
+Paste the two device tables (Mac, iPhone LPM off/on) into `docs/hero-player.md` §"Network gate and Safari handling", replacing "Unverified without an Apple device". Then update PLAN v3.3 §4 (warm-element suspension) and §7 (`transferSize`) with the measured values.

@@ -195,3 +195,11 @@ The gate runs once per page, after the `load` event (`net-gate.ts` decides, `net
   - Esc freezes and persists.
 - **Run it:** `npm run test:e2e:hero` (build first). Or serve on a spare port and run `PORT=<port> npx cypress run --spec cypress/e2e/hero.cy.ts`.
 - **Final pass (M10b):** after the art locks, the same specs run against the real clips, plus latency within ±5 % of the sim.
+
+## Safari first pass without a device (M11a)
+
+- **Checklist:** `docs/safari-checklist.md`, with the steps, pass criteria and what each result decides (warm pool vs seek-on-intent, the `transferSize` fallbacks, the H.264 fallback, Low Power Mode).
+- **Probe:** `npm run probe:safari` serves `scripts/hero/safari-probe/probe.html` from Ari's Mac. It's loopback-only by default; `PROBE_HOST=0.0.0.0` lets the iPhone on the same Wi-Fi reach it.
+  - It measures codec choice, muted inline autoplay, Resource Timing `transferSize` (first, cached, cross-origin with and without TAO) and cold vs warm first-frame latency after 60 s idle.
+  - Results save to `scripts/hero/safari-probe/results/` (gitignored).
+  - On the box it was smoke-run in headless Chromium only, to prove the page and server work. Chromium numbers say nothing about Safari.

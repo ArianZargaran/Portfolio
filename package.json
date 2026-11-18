@@ -18,6 +18,7 @@
     "typecheck": "react-router typegen && tsc && tsc -p cypress",
     "validate": "npm run lint && npm run typecheck && vitest --run",
     "check:bundle": "node scripts/ci/check-bundle.mjs",
+    "probe:safari": "node scripts/hero/safari-probe/serve.mjs",
     "check:media": "node scripts/ci/check-media.mjs",
     "check:budgets": "npm run check:bundle && npm run check:media",
     "check:csp": "node scripts/ci/check-csp.mjs",
