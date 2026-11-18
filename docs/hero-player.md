@@ -124,6 +124,7 @@ Decided (PLAN v3.3 §4): reaction media is fetched **on hover/focus intent only*
 - **Fetching:** warming never fetches. A clip that hasn't been fetched (no intent yet, or over budget) isn't warmed; it falls back to the cold path, where the base keeps showing until a frame is up.
 - **Pool:** the base loop plus at most 2 action elements (`WARM_MAX_ACTIONS`) are warm at once, so 3 in total. One per element, nearest first.
 - **Elements:** every clip is `muted`, `playsinline`, `aria-hidden`, and `preload="none"` until fetched (the base is `auto`). That keeps inline playback working on iOS Safari.
+- **Chromium with real idle (review N9, Nov 17 2026):** Chromium 156 headless, local probe server, 3 warm elements held paused for 60 s and 120 s of wall-clock idle (2 rounds each, 121 s and 242 s measured). Warm p95 51.5 ms (60 s) and 38.5 ms (120 s), both ≤ 67 ms; cold p95 25.9 / 52.4 ms. So in Chromium a long idle costs nothing visible. Cold is just as fast from a local server, so the probe doesn't show a warm _gain_ there; the real question stays Safari/iPhone. Raw results: `/workspace/hero-interactions-scope/warm-probe-idle/`.
 - **Not yet checked on Safari (PLAN v3.3 §4):** whether idle decoders get suspended. If Safari drops them, fall back to "seek on intent", which costs about one cold switch. This needs an Apple device.
 - **Byte budget:** same per visit (M3). Warming adds no bytes.
 
