@@ -11,7 +11,7 @@ def sha(p):
     return h.hexdigest()
 out = {"checked_at": __import__("datetime").datetime.now().astimezone().isoformat(), "lists": {}, "locks": {}, "deps": {}}
 lists = {}
-for n in (26, 27, 28):
+for n in (26, 27, 28, 29):
     p = f"tools/locks_now{n}.sha"
     if os.path.exists(os.path.join(B, p)):
         lists[n] = dict(reversed(l.strip().split("|", 1)) for l in open(os.path.join(B, p)) if "|" in l)
@@ -22,11 +22,15 @@ wanted = [f"{CP}/LOCK_PAINTED_CHAR_STILL_POLISH_V5.json", f"{CP}/LOCK_PAINTED_CH
           f"{S}/m2/variants/d4_armrest/LOCK_D4.json",
           # Shipped by the locked v5_2 install (Ari t1003s5480 / t1005s5485, locks_now28):
           f"{CP}/LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2.json", f"{CP}/LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4.json",
-          f"{S}/m2/variants/walls_top_m2/LOCK_POSTER_M2_V3_R2.json"]
+          f"{S}/m2/variants/walls_top_m2/LOCK_POSTER_M2_V3_R2.json",
+          # S1a glance-up v2 for poster hover (Ari t1014s5523, locks_now29):
+          f"{CP}/LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2.json"]
 mism = []
 # Exact authority pins for this install; don't silently accept a rewritten list.
 pins = {
     "tools/locks_now28.sha": "7c51a34fd9a085f9ed904f5dcbc3acfdab01690d5b35330a8322a3b834ba3927",
+    "tools/locks_now29.sha": "d57a83dd7b325e9e6f951afb73f0eaa3ca33721e4b8cb68e4d2ee7975d15020a",
+    f"{CP}/LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2.json": "6de9b1acea9264c7f62a4c5d46f72c00bd2af177b9b646b0a9a151b185538027",
     f"{CP}/LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2.json": "14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712",
     f"{CP}/LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4.json": "08dcd66c76b505ae386532870beabbae7ace72b27c576a88cf7e53a5375727dc",
     f"{S}/m2/variants/walls_top_m2/LOCK_POSTER_M2_V3_R2.json": "0e49dc873737a05818cd0c624f810aa2127664a4f30e7e76b9f0227f5797e5a0",
@@ -34,6 +38,12 @@ pins = {
 for p, h in pins.items():
     if sha(p) != h: mism.append(f"authority pin {p}")
 if len(lists.get(28, {})) != 68: mism.append("locks_now28 must have 68 records")
+if len(lists.get(29, {})) != 69: mism.append("locks_now29 must have 69 records")
+# locks_now29 = locks_now28 + exactly the S1a V2 record (review_locks_now29 §1).
+if 28 in lists and 29 in lists:
+    extra = {k: v for k, v in lists[29].items() if lists[28].get(k) != v}
+    if list(extra) != [f"{CP}/LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2.json"]:
+        mism.append(f"locks_now29 must add only the S1a V2 record to locks_now28 (got {sorted(extra)})")
 for lp in wanted:
     actual = sha(lp)
     rec = {"sha256": actual, "in_lists": {n: (l.get(lp) == actual if lp in l else "absent") for n, l in lists.items()}}
