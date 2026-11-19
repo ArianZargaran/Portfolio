@@ -133,18 +133,23 @@ describe("hero motion (stub clips)", () => {
       );
     // Hold each foreign join long enough for a wrong cut-in to become
     // visible (review p2 M1: 4 rAFs, ~65 ms, was shorter than play() + first
-    // frame). The hero clock stays pinned on the join; real decode runs. Each
-    // hold lasts at least HOLD_FRAMES animation frames AND HOLD_MS real time,
-    // and if the nod <video> fires `playing` during it, AFTER_PLAYING more
-    // frames so its first-frame callback can land. Every frame asserts that
-    // the base is shown and the nod element is not switched on.
-    const HOLD_FRAMES = 30;
+    // frame). The hero clock stays pinned on the join while real decode runs.
+    // A hold ends only after HOLD_MS of real time AND MIN_TICKS animation
+    // frames (the player ticks on rAF too, so that's player ticks). At normal
+    // speed 500 ms is ~30 frames. Headless Electron sometimes throttles rAF to
+    // ~3 fps (seen in p3), and then the tick floor still gives the player time
+    // to prepare -> first frame -> show. If the nod <video> fires `playing`
+    // during a hold, it continues for AFTER_PLAYING_TICKS more frames and
+    // AFTER_PLAYING_MS more real time, so its first-frame callback can land.
+    // Every frame asserts that the base is shown and the nod is not on.
     const HOLD_MS = 500;
-    const AFTER_PLAYING = 15;
+    const MIN_TICKS = 8;
+    const AFTER_PLAYING_TICKS = 4;
+    const AFTER_PLAYING_MS = 250;
     for (const f of [0, 36, 72, 108, 144, 176, 179]) {
       setHeroMs(msAtFrame(f));
       cy.window().then(
-        { timeout: 10_000 },
+        { timeout: 20_000 },
         (w) =>
           new Cypress.Promise<void>((resolve, reject) => {
             const nod = [...w.document.querySelectorAll("video")].find((v) =>
@@ -155,7 +160,13 @@ describe("hero motion (stub clips)", () => {
             const t0 = Date.now(); // real time (performance.now is pinned)
             let frames = 0;
             let playingAt: number | null = null;
-            const onPlaying = () => (playingAt ??= frames);
+            let playingMs = 0;
+            const onPlaying = () => {
+              if (playingAt === null) {
+                playingAt = frames;
+                playingMs = Date.now();
+              }
+            };
             nod?.addEventListener("playing", onPlaying);
             const done = (err?: unknown) => {
               nod?.removeEventListener("playing", onPlaying);
@@ -175,9 +186,11 @@ describe("hero motion (stub clips)", () => {
                 return done(e);
               }
               frames++;
-              const held = frames >= HOLD_FRAMES && Date.now() - t0 >= HOLD_MS;
+              const held = frames >= MIN_TICKS && Date.now() - t0 >= HOLD_MS;
               const settled =
-                playingAt === null || frames - playingAt >= AFTER_PLAYING;
+                playingAt === null ||
+                (frames - playingAt >= AFTER_PLAYING_TICKS &&
+                  Date.now() - playingMs >= AFTER_PLAYING_MS);
               if (held && settled) done();
               else w.requestAnimationFrame(frame);
             };
