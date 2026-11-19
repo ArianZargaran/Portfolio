@@ -259,6 +259,17 @@
           navigation: te(performance.getEntriesByType("navigation")[0]),
           cachedReload: null,
         };
+        // The opposite failure (review p2 L2): a genuine first download that
+        // the gate's rule rejects would make every visit start frozen and
+        // never store a verdict. The document (no-store) and the fresh still
+        // must both read as samples.
+        const firstOk = [
+          R.timing.sameOriginFirstLoad,
+          R.timing.navigation,
+        ].every((e) => e && e.gate === "sample");
+        R.timing.gateOnFirstVisit = firstOk
+          ? "ok: the first-visit document and still read as genuine downloads (sample)"
+          : "PROBLEM: a genuine first download reads as a cache hit, so this browser would always start frozen; send this file to Forge";
         sessionStorage.setItem("probe:cachedUrl", same);
       }
 
@@ -441,8 +452,18 @@
         if (ch) await cacheHitAfterReload(JSON.parse(ch));
         window.__probeDone = true;
         show();
+        const flags = [
+          R.timing?.gateOnFirstVisit,
+          R.cacheHit?.gateOnRepeatVisit,
+        ].filter(Boolean);
+        R.summary = {
+          gateOnFirstVisit: R.timing?.gateOnFirstVisit ?? null,
+          gateOnRepeatVisit: R.cacheHit?.gateOnRepeatVisit ?? null,
+          allOk: flags.length === 2 && flags.every((f) => f.startsWith("ok")),
+        };
+        show();
         status(
-          "Done. Press Save, then send the saved file to Forge via Atlas.",
+          `Done${R.summary.allOk ? "" : " (PROBLEM flagged, see summary)"}. Press Save, then send the saved file to Forge via Atlas.`,
         );
       })();
       $("save").onclick = async () => {
