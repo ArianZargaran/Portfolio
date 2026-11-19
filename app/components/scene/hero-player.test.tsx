@@ -162,3 +162,101 @@ describe("HeroPlayer rotation prefetch flag (FEATURE_HERO_ROTATION_PREFETCH)", (
     expect(fetched(container)).toEqual(["typing"]);
   });
 });
+
+describe("HeroPlayer stale first-frame callback (review finding 5)", () => {
+  type Cb = () => void;
+  let frameCbs: { el: HTMLVideoElement; cb: Cb }[];
+  let hidden = false;
+  const original = Object.getOwnPropertyDescriptor(
+    HTMLVideoElement.prototype,
+    "requestVideoFrameCallback",
+  );
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: [
+        "performance",
+        "requestAnimationFrame",
+        "cancelAnimationFrame",
+        "setTimeout",
+        "clearTimeout",
+      ],
+    });
+    frameCbs = [];
+    hidden = false;
+    vi.spyOn(document, "hidden", "get").mockImplementation(() => hidden);
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    HTMLMediaElement.prototype.pause = vi.fn();
+    HTMLMediaElement.prototype.load = vi.fn();
+    HTMLVideoElement.prototype.requestVideoFrameCallback = function (
+      this: HTMLVideoElement,
+      cb: VideoFrameRequestCallback,
+    ) {
+      frameCbs.push({
+        el: this,
+        cb: () => cb(0, {} as VideoFrameCallbackMetadata),
+      });
+      return frameCbs.length;
+    };
+  });
+  afterEach(() => {
+    if (original)
+      Object.defineProperty(
+        HTMLVideoElement.prototype,
+        "requestVideoFrameCallback",
+        original,
+      );
+    else
+      delete (
+        HTMLVideoElement.prototype as { requestVideoFrameCallback?: unknown }
+      ).requestVideoFrameCallback;
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  const flush = () =>
+    act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  const tick = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+
+  // Rotation nod slot (both flags on) cuts in at cycle 1 f180 = 33 s. The
+  // clip is prepared at i60 (prepare #1, its first-frame callback pending),
+  // the tab is hidden (release) and shown again inside the enter window, so
+  // the same clip is prepared again (#2). Prepare #1's late callback must not
+  // mark #2 ready: only #2's own first frame may show the nod.
+  it("an old prepare's callback cannot mark a newer prepare ready", async () => {
+    const { container } = render(<HeroPlayer rotationPrefetch rotationNod />);
+    const root = container.querySelector<HTMLElement>("[data-shown]")!;
+    const nod = [...container.querySelectorAll("video")].find(
+      (v) =>
+        NAMES.get(v.querySelector("source")?.getAttribute("src") ?? "") ===
+        "nod.k180",
+    )!;
+    const nodCbs = () => frameCbs.filter((f) => f.el === nod);
+
+    tick(32_900); // just before i60; then step frame by frame to the prepare
+    for (let i = 0; i < 40 && nodCbs().length === 0; i++) {
+      tick(20);
+      await flush();
+    }
+    expect(nodCbs()).toHaveLength(1); // prepare #1, first frame not yet up
+    expect(root.dataset.shown).toBe("base");
+
+    hidden = true;
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    hidden = false;
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    tick(20);
+    await flush();
+    expect(nodCbs()).toHaveLength(2); // prepare #2 of the same clip
+
+    act(() => nodCbs()[0].cb()); // stale: prepare #1's first frame
+    tick(20);
+    expect(root.dataset.shown).toBe("base");
+
+    act(() => nodCbs()[1].cb()); // prepare #2's own first frame
+    tick(20);
+    expect(root.dataset.shown).toBe("nod.k180");
+  });
+});

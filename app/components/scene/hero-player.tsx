@@ -142,6 +142,10 @@ export default function HeroPlayer({
     let shown: Shown = "base";
     let prepared: ActionId | null = null;
     let ready = false;
+    // Generation of the current prepare: bumped by every prepare and every
+    // release, so a play()/first-frame callback left over from an earlier
+    // prepare (even of the same clip) can never mark a newer one ready.
+    let prepareGen = 0;
     let dead = false;
     // Reaction queue (M2): requests come from the bus, are applied here,
     // and take effect on the next frame.
@@ -239,6 +243,7 @@ export default function HeroPlayer({
       actionRefs.current[prepared]?.pause();
       prepared = null;
       ready = false;
+      prepareGen++;
     };
     const fail = () => {
       dead = true;
@@ -344,12 +349,18 @@ export default function HeroPlayer({
         } else if (v && prepared !== action.id) {
           release();
           prepared = action.id;
+          const gen = ++prepareGen;
+          const current = () => gen === prepareGen && prepared === action.id;
           warmed.delete(action.id);
           v.currentTime = frameTime(clipFrame, FPS);
           v.play().then(
             () =>
-              onFirstFrame(v, () => prepared === action.id && (ready = true)),
-            () => release(),
+              onFirstFrame(v, () => {
+                if (current()) ready = true;
+              }),
+            () => {
+              if (current()) release();
+            },
           );
         } else if (v && ready) {
           const drift = driftFrames(v.currentTime, clipFrame, FPS);
