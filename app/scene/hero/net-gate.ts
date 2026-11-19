@@ -15,8 +15,9 @@
  *    >= 1.5 Mbps AND the composition's planned hero bytes within its
  *    budget; otherwise "still". The measured verdict is remembered for
  *    7 days.
- * 5. Inconclusive (the still or document came from cache with
- *    transferSize 0 or was revalidated with a 304, no Resource Timing, or
+ * 5. Inconclusive (the still or document came from cache: transferSize 0,
+ *    encodedBodySize 0 or missing, or revalidated with a 304; no Resource
+ *    Timing; or
  *    a cross-origin still without Timing-Allow-Origin): reuse the last measured verdict if it is at most
  *    7 days old; otherwise "frozen": the scene starts paused on the still
  *    (not persisted) and activating it plays (WCAG 2.2.2 controls).
@@ -144,22 +145,31 @@ export interface TimingEntry {
 }
 
 /**
- * Downloaded over the network just now: transferSize covers the headers
- * plus the whole body. A cache hit reports 0, and a revalidated 304 reports
- * only the headers (transferSize < encodedBodySize). Neither says anything
- * about throughput.
+ * Downloaded over the network just now: the body came over the wire
+ * (encodedBodySize > 0) and transferSize covers the headers plus that whole
+ * body. Anything else says nothing about throughput and is left out (for the
+ * document or the still: the measurement is inconclusive):
+ *
+ * - a cache hit reports transferSize 0;
+ * - a revalidated 304 reports only the headers: transferSize < encodedBodySize
+ *   (spec/Firefox shape), or Chromium's shape for a revalidated or
+ *   memory-cached image: transferSize ~300 with encodedBodySize 0 (review
+ *   lock-v5_2-clean, Medium 1: it read as ~5 kB of HTML over ~20 ms, a
+ *   noise-driven verdict);
+ * - missing sizes (no Timing-Allow-Origin, older Safari) report nothing.
  */
-const fresh = (e: TimingEntry) =>
-  (e.transferSize ?? 0) > 0 &&
-  (e.encodedBodySize === undefined ||
-    (e.transferSize ?? 0) >= e.encodedBodySize);
+export const fresh = (e: TimingEntry): boolean => {
+  const t = e.transferSize;
+  const b = e.encodedBodySize;
+  return t !== undefined && b !== undefined && b > 0 && t > 0 && t >= b;
+};
 
 const COUNTED = new Set(["navigation", "link", "css", "script", "img"]);
 
 /**
  * Throughput over the document + CSS + JS + the still, or undefined if
  * inconclusive. `stillUrl` is the URL the <img> actually loaded
- * (currentSrc); its entry must exist and have a non-zero transferSize.
+ * (currentSrc); its entry, and the document's, must be `fresh`.
  */
 export function measureThroughput(
   entries: TimingEntry[],

@@ -1,6 +1,7 @@
 import {
   COMPOSITION_BUDGET,
   decideGate,
+  fresh,
   GATE,
   measureThroughput,
   PLANNED_BYTES,
@@ -112,6 +113,7 @@ describe("network gate (M7): throughput measurement", () => {
     startTime: 0,
     responseEnd: 200,
     transferSize: 20_000,
+    encodedBodySize: 19_700,
   };
   const css: TimingEntry = {
     name: "https://ari.soy/assets/root-1.css",
@@ -120,6 +122,7 @@ describe("network gate (M7): throughput measurement", () => {
     startTime: 210,
     responseEnd: 300,
     transferSize: 10_000,
+    encodedBodySize: 9_700,
   };
   const js: TimingEntry = {
     name: "https://ari.soy/assets/entry.client-1.js",
@@ -128,6 +131,7 @@ describe("network gate (M7): throughput measurement", () => {
     startTime: 210,
     responseEnd: 500,
     transferSize: 50_000,
+    encodedBodySize: 49_700,
   };
   const still: TimingEntry = {
     name: "https://ari.soy/assets/still-1440.avif",
@@ -136,6 +140,7 @@ describe("network gate (M7): throughput measurement", () => {
     startTime: 250,
     responseEnd: 1_000,
     transferSize: 120_000,
+    encodedBodySize: 119_700,
   };
   const font: TimingEntry = {
     name: "https://ari.soy/assets/x.woff2",
@@ -144,6 +149,7 @@ describe("network gate (M7): throughput measurement", () => {
     startTime: 0,
     responseEnd: 5_000,
     transferSize: 1,
+    encodedBodySize: 1,
   };
 
   it("sums document + CSS + JS + the still over their combined span", () => {
@@ -177,6 +183,73 @@ describe("network gate (M7): throughput measurement", () => {
       bytes: 140_000,
       ms: 1_000,
     });
+  });
+
+  // Review lock-v5_2-clean, Medium 1: the shapes a cached or revalidated
+  // response takes across engines. Each must read as a cache hit
+  // (inconclusive), never as a throughput sample.
+  it("Chromium cached/revalidated shape (transferSize 300, encodedBodySize 0) is a cache hit", () => {
+    const chromiumCached = { ...still, transferSize: 300, encodedBodySize: 0 };
+    expect(fresh(chromiumCached)).toBe(false);
+    expect(
+      measureThroughput([nav, css, js, chromiumCached], still.name),
+    ).toBeUndefined();
+    // the document in the same shape (bfcache/HTTP cache) is a cache hit too
+    expect(
+      measureThroughput(
+        [{ ...nav, transferSize: 300, encodedBodySize: 0 }, still],
+        still.name,
+      ),
+    ).toBeUndefined();
+    // a cached script in that shape is left out of the sum
+    const jsCached = { ...js, transferSize: 300, encodedBodySize: 0 };
+    expect(measureThroughput([nav, jsCached, still], still.name)).toEqual({
+      bytes: 140_000,
+      ms: 1_000,
+    });
+  });
+
+  it("304 shape (headers only, encodedBodySize = the cached body) is a cache hit", () => {
+    expect(
+      fresh({ ...still, transferSize: 300, encodedBodySize: 119_700 }),
+    ).toBe(false);
+  });
+
+  it("missing size fields (no Timing-Allow-Origin, older Safari/Firefox) are inconclusive", () => {
+    const noSizes = { ...still };
+    delete noSizes.transferSize;
+    delete noSizes.encodedBodySize;
+    const noEncoded = { ...still };
+    delete noEncoded.encodedBodySize;
+    const noTransfer = { ...still };
+    delete noTransfer.transferSize;
+    // TAO-less cross-origin entries report 0 for both
+    const tao0 = { ...still, transferSize: 0, encodedBodySize: 0 };
+    for (const e of [noSizes, noEncoded, noTransfer, tao0]) {
+      expect(fresh(e)).toBe(false);
+      expect(measureThroughput([nav, css, js, e], still.name)).toBeUndefined();
+    }
+  });
+
+  it("a genuine download (body over the wire, headers on top) is a sample", () => {
+    expect(fresh(still)).toBe(true);
+    expect(fresh({ ...still, transferSize: 119_700 })).toBe(true); // no header overhead reported
+    expect(measureThroughput([nav, still], still.name)).toEqual({
+      bytes: 140_000,
+      ms: 1_000,
+    });
+  });
+
+  it("an inconclusive measurement starts frozen (no stored verdict) and stores nothing", () => {
+    const r = decideGate({
+      composition: "laptop",
+      throughput: measureThroughput(
+        [nav, { ...still, transferSize: 300, encodedBodySize: 0 }],
+        still.name,
+      ),
+      now: 1,
+    });
+    expect(r).toEqual({ verdict: "frozen", reason: "inconclusive" });
   });
 
   it("is inconclusive without the still entry or URL (no Resource Timing, cross-origin)", () => {
