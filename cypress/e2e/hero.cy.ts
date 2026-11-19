@@ -9,7 +9,24 @@ type Conn = { effectiveType?: string; saveData?: boolean } | null;
 const clipOf = (url: string) =>
   (url.match(/\/(typing|[a-z0-9]+\.k\d+)\.[^/]*\.mp4/) ?? [])[1] ?? url;
 
-function visitHome(conn: Conn, opts: { noTiming?: boolean } = {}) {
+/* Controlled hero clock (M10b). The player's clock reads performance.now()
+   (clock.ts); with `pinnedClock` the page's performance.now() returns a value
+   the test sets, so the hero's time only moves when the test moves it. Real
+   video decode still runs in real time, so a cut-in can be waited for at an
+   exact frame, with no race against the nod's 2-frame enter window. */
+type PinnedWin = Cypress.AUTWindow & { __heroMs: number };
+const setHeroMs = (ms: number) =>
+  cy.window().then((w) => {
+    (w as PinnedWin).__heroMs = ms;
+  });
+/** Clock ms at which the loop shows frame `f` of cycle `cycle` (12 fps, 216 frames), mid-frame. */
+const msAtFrame = (f: number, cycle = 0) =>
+  ((cycle * 216 + f + 0.5) / 12) * 1000;
+
+function visitHome(
+  conn: Conn,
+  opts: { noTiming?: boolean; pinnedClock?: boolean } = {},
+) {
   const requested: string[] = [];
   cy.intercept({ method: "GET", url: /\.mp4($|\?)/ }, (req) => {
     requested.push(clipOf(req.url));
@@ -27,6 +44,14 @@ function visitHome(conn: Conn, opts: { noTiming?: boolean } = {}) {
         get: () => (conn === null ? undefined : conn),
       });
       if (opts.noTiming) win.performance.getEntries = () => [];
+      if (opts.pinnedClock) {
+        const w = win as PinnedWin;
+        w.__heroMs = 0;
+        Object.defineProperty(win.performance, "now", {
+          configurable: true,
+          value: () => w.__heroMs,
+        });
+      }
     },
   });
   return requested;
@@ -73,6 +98,48 @@ describe("hero motion (stub clips)", () => {
       .invoke("attr", "data-bytes")
       .then(Number)
       .should("be.lte", 970 * 1024);
+  });
+
+  it("M10b: the egg nod actually comes up at f180 (controlled clock)", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    setHeroMs(msAtFrame(12)); // f12: well before the egg's f180 join
+    cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should("include", "nod.k180");
+    // Wait (real time, hero clock still at f12) until the nod clip can decode.
+    cy.get("video")
+      .filter((_, v) =>
+        /nod\.k180/.test(v.querySelector("source")?.getAttribute("src") ?? ""),
+      )
+      .should("have.length", 1)
+      .should((v) =>
+        expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2),
+      );
+    // Just before the join (f176, inside LEAD_FRAMES): still the base.
+    setHeroMs(msAtFrame(176));
+    cy.get(".hero").should("have.attr", "data-shown", "base");
+    // Hold the clock on f180 (nod i60, its own entry): the nod must come up.
+    setHeroMs(msAtFrame(180));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "nod.k180",
+    );
+    // f181 (i61, the last enter frame) keeps it; the clip ends at i131 (f35
+    // of the next cycle) and the base takes over again.
+    setHeroMs(msAtFrame(181));
+    cy.get(".hero").should("have.attr", "data-shown", "nod.k180");
+    setHeroMs(msAtFrame(40, 1));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "base",
+    );
   });
 
   it("Save-Data: still only, no player, no media", () => {
