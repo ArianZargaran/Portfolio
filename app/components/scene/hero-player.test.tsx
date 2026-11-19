@@ -445,6 +445,23 @@ describe("HeroPlayer glance: plan before fetch (review N1)", () => {
     expect(load).toHaveBeenCalledTimes(2);
   });
 
+  it("a request in the last tick of frame J-4 locks the planned join: exactly one clip (review R1)", () => {
+    const { container } = render(<HeroPlayer />);
+    const root = container.querySelector<HTMLElement>(".hero")!;
+    tick(2_740); // abs 32.88: frame 32 = J-4 for the f36 join
+    glance();
+    expect(root.dataset.reaction).toBe("glance-up:s1a.k36");
+    expect(s1a(container)).toEqual(["s1a.k36"]);
+    // The next ticks cross into frame 33 (J-3): the slot must stay on f36,
+    // not be re-planned onto f72 with a second fetch.
+    for (let i = 0; i < 10; i++) tick(20);
+    expect(s1a(container)).toEqual(["s1a.k36"]);
+    expect(load).toHaveBeenCalledTimes(1);
+    tick(2_000);
+    expect(s1a(container)).toEqual(["s1a.k36"]);
+    expect(load).toHaveBeenCalledTimes(1);
+  });
+
   it("repeated glances stop at 3 variants (H.264 sizes) and the egg nod still fits", () => {
     const { container } = render(<HeroPlayer />);
     const root = container.querySelector<HTMLElement>(".hero")!;

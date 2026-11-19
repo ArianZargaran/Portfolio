@@ -236,7 +236,12 @@ export default function HeroPlayer({
         root.dataset.reaction = `${id}:budget`;
         return;
       }
-      if (kind === "request") queue = request(queue, id, t).state;
+      // Schedule straight away onto the planned join (review R1): left
+      // unscheduled until the next tick, a request in the last tick of
+      // frame J-4 would be re-planned at J-3 onto J+36 and fetch a second
+      // variant while the first is never played.
+      if (kind === "request")
+        queue = step(request(queue, id, t).state, t, stateAt(t).abs, busyUntil);
     });
 
     // The base loop is always visible; an action clip covers it while on.
