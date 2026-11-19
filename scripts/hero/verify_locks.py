@@ -74,6 +74,7 @@ for lp in wanted:
         if not ok: mism.append(f"{os.path.basename(lp)} builds_on {p}")
 out["mismatches"] = mism
 out["result"] = "PASS" if not mism else "FAIL"
+os.makedirs(REPORT, exist_ok=True)  # --report may name a new directory (mkdir -p)
 json.dump(out, open(f"{REPORT}/lock_check.json", "w"), indent=1)
 print(json.dumps({k: v for k, v in out.items() if k != "locks"}, indent=1))
 for k, v in out["locks"].items(): print(k, {x: y for x, y in v.items() if x != "mismatched"})
