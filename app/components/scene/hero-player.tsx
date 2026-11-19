@@ -103,7 +103,7 @@ function ClipVideo({
 
 /**
  * Plays the hero character over the still: the typing loop, with actions
- * (nod, leg bounce) spliced in on the shared clock. All timing comes from
+ * (today the nod; S1a/S1b/T2 return when they lock) spliced in on the shared clock. All timing comes from
  * the pure schedule (stateAt/decide); this component only keeps the
  * <video> elements on the frames it asks for. Lazy chunk (see HeroMount).
  */

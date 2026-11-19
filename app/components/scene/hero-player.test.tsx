@@ -4,7 +4,11 @@
 import { act, render } from "@testing-library/react";
 
 import { ACTIONS, BASE_LOOP } from "~/scene/hero/actions";
-import { heroHotspot, intentHeroReaction } from "~/scene/hero/reaction-bus";
+import {
+  heroHotspot,
+  intentHeroReaction,
+  requestHeroReaction,
+} from "~/scene/hero/reaction-bus";
 
 import HeroPlayer from "./hero-player";
 
@@ -17,10 +21,9 @@ const fetched = (c: HTMLElement) =>
   videos(c)
     .filter((v) => v.preload === "auto")
     .map((v) => NAMES.get(v.src));
-const NAMES = new Map([
+const NAMES = new Map<string, string>([
   [BASE_LOOP.clip.sources[0].src, "typing"],
-  [ACTIONS.nod.clip.sources[0].src, "nod"],
-  [ACTIONS.bounce.clip.sources[0].src, "bounce"],
+  ...Object.values(ACTIONS).map((a) => [a.clip.sources[0].src, a.id] as const),
 ]);
 
 describe("HeroPlayer intent fetch (M3)", () => {
@@ -40,16 +43,21 @@ describe("HeroPlayer intent fetch (M3)", () => {
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
 
-    act(() => intentHeroReaction("bounce"));
-    expect(fetched(container)).toEqual(["typing", "bounce"]);
-    expect(load).toHaveBeenCalledTimes(1);
-    // typing + bounce, charged at H.264 sizes until the codec is known
-    expect(container.querySelector(".hero")?.getAttribute("data-bytes")).toBe(
-      String(445_269 + 115_915),
-    );
+    // No reaction clip is installed (S1a/S1b/T2 wait for their locks), so
+    // no reaction intent fetches anything.
+    for (const id of ["speaker", "phone", "sip"] as const)
+      act(() => intentHeroReaction(id));
+    expect(fetched(container)).toEqual(["typing"]);
+    expect(load).not.toHaveBeenCalled();
+  });
 
-    act(() => intentHeroReaction("bounce")); // already buffered: no refetch
-    expect(load).toHaveBeenCalledTimes(1);
+  it("mounts only the installed clips: typing and nod.k180", () => {
+    const { container } = render(<HeroPlayer />);
+    expect(
+      videos(container)
+        .map((v) => NAMES.get(v.src))
+        .sort(),
+    ).toEqual(["nod.k180", "typing"].sort());
   });
 
   it("ignores intents for reactions without clips, and while frozen", () => {
@@ -57,9 +65,23 @@ describe("HeroPlayer intent fetch (M3)", () => {
     act(() => intentHeroReaction("speaker")); // no clip yet
     expect(fetched(container)).toEqual(["typing"]);
     rerender(<HeroPlayer frozen />);
-    act(() => intentHeroReaction("bounce"));
+    act(() => intentHeroReaction("phone"));
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
+  });
+});
+
+describe("HeroPlayer requests without clips", () => {
+  beforeEach(() => {
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    HTMLMediaElement.prototype.pause = vi.fn();
+    HTMLMediaElement.prototype.load = vi.fn();
+  });
+
+  it("a request for a reaction without a clip fetches nothing", () => {
+    const { container } = render(<HeroPlayer />);
+    act(() => requestHeroReaction("sip"));
+    expect(fetched(container)).toEqual(["typing"]);
   });
 });
 
@@ -79,7 +101,7 @@ describe("HeroPlayer E2 egg (M4)", () => {
     act(() => heroHotspot("queen-poster", "visit"));
     expect(fetched(container)).toEqual(["typing"]);
     act(() => heroHotspot("speakers", "intent"));
-    expect(fetched(container)).toEqual(["typing", "nod"]);
+    expect(fetched(container)).toEqual(["typing", "nod.k180"]);
   });
 
   it("does nothing after leaving the hero", () => {
@@ -111,8 +133,9 @@ describe("HeroPlayer rotation prefetch flag (FEATURE_HERO_ROTATION_PREFETCH)", (
   });
   afterEach(() => vi.useRealTimers());
 
-  // Draft rotation [null, "nod", "bounce", null]: the nod's clip starts at
-  // about 32 s, so the 6 s look-ahead would fetch it from about 26 s.
+  // Draft rotation [null, "nod.k180", null, null]: the nod's clip starts at
+  // 33 s (cycle 1, f180), so the 6 s look-ahead fetches it from 27 s. The
+  // cycle-2 bounce slot is empty until S1b locks.
   it("off (default): the rotation never fetches or plays an unfetched clip", () => {
     const { container } = render(<HeroPlayer />);
     act(() => vi.advanceTimersByTime(40_000));
@@ -120,7 +143,7 @@ describe("HeroPlayer rotation prefetch flag (FEATURE_HERO_ROTATION_PREFETCH)", (
     const nod = [...container.querySelectorAll("video")].find(
       (v) =>
         NAMES.get(v.querySelector("source")?.getAttribute("src") ?? "") ===
-        "nod",
+        "nod.k180",
     )!;
     expect(play.mock.contexts).not.toContain(nod);
   });
@@ -130,14 +153,12 @@ describe("HeroPlayer rotation prefetch flag (FEATURE_HERO_ROTATION_PREFETCH)", (
     act(() => vi.advanceTimersByTime(25_000));
     expect(fetched(container)).toEqual(["typing"]);
     act(() => vi.advanceTimersByTime(3_000));
-    expect(fetched(container)).toEqual(["typing", "nod"]);
+    expect(fetched(container)).toEqual(["typing", "nod.k180"]);
   });
 
-  it("on, default rotation (no nod, review N1): only the bounce is ever buffered", () => {
+  it("on, default rotation (no nod, review N1): nothing but typing is ever buffered", () => {
     const { container } = render(<HeroPlayer rotationPrefetch />);
-    act(() => vi.advanceTimersByTime(34_000));
+    act(() => vi.advanceTimersByTime(80_000));
     expect(fetched(container)).toEqual(["typing"]);
-    act(() => vi.advanceTimersByTime(8_000));
-    expect(fetched(container)).toEqual(["typing", "bounce"]);
   });
 });

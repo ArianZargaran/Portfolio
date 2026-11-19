@@ -1,9 +1,24 @@
-import { ACTIONS, BASE_LOOP, type ActionDef } from "./actions";
-import { JOIN_V5_1 } from "./join-config";
+import {
+  fixtureFamily,
+  fixtureVariant,
+  withFixtures,
+} from "./__fixtures__/actions";
+import {
+  ACTIONS,
+  BASE_LOOP,
+  ENTRY_JOINS,
+  NOD,
+  validateAction,
+  type ActionDef,
+} from "./actions";
+import { mod } from "./clock";
+import { armEgg, initialEgg } from "./egg";
+import { JOIN_CONFIGS } from "./join-config";
 import {
   actionFrameAtBase,
   COOLDOWNS,
   earliestStart,
+  entryKs,
   initialQueue,
   joinableKs,
   LEAD_FRAMES,
@@ -17,36 +32,32 @@ import {
   type QueueEnv,
   type QueueState,
   type ReactionDef,
+  variantsOf,
 } from "./reactions";
-import { clipEndAbs, decide, stateAt } from "./schedule";
+import {
+  clipEndAbs,
+  decide,
+  occurrenceState,
+  stateAt,
+  type Occurrence,
+  type Rotation,
+} from "./schedule";
 
 const FPS = BASE_LOOP.fps;
 const N = BASE_LOOP.frames;
 const tOf = (abs: number) => abs / FPS;
 
-/* Fixture reactions with a variant at every join (as design A will ship),
-   built from the bounce clip's shape but re-targeted per join. */
+/* Fixture reactions with a variant at every join (as design A ships): 36
+   frame per-entry clips shaped like the S1a/S1b ones that wait on
+   hero-reactions-s1a-s1b-t2 (no reaction clip is installed yet). */
 const fixture = (id: ReactionDef["id"], priority: number): ReactionDef => ({
   id,
   priority,
-  variants: Object.fromEntries(
-    JOIN_V5_1.points.map((k) => [
-      k,
-      {
-        ...ACTIONS.bounce,
-        id: "bounce",
-        frames: 36,
-        spliceOffset: k,
-        enterWindow: [0, 0],
-        exitWindow: [30, 35],
-        clip: { ...ACTIONS.bounce.clip, firstFrame: 0, frames: 36 },
-      } satisfies ActionDef,
-    ]),
-  ),
+  variants: fixtureFamily("fx"),
 });
 const env: QueueEnv = {
   reactions: {
-    bounce: REACTIONS.bounce,
+    ...REACTIONS,
     speaker: fixture("speaker", 3),
     phone: fixture("phone", 3),
     sip: fixture("sip", 2),
@@ -59,12 +70,181 @@ function run(q: QueueState, from: number, to: number) {
   return q;
 }
 
-describe("registry on the current 18 s loop", () => {
-  it("bounce joins only at f72 (its clip's cut window), the nod only at f180", () => {
-    expect(joinableKs(ACTIONS.bounce)).toEqual([72]);
-    expect(joinableKs(ACTIONS.nod)).toEqual([180]);
-    expect(Object.keys(REACTIONS.bounce!.variants)).toEqual(["72"]);
-    expect(actionFrameAtBase(ACTIONS.nod, 180)).toBe(60);
+describe("registry on the locked v5_2 install (option (a))", () => {
+  it("ships no reaction clips: S1a/S1b/T2 wait for their locks", () => {
+    expect(REACTIONS).toEqual({});
+    expect(Object.keys(ACTIONS)).toEqual(["nod.k180"]);
+    for (const id of ["speaker", "phone", "sip"] as const)
+      expect(request(initialQueue(), id, 1)).toMatchObject({
+        accepted: false,
+        reason: "unknown",
+      });
+  });
+
+  it("the nod is f180 only, on every join config", () => {
+    for (const cfg of Object.values(JOIN_CONFIGS))
+      expect(joinableKs(NOD, cfg)).toEqual([180]);
+    expect(actionFrameAtBase(NOD, 180)).toBe(60);
+    expect(Object.keys(variantsOf("nod"))).toEqual(["180"]);
+  });
+});
+
+describe("once per visit", () => {
+  const once: QueueEnv = {
+    reactions: {
+      sip: {
+        id: "sip",
+        priority: 2,
+        variants: { 180: fixtureVariant(180) },
+        oncePerVisit: true,
+      },
+    },
+  };
+  it("plays at f180, then is refused for the rest of the visit", () => {
+    let q = request(initialQueue(), "sip", tOf(10), once).state;
+    for (let abs = 10; abs <= 200; abs++) q = step(q, tOf(abs), abs, 0, once);
+    expect(q.playing?.id).toBe("sip");
+    expect(q.playing?.occ.start).toBe(180);
+    expect(request(q, "sip", tOf(201), once)).toMatchObject({
+      accepted: false,
+      reason: "once",
+    });
+    for (let abs = 201; abs <= 240; abs++) q = step(q, tOf(abs), abs, 0, once);
+    expect(q.playing).toBeUndefined();
+    expect(request(q, "sip", tOf(240) + 600, once)).toMatchObject({
+      accepted: false,
+      reason: "once",
+    });
+  });
+
+  it("a refusal while frozen doesn't use up the visit's play", () => {
+    let q = setFrozen(initialQueue(), true);
+    expect(request(q, "sip", 1, once)).toMatchObject({ reason: "frozen" });
+    q = setFrozen(q, false);
+    expect(request(q, "sip", 2, once).accepted).toBe(true);
+  });
+});
+
+/*
+ * JOIN SAFETY (lock review locks_now28 §4): the full composite at f0-f144
+ * differs from f180 on the screen and spill (character 0/0), so an opaque
+ * clip baked for one join must never come up at another. These tests drive
+ * every path that can put a clip on screen (queue, egg, rotation) from every
+ * start frame and check where the clip's first frame lands.
+ */
+describe("join safety: a clip only ever comes up at its own entry join", () => {
+  const clipStartBase = (o: Occurrence) =>
+    mod(o.start + o.action.clip.firstFrame, N);
+
+  it("every installed clip validates and is joinable only at its entry", () => {
+    for (const a of Object.values(ACTIONS)) {
+      expect(validateAction(a)).toEqual([]);
+      for (const cfg of Object.values(JOIN_CONFIGS))
+        expect(joinableKs(a, cfg)).toEqual([a.entry]);
+    }
+  });
+
+  it("queue: nod v4 as a reaction starts at f180 from every request frame", () => {
+    const env1: QueueEnv = {
+      reactions: {
+        sip: { id: "sip", priority: 2, variants: variantsOf("nod") },
+      },
+    };
+    for (let at = 0; at < N; at++) {
+      let q = request(initialQueue(), "sip", tOf(at), env1).state;
+      let abs = at;
+      while (!q.playing && abs < at + 2 * N) {
+        q = step(q, tOf(abs), abs, 0, env1);
+        abs++;
+      }
+      expect(q.playing).toBeDefined();
+      expect(clipStartBase(q.playing!.occ)).toBe(180);
+    }
+  });
+
+  it("queue: per-entry variants each start on their own join, from every request frame", () => {
+    for (let at = 0; at < N; at++) {
+      let q = request(initialQueue(), "speaker", tOf(at), env).state;
+      let abs = at;
+      while (!q.playing && abs < at + 2 * N) {
+        q = step(q, tOf(abs), abs, 0, env);
+        abs++;
+      }
+      const occ = q.playing!.occ;
+      expect(clipStartBase(occ)).toBe(occ.action.entry);
+      expect(mod(abs - 1, N)).toBe(occ.action.entry);
+    }
+  });
+
+  it("queue: a registry that maps a clip to a foreign join never shows it there", () => {
+    const wrong: QueueEnv = {
+      reactions: {
+        sip: {
+          id: "sip",
+          priority: 2,
+          variants: Object.fromEntries(ENTRY_JOINS.map((k) => [k, NOD])),
+        },
+      },
+    };
+    const starts: number[] = [];
+    for (let at = 0; at < N; at += 5) {
+      let q = request(initialQueue(), "sip", tOf(at), wrong).state;
+      for (let abs = at; abs < at + 2 * N; abs++) {
+        q = step(q, tOf(abs), abs, 0, wrong);
+        if (q.playing) starts.push(clipStartBase(q.playing.occ));
+      }
+    }
+    expect(starts.filter((k) => k !== 180)).toEqual([]);
+    // The mis-keyed entries are ignored, so it still plays, at f180.
+    expect(starts.length).toBeGreaterThan(0);
+    expect(nextVariant(wrong.reactions!.sip!, 0)).toBe(NOD);
+    expect(entryKs(wrong.reactions!.sip!)).toEqual([180]);
+  });
+
+  it("egg: the nod is armed only for f180, from every frame", () => {
+    for (let abs = 0; abs < 2 * N; abs++) {
+      const e = armEgg(initialEgg(), abs, 0);
+      expect(mod(e.armed!.join, N)).toBe(180);
+      expect(clipStartBase(e.armed!.occ)).toBe(180);
+    }
+  });
+
+  it("rotation: the nod slot comes up at f180", () => {
+    const rot: Rotation = [null, "nod.k180", null, null];
+    const ups: number[] = [];
+    for (let abs = 0; abs < 4 * N; abs++)
+      if (stateAt(tOf(abs), rot).action?.clipFrame === 0) ups.push(mod(abs, N));
+    expect(ups).toEqual([180]);
+  });
+
+  it("an occurrence placed off its entry is never on screen (last-line guard)", () => {
+    for (const k of [0, 36, 72, 108, 144]) {
+      const bad: Occurrence = { action: NOD, cycle: 0, start: k - 60 + N };
+      for (let abs = bad.start; abs < bad.start + NOD.frames; abs++)
+        expect(occurrenceState(abs, bad)).toBeUndefined();
+    }
+    const q: QueueState = {
+      ...initialQueue(),
+      playing: {
+        id: "sip",
+        occ: { action: NOD, cycle: 1, start: N + 36 - 60 },
+      },
+    };
+    const r = resolveState(stateAt(tOf(N + 40), []), q);
+    expect(r.action).toBeUndefined();
+  });
+
+  it("a clip whose enter window reaches a foreign join fails validation", () => {
+    const a: ActionDef = {
+      ...fixtureVariant(36),
+      frames: 80,
+      enterWindow: [0, 40],
+      exitWindow: [70, 79],
+      clip: { ...fixtureVariant(36).clip, frames: 80 },
+    };
+    expect(validateAction(a)).toContain(
+      "fx.k36: enter window reaches the foreign join f72",
+    );
   });
 });
 
@@ -165,7 +345,7 @@ describe("freeze (WCAG 2.2.2) and the queue", () => {
 
   it("stays frozen through hover reactions: a frozen queue never schedules", () => {
     let q = setFrozen(initialQueue(), true);
-    for (const id of ["speaker", "phone", "sip", "bounce"] as const)
+    for (const id of ["speaker", "phone", "sip"] as const)
       q = request(q, id, 1, env).state;
     expect(run(q, 0, 400)).toEqual(q);
   });
@@ -178,44 +358,48 @@ describe("reactions vs the auto-rotation", () => {
     q = run(q, 370, 396);
     expect(q.playing?.id).toBe("speaker"); // joined at 396 (f180)
     const rot = stateAt(tOf(396) + 1e-6);
-    expect(rot.action?.occurrence.action.id).toBe("nod"); // suppressed below
+    expect(rot.action?.occurrence.action.id).toBe("nod.k180"); // suppressed below
     const s = resolveState(rot, q);
     expect(s.action?.occurrence.action.spliceOffset).toBe(180);
-    expect(decide(s, "base", true).show).toBe("bounce");
+    expect(decide(s, "base", true).show).toBe("fx.k180");
   });
 
   it("waits for a live rotation clip instead of cutting it", () => {
-    const rot = stateAt(tOf(2 * N + 90) + 1e-6); // the rotation bounce, live
+    const fx72 = fixtureVariant(72);
+    const rot = stateAt(
+      tOf(2 * N + 90) + 1e-6,
+      [null, "nod.k180", fx72.id, null] as Rotation,
+      BASE_LOOP,
+      withFixtures(fx72),
+    ); // a per-entry clip baked for f72, live in cycle 2
     const busy = rotationBusyUntil(rot);
-    expect(busy).toBe(2 * N + 120);
+    expect(busy).toBe(2 * N + 108);
     let q = request(initialQueue(), "speaker", tOf(2 * N + 90), env).state;
     q = step(q, tOf(2 * N + 90), 2 * N + 90, busy, env);
     expect(q.slot!.join).toBeGreaterThanOrEqual(busy);
-    expect(q.slot!.join).toBe(2 * N + 144);
+    expect(q.slot!.join).toBe(2 * N + 108);
   });
 
-  it("the current bounce reaction plays the shipped clip at f72", () => {
-    let q = request(initialQueue(), "bounce", tOf(10)).state;
-    for (let abs = 10; abs <= 80; abs++) q = step(q, tOf(abs), abs);
-    expect(q.playing?.occ.start).toBe(0);
-    expect(clipEndAbs(q.playing!.occ)).toBe(120);
-    const s = resolveState(stateAt(tOf(80) + 1e-6), q);
-    expect(s.action?.clipFrame).toBe(8);
+  it("a per-entry reaction plays the clip baked for the next join", () => {
+    let q = request(initialQueue(), "phone", tOf(10), env).state;
+    for (let abs = 10; abs <= 50; abs++) q = step(q, tOf(abs), abs, 0, env);
+    expect(q.playing?.occ.action.id).toBe("fx.k36");
+    expect(q.playing?.occ.start).toBe(36);
+    expect(clipEndAbs(q.playing!.occ)).toBe(72);
+    const s = resolveState(stateAt(tOf(50) + 1e-6), q);
+    expect(s.action?.clipFrame).toBe(14);
   });
 });
 
 describe("nextVariant (intent fetch target)", () => {
   it("is the clip for the next reachable join", () => {
-    const def = REACTIONS.bounce!;
-    expect(nextVariant(def, 0)).toBe(ACTIONS.bounce);
-    // design A: a variant per join, the nearest one past the lead wins
-    const multi = {
-      ...def,
-      variants: { 72: ACTIONS.bounce, 180: ACTIONS.nod },
-    };
-    expect(nextVariant(multi, 60)).toBe(ACTIONS.bounce);
-    expect(nextVariant(multi, 70)).toBe(ACTIONS.nod); // 72 is inside the lead
-    expect(nextVariant(multi, 200)).toBe(ACTIONS.bounce); // wraps to next cycle
+    const def = env.reactions!.speaker!;
+    expect(nextVariant(def, 0)?.id).toBe("fx.k36");
+    expect(nextVariant(def, 30)?.id).toBe("fx.k36");
+    expect(nextVariant(def, 33)?.id).toBe("fx.k72"); // 36 is inside the lead
+    expect(nextVariant(def, 200)?.id).toBe("fx.k0"); // wraps to next cycle
+    const nodOnly = { ...def, variants: variantsOf("nod") };
+    expect(nextVariant(nodOnly, 0)).toBe(NOD);
     expect(nextVariant({ ...def, variants: {} }, 0)).toBeUndefined();
   });
 });

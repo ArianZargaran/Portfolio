@@ -8,6 +8,7 @@ function scene() {
       <nav class="scene_hits">
         <a class="scene_hit" href="/podcast" data-object="speakers"><span>Podcast</span></a>
         <a class="scene_hit" href="/about" data-object="queen-poster"><span>About me</span></a>
+        <a class="scene_hit" href="/work" data-object="laptop"><span>Work</span></a>
       </nav>
     </div>
     <button id="outside">x</button>`;
@@ -69,15 +70,31 @@ describe("hero triggers (M5)", () => {
     off();
   });
 
-  it("hotspots without a reaction still report visits (E2 egg)", () => {
+  it("hotspots without a reaction still report visits", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: true });
-    over(hit("queen-poster"));
+    over(hit("laptop"));
     vi.advanceTimersByTime(TRIGGERS.dwellMs);
-    expect(s.hotspot).toHaveBeenCalledWith("queen-poster", "visit");
+    expect(s.hotspot).toHaveBeenCalledWith("laptop", "visit");
     expect(s.intent).not.toHaveBeenCalled();
     expect(s.request).not.toHaveBeenCalled();
     off();
+  });
+
+  it("queen-poster: a dwell-confirmed visit (for the E2 egg) but no reaction until S1a locks", () => {
+    expect(HOTSPOT_REACTIONS).not.toHaveProperty("queen-poster");
+    for (const how of ["hover", "focus"] as const) {
+      const s = sink();
+      const off = wireTriggers(scene(), s, { hoverOK: true });
+      if (how === "hover") over(hit("queen-poster"));
+      else hit("queen-poster").focus();
+      vi.advanceTimersByTime(TRIGGERS.dwellMs);
+      expect(s.hotspot).toHaveBeenCalledWith("queen-poster", "visit");
+      expect(s.intent).not.toHaveBeenCalled();
+      expect(s.request).not.toHaveBeenCalled();
+      off();
+      document.body.innerHTML = "";
+    }
   });
 
   it("no hover intent on touch or on devices that cannot hover", () => {
@@ -114,48 +131,8 @@ describe("hero triggers (M5)", () => {
     off();
   });
 
-  it("idle 20 s: one bounce per idle period; 45 s on the page: sip", () => {
-    const s = sink();
-    const off = wireTriggers(scene(), s, { hoverOK: true });
-    vi.advanceTimersByTime(19_000);
-    window.dispatchEvent(new Event("keydown"));
-    vi.advanceTimersByTime(19_000);
-    expect(s.request).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1_000);
-    expect(s.request).toHaveBeenCalledWith("bounce");
-    vi.advanceTimersByTime(6_000); // 45 s since wiring
-    expect(s.request).toHaveBeenLastCalledWith("sip");
-    vi.advanceTimersByTime(60_000);
-    expect(s.request).toHaveBeenCalledTimes(2);
-    off();
-  });
-
-  it("tab return after 30 s hidden: bounce", () => {
-    const s = sink();
-    let t = 0;
-    let hidden = false;
-    Object.defineProperty(document, "hidden", {
-      configurable: true,
-      get: () => hidden,
-    });
-    const off = wireTriggers(scene(), s, { hoverOK: true, now: () => t });
-    const flip = (h: boolean) => {
-      hidden = h;
-      document.dispatchEvent(new Event("visibilitychange"));
-    };
-    flip(true);
-    t = 10_000;
-    flip(false);
-    expect(s.request).not.toHaveBeenCalled();
-    flip(true);
-    t = 41_000;
-    flip(false);
-    expect(s.request).toHaveBeenCalledWith("bounce");
-    off();
-    Reflect.deleteProperty(document, "hidden");
-  });
-
-  it("back in view after being scrolled away: bounce", () => {
+  it("no idle, doze, tab-return, back-in-view or time-on-page requests on this install (S1b/T2 unlocked, sip has no clip)", () => {
+    expect(Object.keys(TRIGGERS).sort()).toEqual(["dwellMs", "inViewRatio"]);
     const s = sink();
     let cb: IntersectionObserverCallback = () => undefined;
     class FakeIO {
@@ -169,15 +146,63 @@ describe("hero triggers (M5)", () => {
       IntersectionObserver: FakeIO,
       document,
     }) as Window;
+    let hidden = false;
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => hidden,
+    });
     const off = wireTriggers(scene(), s, { hoverOK: false, win });
     const io = {} as IntersectionObserver;
     const see = (r: number) =>
       cb([{ intersectionRatio: r } as IntersectionObserverEntry], io);
-    see(1); // initial: in view, nothing
+    see(1);
+    vi.advanceTimersByTime(120_000); // idle 20 s, doze 45 s, sip 90 s: nothing
+    hidden = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(60_000);
+    hidden = false;
+    document.dispatchEvent(new Event("visibilitychange")); // tab return
     see(0.2);
+    see(0.6); // back in view
+    vi.advanceTimersByTime(120_000);
     expect(s.request).not.toHaveBeenCalled();
-    see(0.6);
-    expect(s.request).toHaveBeenCalledWith("bounce");
+    expect(s.intent).not.toHaveBeenCalled();
     off();
+    Reflect.deleteProperty(document, "hidden");
+  });
+
+  it("scrolled out of view: leave (disarms the E2 egg); a hidden tab cancels a pending dwell", () => {
+    const s = sink();
+    let cb: IntersectionObserverCallback = () => undefined;
+    class FakeIO {
+      constructor(c: IntersectionObserverCallback) {
+        cb = c;
+      }
+      observe = vi.fn();
+      disconnect = vi.fn();
+    }
+    const win = Object.assign(Object.create(window), {
+      IntersectionObserver: FakeIO,
+      document,
+    }) as Window;
+    let hidden = false;
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => hidden,
+    });
+    const off = wireTriggers(scene(), s, { hoverOK: false, win });
+    const io = {} as IntersectionObserver;
+    const see = (r: number) =>
+      cb([{ intersectionRatio: r } as IntersectionObserverEntry], io);
+    see(1);
+    see(0.2);
+    expect(s.hotspot).toHaveBeenCalledWith("", "leave");
+    hit("speakers").focus();
+    hidden = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+    vi.advanceTimersByTime(TRIGGERS.dwellMs);
+    expect(s.intent).not.toHaveBeenCalled();
+    off();
+    Reflect.deleteProperty(document, "hidden");
   });
 });

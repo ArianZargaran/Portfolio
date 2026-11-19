@@ -4,8 +4,10 @@
 
 type Conn = { effectiveType?: string; saveData?: boolean } | null;
 
+// Registry ids: the base "typing" and the per-entry actions (<family>.k<join>;
+// installed today: nod.k180); built names are <id>.<codec>-<hash>.mp4.
 const clipOf = (url: string) =>
-  (url.match(/\/(typing|nod|bounce)\.[^/]*\.mp4/) ?? [])[1] ?? url;
+  (url.match(/\/(typing|[a-z0-9]+\.k\d+)\.[^/]*\.mp4/) ?? [])[1] ?? url;
 
 function visitHome(conn: Conn, opts: { noTiming?: boolean } = {}) {
   const requested: string[] = [];
@@ -47,14 +49,26 @@ describe("hero motion (stub clips)", () => {
       .should("be.gt", 0);
   });
 
-  it("E2 intent (poster visit, then focus on the speakers) fetches the nod, within the budget", () => {
+  it("E2 intent (poster visit, then focus on the speakers) fetches only the nod, within the budget", () => {
     const requested = visitHome({ effectiveType: "4g" });
     cy.get(".hero[data-state=live]", { timeout: 15000 });
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
     cy.wait(400);
+    // No poster reaction on the locked install (S1a is not locked): the
+    // poster's dwell fetches nothing, it only counts as the egg's first visit.
+    // (A media element may issue several range requests per clip, so compare
+    // the set of clips requested, not the request count.)
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r)]).to.deep.equal(["typing"]),
+    );
     cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
-    cy.wrap(requested).should("include", "nod");
+    cy.wrap(requested).should("include", "nod.k180");
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
+        "nod.k180",
+      ]),
+    );
     cy.get(".hero")
       .invoke("attr", "data-bytes")
       .then(Number)

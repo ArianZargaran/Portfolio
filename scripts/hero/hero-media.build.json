@@ -1,12 +1,64 @@
 {
+ "$comment": "Build metadata for the hero clips (never served). Locked v5_2 install (Ari t1003s5480, option (a) via Atlas): typing (LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2) and nod.k180 (LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4) only, built by scripts/hero/variants.py --loop v5_2 (M9b), proofs in $HERO_REPORT/pipeline/. S1a/S1b/T2 are not locked and not installed (local branch hero-reactions-s1a-s1b-t2). Bounce v2 is locked inside the v5_2 record as an asset only and does not ship.",
  "clips": {
+  "nod.k180.av1.mp4": {
+   "source_seq": "nod_v4",
+   "join": 180,
+   "first_frame": 60,
+   "frames": 72,
+   "fps": 12,
+   "ffmpeg_args": [
+    "-c:v",
+    "libsvtav1",
+    "-preset",
+    "4",
+    "-crf",
+    "32",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart"
+   ],
+   "built_from": "pipeline/install-v5_2/enc/nod_v4.k180.ecf4da54.av1.mp4",
+   "bytes": 115975,
+   "sha256": "ecf4da543835e2bf0f2be30827c3af321599daf5884a3d5a1acbe0f65c813f8a"
+  },
+  "nod.k180.h264.mp4": {
+   "source_seq": "nod_v4",
+   "join": 180,
+   "first_frame": 60,
+   "frames": 72,
+   "fps": 12,
+   "ffmpeg_args": [
+    "-c:v",
+    "libx264",
+    "-preset",
+    "veryslow",
+    "-crf",
+    "21",
+    "-g",
+    "72",
+    "-pix_fmt",
+    "yuv420p",
+    "-profile:v",
+    "high",
+    "-level",
+    "3.2",
+    "-movflags",
+    "+faststart"
+   ],
+   "built_from": "pipeline/install-v5_2/enc/nod_v4.k180.23373fb5.h264.mp4",
+   "bytes": 147578,
+   "sha256": "23373fb57fa2e4313e5e2633190334e5fcd411b0d94468daae5c9ba0bbc96dee"
+  },
   "typing.av1.mp4": {
    "source_seq": "typing",
+   "join": 0,
    "first_frame": 0,
    "frames": 216,
    "fps": 12,
-   "bytes": 333271,
-   "sha256": "daf42347d411f519f76b852ae59e86106846bf7e0683dfd093580c012f818a4f",
    "ffmpeg_args": [
     "-c:v",
     "libsvtav1",
@@ -20,15 +72,17 @@
     "yuv420p",
     "-movflags",
     "+faststart"
-   ]
+   ],
+   "built_from": "pipeline/m9b-dryrun-v5_2/enc/typing.k0.35717b12.av1.mp4",
+   "bytes": 332028,
+   "sha256": "35717b124722bb6bde258bbbc73b523510b5029c811629376d473d202d3fe701"
   },
   "typing.h264.mp4": {
    "source_seq": "typing",
+   "join": 0,
    "first_frame": 0,
    "frames": 216,
    "fps": 12,
-   "bytes": 445269,
-   "sha256": "5fb1a7b2c160eb32ebdd7849fa9084a9831b13a9765f9ec1c36ae97810978cda",
    "ffmpeg_args": [
     "-c:v",
     "libx264",
@@ -46,103 +100,10 @@
     "3.2",
     "-movflags",
     "+faststart"
-   ]
-  },
-  "nod.av1.mp4": {
-   "source_seq": "e2",
-   "first_frame": 48,
-   "frames": 74,
-   "fps": 12,
-   "bytes": 164081,
-   "sha256": "2d89c9cf3e8bfb51fdcc518edb7c8520d29f14f06219f59ac75e96ce84b74a99",
-   "ffmpeg_args": [
-    "-c:v",
-    "libsvtav1",
-    "-preset",
-    "4",
-    "-crf",
-    "30",
-    "-g",
-    "72",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart"
-   ]
-  },
-  "nod.h264.mp4": {
-   "source_seq": "e2",
-   "first_frame": 48,
-   "frames": 74,
-   "fps": 12,
-   "bytes": 217147,
-   "sha256": "372c811667c8210d3751797f40ed302551cd24c32a154c89d45f55b9bc171a61",
-   "ffmpeg_args": [
-    "-c:v",
-    "libx264",
-    "-preset",
-    "veryslow",
-    "-crf",
-    "20",
-    "-g",
-    "72",
-    "-pix_fmt",
-    "yuv420p",
-    "-profile:v",
-    "high",
-    "-level",
-    "3.2",
-    "-movflags",
-    "+faststart"
-   ]
-  },
-  "bounce.av1.mp4": {
-   "source_seq": "bounce",
-   "first_frame": 72,
-   "frames": 48,
-   "fps": 12,
-   "bytes": 92800,
-   "sha256": "2732c00d4012171b1327a66c38c1094e5e80bfdc42b8e6a826b977d7a0299918",
-   "ffmpeg_args": [
-    "-c:v",
-    "libsvtav1",
-    "-preset",
-    "4",
-    "-crf",
-    "30",
-    "-g",
-    "72",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart"
-   ]
-  },
-  "bounce.h264.mp4": {
-   "source_seq": "bounce",
-   "first_frame": 72,
-   "frames": 48,
-   "fps": 12,
-   "bytes": 115915,
-   "sha256": "3bacca7b7bbf182db5cf9ca127172c988ee65c3753d3c1faf8d1ba55c3b1a0b5",
-   "ffmpeg_args": [
-    "-c:v",
-    "libx264",
-    "-preset",
-    "veryslow",
-    "-crf",
-    "20",
-    "-g",
-    "72",
-    "-pix_fmt",
-    "yuv420p",
-    "-profile:v",
-    "high",
-    "-level",
-    "3.2",
-    "-movflags",
-    "+faststart"
-   ]
+   ],
+   "built_from": "pipeline/m9b-dryrun-v5_2/enc/typing.k0.a9b3d497.h264.mp4",
+   "bytes": 442525,
+   "sha256": "a9b3d4975fa8ca42cc15e6b7380e0c41a4ea842659a7f7023ffd9044b3c66080"
   }
  },
  "rect_xywh": [
@@ -156,8 +117,27 @@
   900
  ],
  "sources": {
-  "typing": "designs/painted_char_typing_t959/v5_1/frames/typing (LOCK_PAINTED_CHAR_TYPING_LOOP_V5_1)",
-  "bounce": "designs/painted_char_typing_t959/v5_1/frames/bounce (same lock)",
-  "nod": "designs/painted_char_action_E2_headbang_t960/v3/frames (LOCK_PAINTED_CHAR_ACTION_E2_NOD_V3)"
+  "typing": "designs/painted_char_typing_t995/v5_2/frames/typing (LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2)",
+  "nod_v4": "designs/painted_char_action_E2_nod_t995/v4/layers_per_frame over the v5_2 loop, sub-clip i60-131, entry f180 only (LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4)"
+ },
+ "locks": {
+  "$comment": "Verified against portfolio-brain tools/locks_now28.sha (sha256 7c51a34fd9a085f9ed904f5dcbc3acfdab01690d5b35330a8322a3b834ba3927, 68 locks; review designs/review_locks_now28/REVIEW.md PASS WITH NOTES). Encodes reused: the frames re-rendered from the locked files are byte-identical to the frames these encodes were made from (lock-v5_2/REPORT.md).",
+  "typing": {
+   "record": "LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2",
+   "file": "scenes/home-office.desk.coding.dusk.clear/m2/variants/char_painted/LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2.json",
+   "sha256": "14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712",
+   "note": "bounce v2 (frames/bounce) is inside this record; locked as an asset only, not built"
+  },
+  "nod_v4": {
+   "record": "LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4",
+   "file": "scenes/home-office.desk.coding.dusk.clear/m2/variants/char_painted/LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4.json",
+   "sha256": "08dcd66c76b505ae386532870beabbae7ace72b27c576a88cf7e53a5375727dc"
+  },
+  "poster": {
+   "record": "LOCK_POSTER_M2_V3_R2",
+   "file": "scenes/home-office.desk.coding.dusk.clear/m2/variants/walls_top_m2/LOCK_POSTER_M2_V3_R2.json",
+   "sha256": "0e49dc873737a05818cd0c624f810aa2127664a4f30e7e76b9f0227f5797e5a0",
+   "note": "revision 2 of LOCK_POSTER_M2_V3 (record field), relocked against wt_tmpl4_poster_recreated.py (Ari t1005s5485); output pins unchanged, so no plate or clip changes. Revision 1 LOCK_POSTER_M2_V3.json (dbee17ff2adbdda9829a8d1e9e251d4c77dbad464f9033a883342a24f4a02c77) stays beside it untouched."
+  }
  }
 }

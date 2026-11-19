@@ -11,8 +11,10 @@
  * Once a clip would exceed the budget it is not fetched, and a reaction
  * that needs it does not play (the still and the loop carry on).
  *
- * "MB" here follows the plan's KiB arithmetic: 576 KiB today (typing 325.5 +
- * nod 160.2 + bounce 90.6) - nod in rotation 160 + MVP 330 = 746 -> 750 KiB.
+ * "MB" here follows the plan's KiB arithmetic (576 KiB at M3 - nod in
+ * rotation 160 + MVP 330 = 746 -> 750 KiB). The locked v5_2 install
+ * (typing + nod.k180 only) has a worst case of 448,003 B AV1 / 590,103 B
+ * H.264 against these 768,000 / 993,280 B (check:media).
  */
 import type { Clip, ClipSource } from "./actions";
 

@@ -27,8 +27,30 @@
  *   recorded like a reaction start, so reactions also wait for it.
  * - E2 (the poster -> speaker egg) is not a queued reaction: it is armed
  *   outside the queue (M4) so it can never block another reaction.
+ * - Once per visit: a reaction marked `oncePerVisit` is refused after it
+ *   has started once, whatever triggered it (kept for the T2 doze, which
+ *   returns with its clip; see below).
+ * - Join safety (lock review locks_now28 §4): every clip is a baked opaque
+ *   crop that is clean only at its own entry join; the full composite at
+ *   the other joins differs on the screen and spill. A clip is therefore
+ *   only ever scheduled at a join k equal to its `entry` (`joinableKs`), and
+ *   `step` refuses to start a variant whose entry is not the join it lands
+ *   on, whatever the registry says.
+ *
+ * Installed reactions: none yet. The S1a glance-up (queen poster), S1b
+ * strong bounce (idle / return) and T2 doze (45 s) are not locked
+ * (t1003s5480 locked only the v5_2 loop, nod v4 and bounce v2), so their
+ * clips, triggers and tests are kept on the local branch
+ * `hero-reactions-s1a-s1b-t2` and the queue refuses every request as
+ * "unknown" until clips are registered here. The E2 nod is not a reaction.
  */
-import { ACTIONS, BASE_LOOP, cutWindows, type ActionDef } from "./actions";
+import {
+  ACTIONS,
+  BASE_LOOP,
+  cutWindows,
+  type ActionDef,
+  type ActionFamily,
+} from "./actions";
 import { mod } from "./clock";
 import { HERO_JOIN, nextJoinAbs, type JoinConfig } from "./join-config";
 import {
@@ -38,18 +60,27 @@ import {
   type ScheduleState,
 } from "./schedule";
 
-/** Reaction ids (PLAN §3). Only `bounce` has media today; T6/S5/S4 are planned. */
-export type ReactionId = "bounce" | "speaker" | "phone" | "sip";
+/**
+ * Reaction ids (PLAN §3). T6/S5/S4 (speaker, phone, sip) are typed and get
+ * entries when their clips exist. `glance-up` (S1a), `strong-bounce` (S1b)
+ * and `doze` (T2) come back with their clips from hero-reactions-s1a-s1b-t2.
+ */
+export type ReactionId = "speaker" | "phone" | "sip";
 
 export interface ReactionDef {
   id: ReactionId;
-  /** Higher wins the queue slot (PLAN §3: bounce 1, sip 2, speaker/phone 3). */
+  /**
+   * Higher wins the queue slot (PLAN §3: idle/return 1, timers 2, hotspots 3):
+   * sip 2, speaker / phone 3.
+   */
   priority: number;
   /**
    * Clip to cut in at each join point (base frame k). Design A: one baked
-   * variant per entry; today's clips cover a single join each.
+   * variant per entry, each clean only at its own join.
    */
   variants: Partial<Record<number, ActionDef>>;
+  /** Refused after its first start in this visit (page load). */
+  oncePerVisit?: boolean;
 }
 
 /** Action frame shown at base frame k (inverse of the splice mapping). */
@@ -59,25 +90,55 @@ export const actionFrameAtBase = (
   loopFrames = BASE_LOOP.frames,
 ): number => mod(k - a.spliceOffset, loopFrames);
 
-/** Join points where `a` can cut in without a pop (its enter cut window). */
+/**
+ * Join points where `a` can cut in without a pop: its own `entry` join only
+ * (design A; the screen differs at every other join), and only if that join
+ * is in the config and inside the clip's enter cut window. Never more than
+ * one point.
+ */
 export function joinableKs(
   a: ActionDef,
   cfg: JoinConfig = HERO_JOIN,
 ): number[] {
   const { enter } = cutWindows(a);
   return cfg.points.filter((k) => {
+    if (k !== a.entry) return false;
     const i = actionFrameAtBase(a, k, cfg.loopFrames);
     return i >= enter[0] && i <= enter[1] && i < a.frames;
   });
 }
 
-const variantsFor = (a: ActionDef, cfg: JoinConfig = HERO_JOIN) =>
-  Object.fromEntries(joinableKs(a, cfg).map((k) => [k, a]));
+/**
+ * Join k -> clip for every per-entry variant of `family` that can cut in
+ * at k (its own entry, if that is a join point of the active config).
+ */
+export const variantsOf = (
+  family: ActionFamily,
+  cfg: JoinConfig = HERO_JOIN,
+): Partial<Record<number, ActionDef>> =>
+  Object.fromEntries(
+    Object.values(ACTIONS)
+      .filter((a) => a.family === family)
+      .flatMap((a) => joinableKs(a, cfg).map((k) => [k, a] as const)),
+  );
 
-/** Registry. With the v5_1 loop only the bounce has a clean join (f72). */
-export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {
-  bounce: { id: "bounce", priority: 1, variants: variantsFor(ACTIONS.bounce) },
-};
+/**
+ * Registry (v5_2, design A). Empty on this install: the only installed
+ * action is the nod, which is the E2 egg (egg.ts), not a reaction. Entries
+ * come back with their locked clips (hero-reactions-s1a-s1b-t2:
+ * glance-up = variantsOf("s1a"), strong-bounce = variantsOf("s1b"),
+ * doze = variantsOf("t2"), oncePerVisit).
+ */
+export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {};
+
+/**
+ * Join points a reaction may be scheduled at: the registry keys whose clip
+ * is baked for that very join (join safety; a mis-keyed variant is ignored).
+ */
+export const entryKs = (def: ReactionDef): number[] =>
+  Object.keys(def.variants)
+    .map(Number)
+    .filter((k) => def.variants[k]?.entry === k);
 
 export const COOLDOWNS = { sameS: 30, gapS: 6, perMinute: 6 } as const;
 /** Frames between locking a join and cutting in (seek + first decoded frame). */
@@ -115,7 +176,13 @@ export type RequestResult =
   | {
       accepted: false;
       state: QueueState;
-      reason: "frozen" | "unknown" | "cooldown" | "outranked" | "locked";
+      reason:
+        | "frozen"
+        | "unknown"
+        | "cooldown"
+        | "once"
+        | "outranked"
+        | "locked";
     };
 
 export interface QueueEnv {
@@ -135,6 +202,8 @@ export function request(
   if (!def || !Object.keys(def.variants).length)
     return { accepted: false, state: q, reason: "unknown" };
   const last = q.lastStart[id];
+  if (def.oncePerVisit && (last !== undefined || q.playing?.id === id))
+    return { accepted: false, state: q, reason: "once" };
   if (last !== undefined && t - last < COOLDOWNS.sameS)
     return { accepted: false, state: q, reason: "cooldown" };
   if (q.playing?.id === id)
@@ -200,10 +269,13 @@ export function step(
       next.playing ? clipEndAbs(next.playing.occ) : 0,
       Math.ceil(earliestStart(next, t) * fps - (t * fps - abs)),
     );
-    const ks = Object.keys(def.variants).map(Number);
-    const join = nextJoinAbs(from, ks, cfg.loopFrames);
+    const join = nextJoinAbs(from, entryKs(def), cfg.loopFrames);
     if (join === undefined) return { ...next, slot: undefined };
     const action = def.variants[mod(join, cfg.loopFrames)]!;
+    // Join safety: a clip starts only at its own entry join (never at a
+    // foreign join, where the screen in the baked crop would pop).
+    if (action.entry !== mod(join, cfg.loopFrames))
+      return { ...next, slot: undefined };
     const occ: Occurrence = {
       action,
       cycle: Math.floor(join / cfg.loopFrames),
@@ -237,8 +309,7 @@ export function nextVariant(
   abs: number,
   cfg: JoinConfig = HERO_JOIN,
 ): ActionDef | undefined {
-  const ks = Object.keys(def.variants).map(Number);
-  const join = nextJoinAbs(abs + LEAD_FRAMES, ks, cfg.loopFrames);
+  const join = nextJoinAbs(abs + LEAD_FRAMES, entryKs(def), cfg.loopFrames);
   return join === undefined
     ? undefined
     : def.variants[mod(join, cfg.loopFrames)];
@@ -276,6 +347,18 @@ export function rotationBusyUntil(rotation: ScheduleState): number {
   const a = rotation.action;
   return a && a.clipFrame >= 0 ? clipEndAbs(a.occurrence) : 0;
 }
+
+/**
+ * Cooldown ledger key of a clip: the reaction that plays the same art, so a
+ * rotation play and that reaction share the 30 s same-reaction cooldown
+ * (every per-entry variant of a family counts as one reaction). The nod is
+ * no reaction; it keeps its own key.
+ */
+export const FAMILY_REACTION: Record<ActionFamily, ReactionId | "nod"> = {
+  nod: "nod",
+};
+export const cooldownKey = (a: ActionDef): string =>
+  FAMILY_REACTION[a.family] ?? a.family;
 
 /** Decision for one rotation occurrence, made once when it first appears. */
 export interface RotationGate {
@@ -318,6 +401,7 @@ export function gateRotation(
     if (!fetched(occ.action.id) && rotation.action!.clipFrame < 0)
       return { queue: q, gate, rotation: off };
     const id = occ.action.id;
+    const key = cooldownKey(occ.action);
     const startAbs = occ.start + occ.action.clip.firstFrame;
     const tStart = t + (startAbs - rotation.abs) / fps;
     const allowed =
@@ -325,12 +409,12 @@ export function gateRotation(
       !q.playing &&
       !q.slot?.locked &&
       fetched(id) &&
-      cooldownAllows(q, id, tStart);
+      cooldownAllows(q, key, tStart);
     gate = { start: occ.start, allowed };
     if (allowed)
       q = {
         ...q,
-        lastStart: { ...q.lastStart, [id]: tStart },
+        lastStart: { ...q.lastStart, [key]: tStart },
         starts: [...q.starts.filter((x) => tStart - x < 60), tStart],
       };
   }

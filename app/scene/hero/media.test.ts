@@ -15,7 +15,7 @@ describe("hero media placement", () => {
   });
 
   it("feather stays inside the static margin around the animated area", () => {
-    // Animated union bbox of typing, bounce and E2 (hero-encoding-report/regions.json).
+    // Animated union bbox of typing, the v5_1 bounce and E2 (hero-encoding-report/regions.json); the v5_2 clips use the same rect.
     const anim = { x1: 197, y1: 295, x2: 620, y2: 814 };
     const r = HERO_RECT;
     const margins = [

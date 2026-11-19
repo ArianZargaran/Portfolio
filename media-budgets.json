@@ -1,18 +1,23 @@
 {
-  "$comment": "Hero media byte caps (bytes, 1 kB = 1000 B), checked by scripts/ci/check-media.mjs. PLAN v3.3 / BUILD_ORDER M8: every reaction clip <= 120 kB AV1 / 160 kB H.264. The base loop has its own cap. Exceptions are explicit, carry a reason, and get a tight cap so they can't grow.",
+  "$comment": "Hero media byte caps (bytes, 1 kB = 1000 B), checked by scripts/ci/check-media.mjs. PLAN v3.3 / BUILD_ORDER M8: every reaction clip <= 120 kB AV1 / 160 kB H.264. The base loop has its own cap. Exceptions are explicit, carry a reason, and get a tight cap so they can't grow. The E2 nod exception is gone (v5_2 install): nod.k180 is encoded at AV1 crf 32 / H.264 crf 21 (116.0 / 147.6 kB) and fits the reaction cap.",
   "dir": "app/scene/hero/media",
   "manifest": "scripts/hero/hero-media.build.json",
   "caps": {
-    "base": { "av1": 340000, "h264": 455000 },
-    "reaction": { "av1": 120000, "h264": 160000 }
-  },
-  "roles": { "typing": "base" },
-  "exceptions": {
-    "nod": {
-      "av1": 165000,
-      "h264": 218000,
-      "reason": "E2 v3 nod predates the M8 cap; re-encoded to the cap in M9b (Track C, after the art locks)"
+    "base": {
+      "av1": 340000,
+      "h264": 455000
+    },
+    "reaction": {
+      "av1": 120000,
+      "h264": 160000
     }
   },
-  "visitBudget": { "av1": 768000, "h264": 993280 }
+  "roles": {
+    "typing": "base"
+  },
+  "exceptions": {},
+  "visitBudget": {
+    "av1": 768000,
+    "h264": 993280
+  }
 }

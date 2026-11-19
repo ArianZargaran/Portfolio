@@ -145,7 +145,7 @@ await run("normal", {}, async (page, r) => {
   await page
     .locator(".scene_hits--laptop")
     .screenshot({ path: `${OUT}/02b_live_typing_scene.png` });
-  // Nod core runs t = 33.1-37.1 s after the clock starts (cycle 1, base f120 + i 61..109).
+  // Nod clip (nod.k180, i60-131) runs t = 33-39 s after the clock starts (cycle 1, cut in at f180).
   const clockStart = await page.evaluate(() => performance.timeOrigin);
   void clockStart;
   const waitUntilShown = async (id, timeout) => {
@@ -155,7 +155,7 @@ await run("normal", {}, async (page, r) => {
       { timeout, polling: 100 },
     );
   };
-  await waitUntilShown("nod", 45000);
+  await waitUntilShown("nod.k180", 45000);
   await page.waitForTimeout(1500);
   r.at_nod = await heroState(page);
   await page.screenshot({ path: `${OUT}/03_live_nod.png` });
@@ -165,11 +165,8 @@ await run("normal", {}, async (page, r) => {
   });
   await waitUntilShown("base", 10000);
   r.nod_returned_to_base = true;
-  await waitUntilShown("bounce", 20000);
-  await page.waitForTimeout(700);
-  r.at_bounce = await heroState(page);
-  await page.screenshot({ path: `${OUT}/04_live_bounce.png` });
-  await waitUntilShown("base", 10000);
+  // No cycle-2 bounce on the locked v5_2 install (S1b is not locked; it
+  // returns with hero-reactions-s1a-s1b-t2).
   // Hit areas still work on top of the clip: click the laptop (Work).
   await page.mouse.click(540, 500);
   await page.waitForURL("**/work", { timeout: 10000 });

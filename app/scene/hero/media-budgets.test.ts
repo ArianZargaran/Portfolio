@@ -2,7 +2,7 @@
 /* M8: the media byte check (scripts/ci/check-media.mjs) passes on the
    shipped clips and fails on an oversize fixture. */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -18,6 +18,13 @@ describe("check-media (M8)", () => {
     expect(r.status).toBe(0);
   });
 
+  it("has no exceptions (the nod fits the reaction cap since the v5_2 install)", () => {
+    const b = JSON.parse(readFileSync("media-budgets.json", "utf8")) as {
+      exceptions: Record<string, unknown>;
+    };
+    expect(b.exceptions).toEqual({});
+  });
+
   describe("fixtures", () => {
     let dir: string;
     beforeEach(() => {
@@ -29,15 +36,34 @@ describe("check-media (M8)", () => {
 
     it("fails on a reaction clip over 120 kB (AV1)", () => {
       clip("typing.av1.mp4", 300_000);
-      clip("bounce.av1.mp4", 120_001);
+      clip("fx.k72.av1.mp4", 120_001);
       const r = run("--dir", dir, "--no-manifest");
       expect(r.status).toBe(1);
-      expect(r.stdout).toMatch(/FAIL bounce\.av1\.mp4: 120\.0 kB \/ 120\.0 kB/);
+      expect(r.stdout).toMatch(
+        /FAIL fx\.k72\.av1\.mp4: 120\.0 kB \/ 120\.0 kB/,
+      );
     });
 
-    it("fails when an exception grows past its own cap", () => {
+    it("fails on a reaction clip over 160 kB (H.264), the nod included", () => {
+      clip("nod.k180.h264.mp4", 160_001);
+      const r = run("--dir", dir, "--no-manifest");
+      expect(r.status).toBe(1);
+      expect(r.stdout).toMatch(
+        /FAIL nod\.k180\.h264\.mp4: 160\.0 kB \/ 160\.0 kB \(reaction\)/,
+      );
+    });
+
+    it("fails when an explicit exception grows past its own cap", () => {
+      const budgets = JSON.parse(readFileSync("media-budgets.json", "utf8"));
+      budgets.exceptions = {
+        nod: { av1: 165_000, h264: 218_000, reason: "fixture" },
+      };
+      const file = path.join(dir, "budgets.json");
+      writeFileSync(file, JSON.stringify(budgets));
       clip("nod.h264.mp4", 218_001);
-      expect(run("--dir", dir, "--no-manifest").status).toBe(1);
+      const r = run("--budgets", file, "--dir", dir, "--no-manifest");
+      expect(r.status).toBe(1);
+      expect(r.stdout).toMatch(/FAIL nod\.h264\.mp4: .*exception: fixture/);
     });
 
     it("counts one variant per action toward the worst-case visit", () => {

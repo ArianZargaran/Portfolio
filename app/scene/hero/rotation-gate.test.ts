@@ -1,10 +1,11 @@
-import { ACTIONS, BASE_LOOP } from "./actions";
+import { fixtureVariant, withFixtures } from "./__fixtures__/actions";
+import { BASE_LOOP } from "./actions";
 import {
   COOLDOWNS,
+  cooldownAllows,
   gateRotation,
   initialQueue,
   initialRotationGate,
-  request,
   rotationBusyUntil,
   type QueueState,
   type RotationGate,
@@ -19,8 +20,15 @@ import {
 const FPS = BASE_LOOP.fps;
 const N = BASE_LOOP.frames;
 const tOf = (abs: number) => abs / FPS;
+/* The default rotation has no cycle-2 clip until S1b locks; these tests run
+   the machinery on a per-entry fixture baked for f72 in that slot (the shape
+   S1b ships in on hero-reactions-s1a-s1b-t2). */
+const S1B = fixtureVariant(72);
+const FX = withFixtures(S1B);
+const withBounce = (r: Rotation): Rotation =>
+  r.map((id, c) => (c === 2 ? S1B.id : id)) as Rotation;
 const bounceStart = (cycle: number) =>
-  cycle * N + ACTIONS.bounce.spliceOffset + ACTIONS.bounce.clip.firstFrame;
+  cycle * N + S1B.spliceOffset + S1B.clip.firstFrame;
 
 /** Runs the gate frame by frame; returns the ids/frames that actually showed. */
 function run(
@@ -37,7 +45,7 @@ function run(
     const r = gateRotation(
       q,
       gate,
-      stateAt(tOf(abs), rotation),
+      stateAt(tOf(abs), rotation, BASE_LOOP, FX),
       tOf(abs),
       fetched,
     );
@@ -52,45 +60,47 @@ function run(
 
 describe("auto-rotation: nod slot behind FEATURE_HERO_ROTATION_NOD (review N1)", () => {
   it("drops the nod by default and keeps the draft only with the flag", () => {
-    expect(heroRotation()).toEqual([null, null, "bounce", null]);
-    expect(heroRotation(false)).toEqual([null, null, "bounce", null]);
+    expect(heroRotation()).toEqual([null, null, null, null]);
+    expect(heroRotation(false)).toEqual([null, null, null, null]);
     expect(heroRotation(true)).toEqual(HERO_ROTATION);
   });
 
-  it("default rotation never shows the nod over 3 rotations", () => {
-    const { plays } = run(0, 12 * N, heroRotation());
-    expect(plays.map((p) => p.id)).toEqual(["bounce", "bounce", "bounce"]);
+  it("default rotation shows nothing over 3 rotations (nod off, no bounce until S1b locks)", () => {
+    expect(run(0, 12 * N, heroRotation()).plays).toEqual([]);
+    const { plays } = run(0, 12 * N, withBounce(heroRotation()));
+    expect(plays.map((p) => p.id)).toEqual(["fx.k72", "fx.k72", "fx.k72"]);
   });
 
-  it("with the flag on, nod and bounce both play (they are 15 s apart)", () => {
+  it("with the flag on, the nod plays at f180 (and a cycle-2 clip 9 s later)", () => {
     const { plays } = run(0, 4 * N, heroRotation(true));
-    expect(plays.map((p) => p.id)).toEqual(["nod", "bounce"]);
+    expect(plays.map((p) => p.id)).toEqual(["nod.k180"]);
+    expect(
+      run(0, 4 * N, withBounce(heroRotation(true))).plays.map((p) => p.id),
+    ).toEqual(["nod.k180", "fx.k72"]);
   });
 });
 
 describe("auto-rotation: every replay respects the cooldowns (review N1)", () => {
-  const rot = heroRotation();
+  const rot = withBounce(heroRotation());
 
   it("records each rotation play in the cooldown ledger", () => {
     const { q } = run(0, 3 * N, rot);
-    expect(q.lastStart.bounce).toBeCloseTo(tOf(bounceStart(2)), 6);
+    // Ledger key: the family's reaction, or the family itself (fixture).
+    expect(q.lastStart.fx).toBeCloseTo(tOf(bounceStart(2)), 6);
     expect(q.starts).toHaveLength(1);
-    // A bounce reaction right after is refused by the same-reaction cooldown.
+    // The same art right after is refused by the same-reaction cooldown.
     const t = tOf(bounceStart(2)) + 5;
-    expect(request(q, "bounce", t)).toMatchObject({
-      accepted: false,
-      reason: "cooldown",
-    });
-    expect(
-      request(q, "bounce", tOf(bounceStart(2)) + COOLDOWNS.sameS).accepted,
-    ).toBe(true);
+    expect(cooldownAllows(q, "fx", t)).toBe(false);
+    expect(cooldownAllows(q, "fx", tOf(bounceStart(2)) + COOLDOWNS.sameS)).toBe(
+      true,
+    );
   });
 
   it("skips the rotation bounce when a bounce reaction started < 30 s before", () => {
     const tB = tOf(bounceStart(2));
     const q = {
       ...initialQueue(),
-      lastStart: { bounce: tB - 20 },
+      lastStart: { fx: tB - 20 },
       starts: [tB - 20],
     };
     const { plays } = run(2 * N, 3 * N, rot, q);
@@ -111,7 +121,7 @@ describe("auto-rotation: every replay respects the cooldowns (review N1)", () =>
       starts: [tB - 7],
     };
     expect(run(2 * N, 3 * N, rot, ok).plays.map((p) => p.id)).toEqual([
-      "bounce",
+      "fx.k72",
     ]);
   });
 
@@ -135,7 +145,7 @@ describe("auto-rotation: every replay respects the cooldowns (review N1)", () =>
       const r = gateRotation(
         q,
         gate,
-        stateAt(tOf(abs), rot),
+        stateAt(tOf(abs), rot, BASE_LOOP, FX),
         tOf(abs),
         () => false,
       );
@@ -157,7 +167,7 @@ describe("auto-rotation: every replay respects the cooldowns (review N1)", () =>
       const r = gateRotation(
         q,
         gate,
-        stateAt(tOf(abs), rot),
+        stateAt(tOf(abs), rot, BASE_LOOP, FX),
         tOf(abs),
         () => fetched,
       );

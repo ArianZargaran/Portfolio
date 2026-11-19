@@ -5,13 +5,12 @@
  *
  * B1 hook: the join points come from this config, not from the player.
  * JOIN_V5_2 (the retouched loop: hands matched to the f180 home pose at every
- * join) sits beside JOIN_V5_1 but is PROVISIONAL until Ari locks it. The
- * default build keeps v5_1 through the single switch line `HERO_JOIN_VERSION`
- * below. To install once v5_2 is locked: set its `loop` to the lock record,
- * drop `provisional`, flip the switch to "v5_2", and ship the v5_2 media
- * (typing loop, nod v4, bounce v2, per-entry variants) in the same commit.
- * join-config.test.ts refuses an active config that is still provisional.
- * Nothing else in the player changes. See docs/hero-player.md (Join points).
+ * join) sits beside JOIN_V5_1.
+ *
+ * Locked v5_2 install (Ari t1003s5480, locks_now28). The character layer
+ * equals f180 at every join; the screen/spill do NOT. Opaque clips remain
+ * entry-specific (currently only nod v4, f180), regardless of homePoseClean.
+ * See docs/hero-player.md (Join points).
  */
 import { BASE_LOOP, type BaseLoopDef } from "./actions";
 import { mod } from "./clock";
@@ -26,7 +25,7 @@ export interface JoinConfig {
   /** Base-loop frames where a reaction may cut in. */
   points: readonly number[];
   /**
-   * True once every join point matches the home pose within the E2 standard
+   * True once the character layer at every join matches the home pose within the E2 standard
    * (<= 4 levels, 0 px over 8 at full res). v5_1 is false: the hands differ
    * at f0-f144 until B1, so only clips whose own cut window already covers
    * a join (today: bounce at f72, the nod at f180) may use it.
@@ -53,32 +52,31 @@ export const JOIN_V5_1: JoinConfig = {
 };
 
 /**
- * B1 retouch candidate (t995, Dusk's painted_char_typing_t995/v5_2). The
- * character at f0/36/72/108/144 equals f180 exactly (REVIEW t995 B1: max 0),
- * so every join is a clean home pose. The screen still differs between
- * joins, which is why baked clips stay one variant per entry (design A).
- * NOT LOCKED: `loop` names the candidate, not a lock record.
+ * B1 retouch (t995): character at f0/36/72/108/144 equals f180 exactly.
+ * Screen/spill differ between joins: homePoseClean refers to character only,
+ * never permission to enter an opaque clip at a foreign join.
  */
+export const V5_2_LOCK_RECORD = "LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2";
+export const V5_2_LOCK_SHA256 =
+  "14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712";
+
 export const JOIN_V5_2: JoinConfig = {
-  loop: "CANDIDATE_PAINTED_CHAR_TYPING_LOOP_V5_2 (t995, pending Ari)",
+  loop: V5_2_LOCK_RECORD,
   loopFrames: 216,
   fps: 12,
   step: 36,
   points: joinPointsEvery(36, 216),
   homePoseClean: true,
-  provisional: true,
 };
 
 export const JOIN_CONFIGS = { v5_1: JOIN_V5_1, v5_2: JOIN_V5_2 } as const;
 export type JoinVersion = keyof typeof JOIN_CONFIGS;
 
 /**
- * THE SWITCH. The one line to change when Ari locks v5_2 (together with the
- * v5_2 media; see the header). A build-time constant rather than an env flag
- * on purpose: the join points must match the typing clip that is bundled,
- * so they can't differ between deployments of the same build.
+ * Build-time switch: join config must match the bundled typing clip and
+ * cannot differ between deployments of the same build.
  */
-export const HERO_JOIN_VERSION: JoinVersion = "v5_1";
+export const HERO_JOIN_VERSION: JoinVersion = "v5_2";
 
 /** Active join config. */
 export const HERO_JOIN: JoinConfig = JOIN_CONFIGS[HERO_JOIN_VERSION];

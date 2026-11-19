@@ -15,15 +15,16 @@
  *   request, in that order. Leaving before the dwell sends nothing, so a
  *   quick swipe fetches nothing (review N3). Touch never hovers; a tap
  *   navigates.
- * - Idle 20 s (no pointer, key, wheel or scroll on the page): bounce, once
- *   per idle period.
- * - 45 s on the page: sip, once.
- * - Tab back after at least 30 s hidden, or the scene back in view (at
- *   least half visible) after being scrolled away: bounce.
+ * - No poster reaction, idle/return reaction or 45 s doze timer on this
+ *   install: S1a / S1b / T2 are unlocked, preserved on the local branch
+ *   hero-reactions-s1a-s1b-t2. Poster visits still arm the E2 egg normally.
  * - Pointer and focus both out of the scene: "leave" (disarms the E2 egg).
  *
- * Requests without a clip (speaker, phone, sip today) are refused by the
- * queue as "unknown"; they start working when their clips are registered.
+ * Sip stays off until S4 exists (planned timer-only at 90 s, not 45 s).
+ *
+ * Requests without a clip (speaker, phone today) are refused by the queue
+ * as "unknown"; they start working when their clips are registered. Every
+ * request still goes through the queue: cooldowns, freeze, one slot.
  */
 import {
   heroHotspot,
@@ -41,13 +42,7 @@ export const HOTSPOT_REACTIONS: Readonly<Record<string, ReactionId>> = {
 
 export const TRIGGERS = {
   dwellMs: 250,
-  idleS: 20,
-  timeOnPageS: 45,
-  tabReturnS: 30,
   inViewRatio: 0.5,
-  idleReaction: "bounce",
-  timeOnPageReaction: "sip",
-  returnReaction: "bounce",
 } as const satisfies Record<string, number | ReactionId>;
 
 /** Hover intent only where a pointer can hover (not touch-first devices). */
@@ -69,7 +64,6 @@ export interface TriggerEnv {
   win?: Window;
   hoverOK?: boolean;
   hotspots?: Readonly<Record<string, ReactionId>>;
-  now?: () => number;
 }
 
 const hotspotOf = (t: EventTarget | null, frame: HTMLElement) => {
@@ -94,7 +88,6 @@ export function wireTriggers(
   const doc = win.document;
   const hotspots = env.hotspots ?? HOTSPOT_REACTIONS;
   const hoverOK = env.hoverOK ?? win.matchMedia?.(HOVER_MQ).matches ?? false;
-  const now = env.now ?? (() => win.performance.now());
   const off: (() => void)[] = [];
   const on = <K extends string>(
     target: EventTarget,
@@ -167,47 +160,12 @@ export function wireTriggers(
     maybeLeave();
   });
 
-  // Idle: one bounce per idle period.
-  let idleTimer = 0;
-  const armIdle = () => {
-    win.clearTimeout(idleTimer);
-    idleTimer = win.setTimeout(
-      () => sink.request(TRIGGERS.idleReaction),
-      TRIGGERS.idleS * 1000,
-    );
-  };
-  for (const type of [
-    "pointermove",
-    "pointerdown",
-    "keydown",
-    "wheel",
-    "scroll",
-  ])
-    on(win, type, armIdle, { passive: true, capture: true });
-  armIdle();
-  off.push(() => win.clearTimeout(idleTimer));
-
-  // Time on page.
-  const pageTimer = win.setTimeout(
-    () => sink.request(TRIGGERS.timeOnPageReaction),
-    TRIGGERS.timeOnPageS * 1000,
-  );
-  off.push(() => win.clearTimeout(pageTimer));
-
-  // Tab return.
-  let hiddenAt: number | null = doc.hidden ? now() : null;
+  // A hidden tab cancels pending dwell. No return reaction until S1b locks.
   on(doc, "visibilitychange", () => {
-    if (doc.hidden) {
-      hiddenAt = now();
-      cancel();
-    } else if (hiddenAt !== null) {
-      if (now() - hiddenAt >= TRIGGERS.tabReturnS * 1000)
-        sink.request(TRIGGERS.returnReaction);
-      hiddenAt = null;
-    }
+    if (doc.hidden) cancel();
   });
 
-  // Back in view after being scrolled away.
+  // Scene scrolled out of view: "leave" (disarms the E2 egg).
   const IO = (
     win as Window & { IntersectionObserver?: typeof IntersectionObserver }
   ).IntersectionObserver;
@@ -217,7 +175,6 @@ export function wireTriggers(
       (entries) => {
         const ratio = entries[entries.length - 1]?.intersectionRatio ?? 0;
         const inView = ratio >= TRIGGERS.inViewRatio;
-        if (inView && away) sink.request(TRIGGERS.returnReaction);
         if (!inView && away === false) sink.hotspot("", "leave");
         away = !inView;
       },

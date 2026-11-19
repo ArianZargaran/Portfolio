@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { ACTIONS, BASE_LOOP } from "./actions";
@@ -43,12 +43,29 @@ describe("shipped hero clips match the registry", () => {
     ]);
   });
 
-  it("stays small enough to commit (< 2 MB for every clip together)", () => {
+  it("stays small enough to commit (< 4 MB for every clip together)", () => {
+    // Design A ships one baked clip per entry; the locked install has 2
+    // clips x 2 codecs (about 1.04 MB in git). A visit fetches far less (the base plus at most one
+    // variant per action, budget.ts / check:media).
     const total = Object.values(manifest.clips).reduce(
       (a, c) => a + c.bytes,
       0,
     );
-    expect(total).toBeLessThan(2 * 1024 * 1024);
+    expect(total).toBeLessThan(4 * 1024 * 1024);
+  });
+
+  it("ships no orphans: media/ = the registry = the build manifest", () => {
+    const registry = [
+      BASE_LOOP.clip,
+      ...Object.values(ACTIONS).map((a) => a.clip),
+    ]
+      .flatMap((c) => c.sources.map((s) => path.basename(s.src)))
+      .sort();
+    const files = readdirSync(MEDIA_DIR)
+      .filter((f) => f.endsWith(".mp4"))
+      .sort();
+    expect(files).toEqual(registry);
+    expect(Object.keys(manifest.clips).sort()).toEqual(registry);
   });
 
   it("keeps clips and build metadata out of public/ (nothing internal is served)", () => {

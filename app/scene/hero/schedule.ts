@@ -19,15 +19,15 @@ import { mod } from "./clock";
 
 /**
  * DRAFT rotation (for Ari): one entry per base cycle, repeating. With the
- * 18 s locked loop, 4 cycles = 72 s, which is also the cloud period, so the
- * whole scene realigns every 72 s.
+ * 18 s loop, 4 cycles = 72 s, which is also the cloud period, so the whole
+ * scene realigns every 72 s.
  *   cycle 0: typing only
- *   cycle 1: typing, music nod from base frame 120 (t = 28 s) into cycle 2
- *   cycle 2: typing (nod tail ends at frame 72) then the leg bounce (f84-107)
+ *   cycle 1: typing, music nod cutting in at f180 (clip i60-131) into cycle 2
+ *   cycle 2: typing (nod returns at the f36 join); no bounce until S1b locks
  *   cycle 3: typing only
  */
 export type Rotation = (ActionId | null)[];
-export const HERO_ROTATION: Rotation = [null, "nod", "bounce", null];
+export const HERO_ROTATION: Rotation = [null, "nod.k180", null, null];
 
 /**
  * The rotation the player runs. PLAN §3: E2 (the nod) is out of the
@@ -36,7 +36,7 @@ export const HERO_ROTATION: Rotation = [null, "nod", "bounce", null];
  * goes through the cooldown gate (reactions.ts `gateRotation`).
  */
 export const heroRotation = (nod = false): Rotation =>
-  HERO_ROTATION.map((id) => (id === "nod" && !nod ? null : id));
+  HERO_ROTATION.map((id) => (id === "nod.k180" && !nod ? null : id));
 
 export interface Occurrence {
   action: ActionDef;
@@ -132,6 +132,13 @@ export function occurrenceState(
   abs: number,
   occ: Occurrence,
 ): ScheduleState["action"] {
+  // Opaque per-entry clips must never be shown at a foreign entry. This
+  // final guard also protects rotation/egg or malformed queue occurrences.
+  if (
+    mod(occ.start + occ.action.clip.firstFrame, BASE_LOOP.frames) !==
+    occ.action.entry
+  )
+    return undefined;
   const i = abs - occ.start;
   if (i < 0 || i >= occ.action.frames) return undefined;
   const cf = i - occ.action.clip.firstFrame;

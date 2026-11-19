@@ -1,7 +1,8 @@
 /**
  * E2 easter egg (PLAN v3.3 §3): visiting the queen poster and then the
  * speakers within 10 s plays the speaker reaction (T6) through the queue as
- * usual, and also arms a nod at the next join it can use (f180 on v5_1),
+ * usual, and also arms a nod at the next join it can use (f180: nod v4 is
+ * baked for that entry only),
  * after T6 ends. The nod is armed OUTSIDE the reaction queue, so the egg
  * can never block or delay another reaction:
  *
@@ -15,7 +16,7 @@
  * Pure: the player feeds it hotspot visits (dwell-confirmed, M5) and the
  * clock.
  */
-import { ACTIONS, type ActionDef } from "./actions";
+import { NOD, type ActionDef } from "./actions";
 import { HERO_JOIN, nextJoinAbs, type JoinConfig } from "./join-config";
 import { actionFrameAtBase, joinableKs, LEAD_FRAMES } from "./reactions";
 import {
@@ -32,7 +33,7 @@ export const EGG = {
   /** The queued reaction the egg completes with. */
   reaction: "speaker" as const,
   /** The extra clip armed outside the queue. */
-  action: ACTIONS.nod as ActionDef,
+  action: NOD as ActionDef,
 };
 
 export interface EggState {

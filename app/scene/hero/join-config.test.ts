@@ -7,6 +7,8 @@ import {
   JOIN_V5_2,
   joinPointsEvery,
   nextJoinAbs,
+  V5_2_LOCK_RECORD,
+  V5_2_LOCK_SHA256,
   validateJoinConfig,
   type JoinConfig,
 } from "./join-config";
@@ -20,7 +22,7 @@ describe("join points (3 s home pose, 18 s loop)", () => {
 
   it("the active config fits the shipped base loop", () => {
     expect(validateJoinConfig(HERO_JOIN)).toEqual([]);
-    expect(HERO_JOIN.homePoseClean).toBe(false); // until B1 (v5_2) lands
+    expect(HERO_JOIN.homePoseClean).toBe(true); // B1: v5_2
   });
 
   it("B1 hook: a different loop config is validated, not hard-coded", () => {
@@ -39,24 +41,27 @@ describe("join points (3 s home pose, 18 s loop)", () => {
     expect(joinPointsEvery(36, 288)).toHaveLength(8);
   });
 
-  it("v5_2 (provisional): joins every 36 frames, home pose clean, valid", () => {
+  it("v5_2: locked, joins every 36 frames, character home pose clean", () => {
     expect(JOIN_V5_2.points).toEqual([0, 36, 72, 108, 144, 180]);
     expect(JOIN_V5_2.step).toBe(36);
     expect(JOIN_V5_2.homePoseClean).toBe(true);
-    expect(JOIN_V5_2.provisional).toBe(true);
+    expect(JOIN_V5_2.provisional).toBeUndefined();
+    expect(JOIN_V5_2.loop).toBe(V5_2_LOCK_RECORD);
+    expect(V5_2_LOCK_SHA256).toBe(
+      "14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712",
+    );
     expect(validateJoinConfig(JOIN_V5_2)).toEqual([]);
     expect(JOIN_CONFIGS).toEqual({ v5_1: JOIN_V5_1, v5_2: JOIN_V5_2 });
   });
 
-  it("the default build stays on v5_1 until Ari locks v5_2", () => {
-    expect(HERO_JOIN_VERSION).toBe("v5_1");
-    expect(HERO_JOIN).toBe(JOIN_V5_1);
-    expect(HERO_JOIN.loop).toBe("LOCK_PAINTED_CHAR_TYPING_LOOP_V5_1");
+  it("this build installs the locked v5_2 loop", () => {
+    expect(HERO_JOIN_VERSION).toBe("v5_2");
+    expect(HERO_JOIN).toBe(JOIN_V5_2);
   });
 
-  it("the active config is never provisional (flip the switch only after the lock)", () => {
+  it("the active config is never provisional and names the verified lock", () => {
     expect(HERO_JOIN.provisional).toBeUndefined();
-    expect(HERO_JOIN.loop).toMatch(/^LOCK_/);
+    expect(HERO_JOIN.loop).toBe("LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2");
   });
 
   it("rejects points off the step grid", () => {

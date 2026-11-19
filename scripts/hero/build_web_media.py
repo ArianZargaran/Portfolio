@@ -1,7 +1,10 @@
 """Build the shipped hero clips into the repo (app/scene/hero/media/, imported by actions.ts so
 Vite content-hashes them into build/client/assets/), from the staged copies.
 Checkpointed: a clip whose recorded sha256 matches is skipped. Build metadata (sources, encoder
-settings, hashes) goes to scripts/hero/hero-media.build.json, which is never served."""
+settings, hashes) goes to scripts/hero/hero-media.build.json, which is never served.
+
+v5_1 only (typing, nod E2 v3, bounce). Since the v5_2 install the shipped clips are built and
+proven by variants.py --loop v5_2 (README step 8); don't run this over them."""
 import os, json, hashlib, subprocess, sys
 from paths import REPO, SRC
 HERE=os.path.dirname(os.path.abspath(__file__))

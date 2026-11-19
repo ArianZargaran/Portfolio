@@ -1,3 +1,4 @@
+import { fixtureVariant } from "./__fixtures__/actions";
 import { ACTIONS, BASE_LOOP } from "./actions";
 import {
   applyEgg,
@@ -14,7 +15,7 @@ import { LEAD_FRAMES } from "./reactions";
 import { clipEndAbs, stateAt, type Occurrence } from "./schedule";
 
 const L = BASE_LOOP.frames; // 216
-const nod = ACTIONS.nod;
+const nod = ACTIONS["nod.k180"];
 const clipFrom = (o: Occurrence) => o.start + o.action.clip.firstFrame;
 
 describe("E2 egg: sequence", () => {
@@ -65,9 +66,17 @@ describe("E2 egg: arming outside the queue", () => {
 
   it("yields to another clip that overlaps it before it commits", () => {
     const e = armEgg(initialEgg(), 10, 0);
-    const other: Occurrence = { action: ACTIONS.bounce, cycle: 0, start: 150 };
+    const other: Occurrence = {
+      action: fixtureVariant(180),
+      cycle: 0,
+      start: 180,
+    };
     expect(stepEgg(e, 20, [other]).armed).toBeUndefined();
-    const far: Occurrence = { action: ACTIONS.bounce, cycle: 2, start: 2 * L };
+    const far: Occurrence = {
+      action: fixtureVariant(180),
+      cycle: 2,
+      start: 2 * L + 180,
+    };
     expect(stepEgg(e, 20, [far]).armed).toBeDefined();
     expect(eggBusyUntil(e, 20)).toBe(0); // not committed: the queue ignores it
   });
@@ -80,7 +89,11 @@ describe("E2 egg: arming outside the queue", () => {
     expect(eggBusyUntil(e, commit - 1)).toBe(0);
     e = stepEgg(e, commit, []);
     expect(eggBusyUntil(e, commit)).toBe(clipEndAbs(occ));
-    const other: Occurrence = { action: ACTIONS.bounce, cycle: 0, start: 150 };
+    const other: Occurrence = {
+      action: fixtureVariant(180),
+      cycle: 0,
+      start: 180,
+    };
     expect(stepEgg(e, commit, [other]).armed).toBeDefined();
 
     const rotation = {
