@@ -6,7 +6,9 @@
 // Serves the probe page, the shipped hero clips (with HTTP Range, which
 // Safari needs for <video>), and the laptop still. A second port serves the
 // same files cross-origin, with and without Timing-Allow-Origin, for the
-// transferSize-0 check. POST /results saves a run to ./results/.
+// transferSize-0 check. ?cache=reval answers repeat loads with 304s for the
+// cache-hit check. GET /clips lists the shipped clip ids. POST /results saves
+// a run to ./results/.
 import {
   createReadStream,
   existsSync,
@@ -55,7 +57,15 @@ const TYPES = {
 function sendFile(req, res, file, extra = {}) {
   if (!file || !existsSync(file))
     return void res.writeHead(404).end("not found");
-  const size = statSync(file).size;
+  const { size, mtimeMs } = statSync(file);
+  if (extra.ETag === "auto") {
+    // ?cache=reval: a validator, so a repeat load is a 304 revalidation (the
+    // shape the gate must read as a cache hit, review Medium 1).
+    const etag = `"${size.toString(16)}-${Math.floor(mtimeMs).toString(16)}"`;
+    extra = { ...extra, ETag: etag };
+    if (req.headers["if-none-match"] === etag)
+      return void res.writeHead(304, extra).end();
+  }
   const type = TYPES[path.extname(file)] ?? "application/octet-stream";
   const base = { "Content-Type": type, "Accept-Ranges": "bytes", ...extra };
   const m = /bytes=(\d*)-(\d*)/.exec(req.headers.range ?? "");
@@ -73,11 +83,30 @@ function sendFile(req, res, file, extra = {}) {
   createReadStream(file).pipe(res);
 }
 
-// Cache headers: ?cache=1 -> immutable (like /assets/ on Vercel), else no-store.
-const cacheOf = (u) =>
-  u.searchParams.get("cache") === "1"
-    ? { "Cache-Control": "public, max-age=31536000, immutable" }
-    : { "Cache-Control": "no-store" };
+// Cache headers: ?cache=1 -> immutable (like /assets/ on Vercel);
+// ?cache=reval -> no-cache + ETag (every repeat load revalidates: 304);
+// else no-store.
+const cacheOf = (u) => {
+  const c = u.searchParams.get("cache");
+  if (c === "1")
+    return { "Cache-Control": "public, max-age=31536000, immutable" };
+  if (c === "reval") return { "Cache-Control": "no-cache", ETag: "auto" };
+  return { "Cache-Control": "no-store" };
+};
+
+// Shipped clip ids (<id>.<codec>.mp4 in app/scene/hero/media), for the page.
+const clipIds = () =>
+  existsSync(media)
+    ? [
+        ...new Set(
+          readdirSync(media)
+            .filter((f) => /\.(av1|h264)\.mp4$/.test(f))
+            .map((f) => f.replace(/\.(av1|h264)\.mp4$/, "")),
+        ),
+      ].sort((a, b) =>
+        a === "typing" ? -1 : b === "typing" ? 1 : a.localeCompare(b),
+      )
+    : [];
 
 function route(req, res, crossOrigin) {
   const u = new URL(req.url, "http://x");
@@ -93,6 +122,13 @@ function route(req, res, crossOrigin) {
   if (u.pathname === "/still.webp")
     return sendFile(req, res, still, { ...cacheOf(u), ...tao, ...cors });
   if (crossOrigin) return void res.writeHead(404).end();
+  if (u.pathname === "/clips")
+    return void res
+      .writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+      })
+      .end(JSON.stringify(clipIds()));
   if (u.pathname === "/" || u.pathname === "/index.html")
     return sendFile(req, res, path.join(here, "probe.html"), {
       "Cache-Control": "no-store",
@@ -122,10 +158,19 @@ if (process.argv.includes("--check")) {
   const clips = existsSync(media)
     ? readdirSync(media).filter((f) => f.endsWith(".mp4"))
     : [];
+  const ids = clipIds();
+  // every clip id the page will load must exist in both codecs
+  const unpaired = ids.filter(
+    (id) => !["av1", "h264"].every((c) => clips.includes(`${id}.${c}.mp4`)),
+  );
   const ok =
-    clips.length > 0 && !!still && existsSync(path.join(here, "probe.html"));
+    clips.length > 0 &&
+    ids.includes("typing") &&
+    unpaired.length === 0 &&
+    !!still &&
+    existsSync(path.join(here, "probe.html"));
   console.log(
-    `probe check: ${clips.length} clips in app/scene/hero/media, still ${still ? path.relative(repo, still) : "MISSING"}, probe.html ${existsSync(path.join(here, "probe.html")) ? "ok" : "MISSING"}`,
+    `probe check: ${clips.length} clips in app/scene/hero/media (ids: ${ids.join(", ")}${unpaired.length ? `; missing a codec: ${unpaired.join(", ")}` : ""}), still ${still ? path.relative(repo, still) : "MISSING"}, probe.html ${existsSync(path.join(here, "probe.html")) ? "ok" : "MISSING"}`,
   );
   console.log(
     `would serve http://${HOST === "0.0.0.0" ? "<lan-ip>" : "localhost"}:${PORT}/ (+ :${XPORT})`,

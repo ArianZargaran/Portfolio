@@ -82,7 +82,21 @@
       const show = () => ($("out").textContent = JSON.stringify(R, null, 2));
       const status = (s) => ($("status").textContent = s);
       const XO = `${location.protocol}//${location.hostname}:${Number(location.port || 80) + 1}`;
-      const CLIPS = ["typing", "nod", "bounce"];
+      // Shipped clip ids from the server (GET /clips): today typing + nod.k180.
+      let CLIPS = ["typing"];
+      const actionClip = () => CLIPS.find((c) => c !== "typing") ?? "typing";
+      const abs = (u) => new URL(u, location.href).href;
+
+      // BEGIN gateFresh: a copy of fresh() in app/scene/hero/net-gate.ts
+      // (kept in sync by app/scene/hero/net-gate-probe.test.ts). True only for
+      // a genuine download; anything else is a cache hit -> inconclusive.
+      function gateFresh(e) {
+        if (!e) return false;
+        const t = e.transferSize;
+        const b = e.encodedBodySize;
+        return t !== undefined && b !== undefined && b > 0 && t > 0 && t >= b;
+      }
+      // END gateFresh
       const AV1 = 'video/mp4; codecs="av01.0.01M.08"',
         H264 = 'video/mp4; codecs="avc1.640020"';
       const pct = (xs, p) => {
@@ -178,7 +192,7 @@
           canPlayAv1: probe.canPlayType(AV1),
           canPlayH264: probe.canPlayType(H264),
         };
-        const v = makeVideo("bounce");
+        const v = makeVideo(actionClip());
         try {
           await once(v, "loadeddata");
           R.codecs.picked = v.currentSrc.includes(".av1.")
@@ -192,7 +206,7 @@
       }
 
       async function autoplay() {
-        const v = makeVideo("bounce");
+        const v = makeVideo(actionClip());
         try {
           await v.play();
           R.autoplay = { mutedPlaysinline: "ok" };
@@ -219,7 +233,10 @@
         e && {
           transferSize: e.transferSize,
           encodedBodySize: e.encodedBodySize,
+          decodedBodySize: e.decodedBodySize,
+          responseStatus: e.responseStatus ?? null,
           durationMs: +e.duration.toFixed(1),
+          gate: gateFresh(e) ? "sample" : "cache hit -> inconclusive",
           mbps:
             e.transferSize && e.duration
               ? +((e.transferSize * 8) / e.duration / 1000).toFixed(2)
@@ -243,6 +260,63 @@
           cachedReload: null,
         };
         sessionStorage.setItem("probe:cachedUrl", same);
+      }
+
+      // Cache-hit check (review lock-v5_2-clean, Medium 1): how this browser
+      // reports a still it already has. Two URLs: ?cache=1 (immutable, like
+      // /assets/ on Vercel) and ?cache=reval (no-cache + ETag: repeat loads
+      // are 304s). Each is loaded twice in this page (an <img> again, which
+      // may be served from memory with no new entry, and a fetch through the
+      // HTTP cache), and once more after the self-reload, which is the gate's
+      // real case (a repeat visit). Every entry records the sizes, duration
+      // and what the gate's rule makes of it.
+      const CH_KEY = "probe:cacheHitUrls";
+      async function cacheHit() {
+        const tag = Math.random().toString(36).slice(2, 8);
+        const urls = {
+          immutable: abs(`/still.webp?cache=1&ch=${tag}`),
+          revalidate: abs(`/still.webp?cache=reval&ch=${tag}`),
+        };
+        const out = {};
+        for (const [kind, url] of Object.entries(urls)) {
+          await loadImg(url);
+          const first = te(entryFor(url));
+          const n = performance.getEntriesByName(url).length;
+          await loadImg(url);
+          const imgAgain =
+            performance.getEntriesByName(url).length > n
+              ? te(entryFor(url))
+              : "no new entry (served from memory: the gate never sees it)";
+          await fetch(url).then((r) => r.arrayBuffer());
+          out[kind] = {
+            url: url.replace(location.origin, ""),
+            first,
+            secondImgSamePage: imgAgain,
+            secondFetchSamePage: te(entryFor(url)),
+            afterReload: null,
+          };
+        }
+        R.cacheHit = out;
+        sessionStorage.setItem(CH_KEY, JSON.stringify(urls));
+      }
+      function cacheHitAfterReload(urls) {
+        return Promise.all(
+          Object.entries(urls).map(async ([kind, url]) => {
+            await loadImg(url);
+            if (R.cacheHit?.[kind])
+              R.cacheHit[kind].afterReload =
+                te(entryFor(url)) ?? "no entry (no Resource Timing)";
+          }),
+        ).then(() => {
+          const repeat = Object.values(R.cacheHit ?? {}).map(
+            (k) => k.afterReload,
+          );
+          R.cacheHit.gateOnRepeatVisit = repeat.every(
+            (e) => typeof e === "string" || e.gate !== "sample",
+          )
+            ? "ok: every repeat load reads as a cache hit (inconclusive, never a throughput sample)"
+            : "PROBLEM: a repeat load reads as a throughput sample; send this file to Forge";
+        });
       }
 
       async function warmVsCold(idleS) {
@@ -310,7 +384,7 @@
           return e.effectiveType === "4g"
             ? "play (connection 4g)"
             : "still (connection slow)";
-        if (t?.transferSize > 0 && t.mbps != null)
+        if (gateFresh(t) && t.mbps != null)
           return t.mbps >= 1.5
             ? `play (${t.mbps} Mbps, single image)`
             : `still (${t.mbps} Mbps, single image)`;
@@ -321,6 +395,8 @@
         $("run").disabled = true;
         try {
           env();
+          CLIPS = await fetch("/clips").then((r) => r.json());
+          R.clips = CLIPS;
           show();
           status("codecs");
           await codecs();
@@ -330,6 +406,9 @@
           show();
           status("resource timing");
           await timing();
+          show();
+          status("cache-hit check");
+          await cacheHit();
           show();
           await warmVsCold(Number($("idle").value));
           show();
@@ -356,7 +435,10 @@
         await loadImg(url);
         R.timing.cachedReload = te(entryFor(url));
         R.timing.cachedNote =
-          "cachedReload transferSize 0 = served from cache (the gate treats it as inconclusive)";
+          "cachedReload: a cache hit (transferSize 0, or encodedBodySize 0, or headers only) is inconclusive for the gate";
+        const ch = sessionStorage.getItem(CH_KEY);
+        sessionStorage.removeItem(CH_KEY);
+        if (ch) await cacheHitAfterReload(JSON.parse(ch));
         window.__probeDone = true;
         show();
         status(
