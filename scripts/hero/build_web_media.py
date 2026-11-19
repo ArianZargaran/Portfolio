@@ -4,11 +4,42 @@ Checkpointed: a clip whose recorded sha256 matches is skipped. Build metadata (s
 settings, hashes) goes to scripts/hero/hero-media.build.json, which is never served.
 
 v5_1 only (typing, nod E2 v3, bounce). Since the v5_2 install the shipped clips are built and
-proven by variants.py --loop v5_2 (README step 8); don't run this over them."""
-import os, json, hashlib, subprocess, sys
+proven by variants.py --loop v5_2 (README step 8). Guarded: it exits 2 without writing anything when
+the repo is on v5_2 (join-config HERO_JOIN_VERSION, or a v5_2 build manifest), unless
+--force-v5_1-over-v5_2 is passed (app/scene/hero/build-guard.test.ts)."""
+import os, json, hashlib, re, subprocess, sys
+OVERRIDE="--force-v5_1-over-v5_2"
+_force=OVERRIDE in sys.argv
+if _force: sys.argv.remove(OVERRIDE)
 from paths import REPO, SRC
 HERE=os.path.dirname(os.path.abspath(__file__))
 DST=f"{REPO}/app/scene/hero/media"
+
+def v5_2_installed():
+    """True when the repo ships the v5_2 install: the join switch is on v5_2 or the build manifest
+    carries v5_2 records (a `locks` block, per-entry `<family>.k<join>` clips)."""
+    reasons=[]
+    jc=f"{REPO}/app/scene/hero/join-config.ts"
+    if os.path.exists(jc):
+        m=re.search(r'HERO_JOIN_VERSION\s*:\s*\w+\s*=\s*"(v5_\d)"',open(jc).read())
+        if m and m.group(1)!="v5_1": reasons.append(f"join-config.ts HERO_JOIN_VERSION = {m.group(1)}")
+    mp=f"{HERE}/hero-media.build.json"
+    if os.path.exists(mp):
+        mm=json.load(open(mp))
+        if "locks" in mm: reasons.append("hero-media.build.json has a v5_2 `locks` block")
+        ks=[k for k in mm.get("clips",{}) if re.match(r"^[a-z0-9]+\.k\d+\.",k)]
+        if ks: reasons.append(f"hero-media.build.json lists per-entry clips ({', '.join(sorted(ks)[:3])}...)")
+    return reasons
+
+# Guard (review finding 3): this v5_1 builder must never overwrite the v5_2 install's media or manifest.
+_why=v5_2_installed()
+if _why and not _force:
+    sys.stderr.write("build_web_media.py: REFUSING to run. It builds the retired v5_1 clips (typing v5_1, nod E2 v3, "
+                     "bounce) and would overwrite app/scene/hero/media/ and scripts/hero/hero-media.build.json, but "
+                     "this repo ships the locked v5_2 install:\n  - " + "\n  - ".join(_why) +
+                     "\nBuild v5_2 clips with scripts/hero/variants.py --loop v5_2 instead. To rebuild v5_1 anyway "
+                     f"(e.g. on an old branch), pass {OVERRIDE}.\n")
+    sys.exit(2)
 os.makedirs(DST,exist_ok=True); MAN=f"{HERE}/hero-media.build.json"
 man=json.load(open(MAN)) if os.path.exists(MAN) else {"clips":{}}
 CLIPS={"typing":("typing",0,216),"nod":("e2",48,74),"bounce":("bounce",72,48)}

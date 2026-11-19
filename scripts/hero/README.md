@@ -15,15 +15,15 @@ The repo root comes from the script's own location, so any clone works. Example:
 `HERO_REPORT=/tmp/hero python3 scripts/hero/prep.py` or
 `python3 scripts/hero/verify_locks.py --brain ~/brain --report ./out`.
 
-| Step                                                                        | Script                | Output                                                                           |
-| --------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------- |
-| 1. Lock check (sha256 of every file in the 5 lock records + locks_now26/27) | `verify_locks.py`     | `hero-encoding-report/lock_check.json`                                           |
-| 2. Animated-region analysis (also proves frames = plate + layers + armrest) | `analyze.py`          | `regions.json`, `tools/anim_mask.npy`                                            |
-| 3. Stage crops (copies, never touching the source)                          | `prep.py`             | `work/src/<seq>/{baked,stack}/NNN.png`                                           |
-| 4. Prototype encodes                                                        | `encode.py typing e2` | `work/enc/<seq>/*`, `work/enc/state.json`                                        |
-| 5. Quality / size / decode cost                                             | `quality.py`          | `quality.json`                                                                   |
-| 6. Side-by-side 3x crops                                                    | `crops.py`            | `crops/SIDEBYSIDE_*.png`                                                         |
-| 7. Shipped clips (v5_1 only; v5_2 clips come from step 8)                   | `build_web_media.py`  | `app/scene/hero/media/*.mp4` + `scripts/hero/hero-media.build.json` (not served) |
+| Step                                                                          | Script                | Output                                                                           |
+| ----------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------- |
+| 1. Lock check (sha256 of every file in the 5 lock records + locks_now26/27)   | `verify_locks.py`     | `hero-encoding-report/lock_check.json`                                           |
+| 2. Animated-region analysis (also proves frames = plate + layers + armrest)   | `analyze.py`          | `regions.json`, `tools/anim_mask.npy`                                            |
+| 3. Stage crops (copies, never touching the source)                            | `prep.py`             | `work/src/<seq>/{baked,stack}/NNN.png`                                           |
+| 4. Prototype encodes                                                          | `encode.py typing e2` | `work/enc/<seq>/*`, `work/enc/state.json`                                        |
+| 5. Quality / size / decode cost                                               | `quality.py`          | `quality.json`                                                                   |
+| 6. Side-by-side 3x crops                                                      | `crops.py`            | `crops/SIDEBYSIDE_*.png`                                                         |
+| 7. Shipped clips (v5_1 only; refuses on v5_2 unless `--force-v5_1-over-v5_2`) | `build_web_media.py`  | `app/scene/hero/media/*.mp4` + `scripts/hero/hero-media.build.json` (not served) |
 
 | 8. Entry variants + splice proofs (M9a, design A) | `variants.py <action>` | `pipeline/frames/<action>/k<join>/`, `pipeline/enc/<action>.k<join>.<sha8>.<codec>.mp4`, `pipeline/pipeline_report_<action>.json`, `pipeline/SPLICE_PROOFS_<action>.md` |
 
