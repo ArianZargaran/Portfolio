@@ -5,7 +5,7 @@
 type Conn = { effectiveType?: string; saveData?: boolean } | null;
 
 // Registry ids: the base "typing" and the per-entry actions (<family>.k<join>;
-// installed today: nod.k180); built names are <id>.<codec>-<hash>.mp4.
+// installed today: nod.k180, s1a.k0..k180); built names are <id>.<codec>-<hash>.mp4.
 const clipOf = (url: string) =>
   (url.match(/\/(typing|[a-z0-9]+\.k\d+)\.[^/]*\.mp4/) ?? [])[1] ?? url;
 
@@ -22,6 +22,84 @@ const setHeroMs = (ms: number) =>
 /** Clock ms at which the loop shows frame `f` of cycle `cycle` (12 fps, 216 frames), mid-frame. */
 const msAtFrame = (f: number, cycle = 0) =>
   ((cycle * 216 + f + 0.5) / 12) * 1000;
+
+/* Hold the pinned hero clock on frame `f` and assert, on every animation
+   frame, that what is shown is in `allowed` and that no clip matching
+   `watch` other than an allowed one has data-on (review p2 M1 / p3: a hold
+   ends only after HOLD_MS of real time AND MIN_TICKS player ticks, and if a
+   watched <video> fires `playing` during it, AFTER_PLAYING_TICKS /
+   AFTER_PLAYING_MS more, so a wrong cut-in has time to show). */
+const HOLD_MS = 500;
+const MIN_TICKS = 8;
+const AFTER_PLAYING_TICKS = 4;
+const AFTER_PLAYING_MS = 250;
+const srcOf = (v: Element) =>
+  v.querySelector("source")?.getAttribute("src") ?? "";
+function holdAt(f: number, watch: RegExp, allowed: string[], cycle = 0) {
+  setHeroMs(msAtFrame(f, cycle));
+  return cy.window().then(
+    { timeout: 20_000 },
+    (w) =>
+      new Cypress.Promise<void>((resolve, reject) => {
+        const vids = [...w.document.querySelectorAll("video")].filter((v) =>
+          watch.test(srcOf(v)),
+        );
+        const t0 = Date.now(); // real time (performance.now is pinned)
+        let frames = 0;
+        let playingAt: number | null = null;
+        let playingMs = 0;
+        const onPlaying = () => {
+          if (playingAt === null) {
+            playingAt = frames;
+            playingMs = Date.now();
+          }
+        };
+        vids.forEach((v) => v.addEventListener("playing", onPlaying));
+        const done = (err?: unknown) => {
+          vids.forEach((v) => v.removeEventListener("playing", onPlaying));
+          if (err) reject(err as Error);
+          else resolve();
+        };
+        const frame = () => {
+          try {
+            const shown =
+              w.document.querySelector(".hero")?.getAttribute("data-shown") ??
+              "";
+            expect(
+              allowed,
+              `f${f} (hold frame ${frames}) shows ${shown}`,
+            ).to.include(shown);
+            for (const v of vids)
+              if (v.hasAttribute("data-on"))
+                expect(
+                  allowed.some(
+                    (id) => id !== "base" && srcOf(v).includes(`/${id}.`),
+                  ),
+                  `f${f} ${srcOf(v)} data-on`,
+                ).to.eq(true);
+          } catch (e) {
+            return done(e);
+          }
+          frames++;
+          const held = frames >= MIN_TICKS && Date.now() - t0 >= HOLD_MS;
+          const settled =
+            playingAt === null ||
+            (frames - playingAt >= AFTER_PLAYING_TICKS &&
+              Date.now() - playingMs >= AFTER_PLAYING_MS);
+          if (held && settled) done();
+          else w.requestAnimationFrame(frame);
+        };
+        w.requestAnimationFrame(frame);
+      }),
+  );
+}
+
+const waitDecodable = (id: string) =>
+  cy
+    .get("video")
+    .filter((_, v) => srcOf(v).includes(`/${id}.`))
+    .should("have.length", 1)
+    .should((v) => expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2));
 
 function visitHome(
   conn: Conn,
@@ -91,20 +169,24 @@ describe("hero motion (stub clips)", () => {
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
     cy.wait(400);
-    // No poster reaction on the locked install (S1a is not locked): the
-    // poster's dwell fetches nothing, it only counts as the egg's first visit.
-    // (A media element may issue several range requests per clip, so compare
-    // the set of clips requested, not the request count.)
-    cy.wrap(requested).should((r) =>
-      expect([...new Set(r)]).to.deep.equal(["typing"]),
-    );
+    // The poster's dwell is the glance-up intent (S1a, locked t1014s5523):
+    // it fetches exactly ONE S1a variant (the next join's), and counts as the
+    // egg's first visit. (A media element may issue several range requests
+    // per clip, so compare the set of clips requested, not the request count.)
+    cy.wrap(requested).should((r) => {
+      const ids = [...new Set(r.filter((id) => id !== "typing"))];
+      expect(ids).to.have.length(1);
+      expect(ids[0]).to.match(/^s1a\.k(0|36|72|108|144|180)$/);
+    });
     cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
     cy.wrap(requested).should("include", "nod.k180");
-    cy.wrap(requested).should((r) =>
-      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
-        "nod.k180",
-      ]),
-    );
+    cy.wrap(requested).should((r) => {
+      const ids = [...new Set(r.filter((id) => id !== "typing"))];
+      expect(ids).to.have.length(2);
+      expect(ids.filter((id) => id.startsWith("s1a."))).to.have.length(1);
+      expect(ids).to.include("nod.k180");
+      expect(ids.some((id) => /^(s1b|t2)\./.test(id))).to.eq(false);
+    });
     cy.get(".hero")
       .invoke("attr", "data-bytes")
       .then(Number)
@@ -132,72 +214,16 @@ describe("hero motion (stub clips)", () => {
         expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2),
       );
     // Hold each foreign join long enough for a wrong cut-in to become
-    // visible (review p2 M1: 4 rAFs, ~65 ms, was shorter than play() + first
-    // frame). The hero clock stays pinned on the join while real decode runs.
-    // A hold ends only after HOLD_MS of real time AND MIN_TICKS animation
-    // frames (the player ticks on rAF too, so that's player ticks). At normal
-    // speed 500 ms is ~30 frames. Headless Electron sometimes throttles rAF to
-    // ~3 fps (seen in p3), and then the tick floor still gives the player time
-    // to prepare -> first frame -> show. If the nod <video> fires `playing`
-    // during a hold, it continues for AFTER_PLAYING_TICKS more frames and
-    // AFTER_PLAYING_MS more real time, so its first-frame callback can land.
-    // Every frame asserts that the base is shown and the nod is not on.
-    const HOLD_MS = 500;
-    const MIN_TICKS = 8;
-    const AFTER_PLAYING_TICKS = 4;
-    const AFTER_PLAYING_MS = 250;
-    for (const f of [0, 36, 72, 108, 144, 176, 179]) {
-      setHeroMs(msAtFrame(f));
-      cy.window().then(
-        { timeout: 20_000 },
-        (w) =>
-          new Cypress.Promise<void>((resolve, reject) => {
-            const nod = [...w.document.querySelectorAll("video")].find((v) =>
-              /nod\.k180/.test(
-                v.querySelector("source")?.getAttribute("src") ?? "",
-              ),
-            );
-            const t0 = Date.now(); // real time (performance.now is pinned)
-            let frames = 0;
-            let playingAt: number | null = null;
-            let playingMs = 0;
-            const onPlaying = () => {
-              if (playingAt === null) {
-                playingAt = frames;
-                playingMs = Date.now();
-              }
-            };
-            nod?.addEventListener("playing", onPlaying);
-            const done = (err?: unknown) => {
-              nod?.removeEventListener("playing", onPlaying);
-              if (err) reject(err as Error);
-              else resolve();
-            };
-            const frame = () => {
-              try {
-                expect(
-                  w.document.querySelector(".hero")?.getAttribute("data-shown"),
-                  `f${f} (hold frame ${frames})`,
-                ).to.eq("base");
-                expect(nod?.hasAttribute("data-on"), `f${f} nod data-on`).to.eq(
-                  false,
-                );
-              } catch (e) {
-                return done(e);
-              }
-              frames++;
-              const held = frames >= MIN_TICKS && Date.now() - t0 >= HOLD_MS;
-              const settled =
-                playingAt === null ||
-                (frames - playingAt >= AFTER_PLAYING_TICKS &&
-                  Date.now() - playingMs >= AFTER_PLAYING_MS);
-              if (held && settled) done();
-              else w.requestAnimationFrame(frame);
-            };
-            w.requestAnimationFrame(frame);
-          }),
+    // visible (holdAt: >= HOLD_MS real time and >= MIN_TICKS player ticks,
+    // longer if the nod fires `playing`). The nod must never be on. The
+    // poster focus at f0 also queued a glance-up, which may legitimately
+    // come up at f36, but only as s1a.k36 at f36 (its own entry).
+    for (const f of [0, 36, 72, 108, 144, 176, 179])
+      holdAt(
+        f,
+        /\/(nod\.k180|s1a\.k\d+)\./,
+        f === 36 ? ["base", "s1a.k36"] : ["base"],
       );
-    }
     // Hold the clock on f180 (nod i60, its own entry): the nod must come up.
     setHeroMs(msAtFrame(180));
     cy.get(".hero", { timeout: 5000 }).should(
@@ -214,6 +240,70 @@ describe("hero motion (stub clips)", () => {
       "have.attr",
       "data-shown",
       "base",
+    );
+  });
+
+  it("S1a: poster focus at f40 fetches only s1a.k72 and it comes up exactly at f72 (controlled clock)", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    setHeroMs(msAtFrame(40));
+    cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
+        "s1a.k72",
+      ]),
+    );
+    waitDecodable("s1a.k72");
+    // Before its join nothing but the base shows (f68 is inside the lead,
+    // the slot is locked but the clip is not due yet).
+    for (const f of [41, 60, 68, 71]) holdAt(f, /\/s1a\.k\d+\./, ["base"]);
+    // On its own entry it comes up.
+    setHeroMs(msAtFrame(72));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "s1a.k72",
+    );
+    setHeroMs(msAtFrame(90)); // core (i18): stays on
+    cy.get(".hero").should("have.attr", "data-shown", "s1a.k72");
+    setHeroMs(msAtFrame(105)); // exit window (i33): back to the base
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "base",
+    );
+    // The next join (f108) belongs to s1a.k108, which was never requested.
+    holdAt(108, /\/s1a\.k\d+\./, ["base"]);
+    cy.wrap(requested).should((r) =>
+      expect([
+        ...new Set(r.filter((id) => id.startsWith("s1a."))),
+      ]).to.deep.equal(["s1a.k72"]),
+    );
+  });
+
+  it("S1a: a glance scheduled for f36 never shows at a foreign join when the clock skips its entry", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    setHeroMs(msAtFrame(0));
+    cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
+        "s1a.k36",
+      ]),
+    );
+    waitDecodable("s1a.k36");
+    // Jump straight past f36: s1a.k36 must not appear at f72/108/144/180 or
+    // the next cycle's f0, and no other variant was ever fetched to show.
+    for (const f of [72, 108, 144, 180]) holdAt(f, /\/s1a\.k\d+\./, ["base"]);
+    holdAt(0, /\/s1a\.k\d+\./, ["base"], 1);
+    cy.wrap(requested).should((r) =>
+      expect([
+        ...new Set(r.filter((id) => id.startsWith("s1a."))),
+      ]).to.deep.equal(["s1a.k36"]),
     );
   });
 
