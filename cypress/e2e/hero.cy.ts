@@ -59,6 +59,17 @@ function visitHome(
 
 const gate = () => cy.get("html").invoke("attr", "data-hero-gate");
 
+// The measured-gate case needs a genuine cold download, not a header-only
+// revalidation whose few bytes say nothing about throughput (review Medium 1).
+const clearBrowserCache = () =>
+  cy.then(() => {
+    // CDP is Chromium/Electron only; other engines start each spec cold.
+    if (Cypress.isBrowser({ family: "chromium" }))
+      return Cypress.automation("remote:debugger:protocol", {
+        command: "Network.clearBrowserCache",
+      });
+  });
+
 describe("hero motion (stub clips)", () => {
   it("4G: plays, and fetches only the typing loop before any intent", () => {
     const requested = visitHome({ effectiveType: "4g" });
@@ -103,7 +114,7 @@ describe("hero motion (stub clips)", () => {
   it("M10b: the egg nod actually comes up at f180 (controlled clock)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
     cy.get(".hero[data-state=live]", { timeout: 15000 });
-    setHeroMs(msAtFrame(12)); // f12: well before the egg's f180 join
+    setHeroMs(msAtFrame(0)); // arm at f0, before all the foreign joins
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
@@ -120,9 +131,26 @@ describe("hero motion (stub clips)", () => {
       .should((v) =>
         expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2),
       );
-    // Just before the join (f176, inside LEAD_FRAMES): still the base.
-    setHeroMs(msAtFrame(176));
-    cy.get(".hero").should("have.attr", "data-shown", "base");
+    // Keep each foreign join pinned for several animation frames, so an
+    // erroneous transient cut-in cannot pass via an assertion before a tick.
+    for (const f of [0, 36, 72, 108, 144, 176, 179]) {
+      setHeroMs(msAtFrame(f));
+      cy.window().then(
+        (w) =>
+          new Cypress.Promise<void>((resolve) => {
+            let n = 4;
+            const frame = () => {
+              expect(
+                w.document.querySelector(".hero")?.getAttribute("data-shown"),
+                `f${f}`,
+              ).to.eq("base");
+              if (--n) w.requestAnimationFrame(frame);
+              else resolve();
+            };
+            w.requestAnimationFrame(frame);
+          }),
+      );
+    }
     // Hold the clock on f180 (nod i60, its own entry): the nod must come up.
     setHeroMs(msAtFrame(180));
     cy.get(".hero", { timeout: 5000 }).should(
@@ -173,6 +201,7 @@ describe("hero motion (stub clips)", () => {
   });
 
   it("no connection API, measured on a fast network: plays and remembers the verdict", () => {
+    clearBrowserCache();
     visitHome(null);
     gate().should("eq", "play:throughput-ok");
     cy.window().then((w) =>
@@ -180,6 +209,37 @@ describe("hero motion (stub clips)", () => {
         JSON.parse(w.localStorage.getItem("hero:net-verdict") ?? "{}"),
       ).to.have.property("verdict", "play"),
     );
+  });
+
+  it("no connection API, cached repeat visit: inconclusive, starts frozen and stores nothing", () => {
+    clearBrowserCache();
+    visitHome({ effectiveType: "4g" }); // warm the cache (no measured verdict)
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(".scene-still_img").should((imgs) =>
+      expect((imgs[0] as HTMLImageElement).complete).to.eq(true),
+    );
+    visitHome(null); // same still URL; visitHome clears localStorage on load
+    gate().should("eq", "frozen:inconclusive");
+    cy.get(".hero").should("not.exist");
+    cy.window().then((w) => {
+      const url =
+        w.document.querySelector<HTMLImageElement>(
+          ".scene-still_img",
+        )!.currentSrc;
+      const still = w.performance.getEntriesByName(
+        url,
+      )[0] as PerformanceResourceTiming;
+      // Check the actual browser timings, not a stubbed Resource Timing entry.
+      expect(still, "cached still Resource Timing entry").to.exist;
+      expect(
+        still.transferSize === 0 ||
+          still.encodedBodySize === 0 ||
+          still.transferSize < still.encodedBodySize,
+        `cached sizes transfer=${still.transferSize}, encoded=${still.encodedBodySize}`,
+      ).to.eq(true);
+      expect(w.localStorage.getItem("hero:net-verdict")).to.eq(null);
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null);
+    });
   });
 
   it("Esc freezes instantly and the freeze persists", () => {
