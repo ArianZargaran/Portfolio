@@ -12,7 +12,7 @@
  * entry-specific (currently only nod v4, f180), regardless of homePoseClean.
  * See docs/hero-player.md (Join points).
  */
-import { BASE_LOOP, type BaseLoopDef } from "./actions";
+import { BASE_LOOP, LOCK_RECORDS, type BaseLoopDef } from "./actions";
 import { mod } from "./clock";
 
 export interface JoinConfig {
@@ -56,9 +56,9 @@ export const JOIN_V5_1: JoinConfig = {
  * Screen/spill differ between joins: homePoseClean refers to character only,
  * never permission to enter an opaque clip at a foreign join.
  */
-export const V5_2_LOCK_RECORD = "LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2";
-export const V5_2_LOCK_SHA256 =
-  "14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712";
+/* Derived from the one lock table in actions.ts (no second copy of the sha). */
+export const V5_2_LOCK_RECORD = LOCK_RECORDS.typing.record;
+export const V5_2_LOCK_SHA256 = LOCK_RECORDS.typing.sha256;
 
 export const JOIN_V5_2: JoinConfig = {
   loop: V5_2_LOCK_RECORD,

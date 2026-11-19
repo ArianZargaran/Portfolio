@@ -143,12 +143,23 @@ export const BASE_LOOP: BaseLoopDef = {
 };
 
 /* Lock records the installed clips come from (Ari, card t1003s5480; verified
-   against portfolio-brain tools/locks_now28.sha, see docs/hero-player.md). */
-export const LOCKS = {
-  typing:
-    "LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2 (sha256 14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712)",
-  nod: "LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4 (sha256 08dcd66c76b505ae386532870beabbae7ace72b27c576a88cf7e53a5375727dc)",
+   against portfolio-brain tools/locks_now28.sha, see docs/hero-player.md).
+   THE single source of truth for these ids and shas: join-config.ts derives
+   V5_2_LOCK_RECORD / V5_2_LOCK_SHA256 from LOCK_RECORDS.typing, and
+   media-files.test.ts checks hero-media.build.json's `locks` block against it. */
+export const LOCK_RECORDS = {
+  typing: {
+    record: "LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2",
+    sha256: "14563ba506716c358c08cec7e81799844084833088ac7e0fd1c2a5f085b5b712",
+  },
+  nod: {
+    record: "LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4",
+    sha256: "08dcd66c76b505ae386532870beabbae7ace72b27c576a88cf7e53a5375727dc",
+  },
 } as const;
+
+const lockString = (l: { record: string; sha256: string }) =>
+  `${l.record} (sha256 ${l.sha256})`;
 
 export const ACTIONS: Record<ActionId, ActionDef> = {
   /* E2 nod v4: the locked E2 v3 head on the v5_2 hands. The clip is the
@@ -167,7 +178,7 @@ export const ACTIONS: Record<ActionId, ActionDef> = {
     enterWindow: [0, 61],
     exitWindow: [109, 167],
     clip: { sources: sources("nod.k180"), firstFrame: 60, frames: 72 },
-    lock: LOCKS.nod,
+    lock: lockString(LOCK_RECORDS.nod),
   },
 };
 
