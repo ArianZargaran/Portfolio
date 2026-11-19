@@ -307,6 +307,72 @@ describe("hero motion (stub clips)", () => {
     );
   });
 
+  it("S1a (review N1): repeated poster hovers during the 30 s cooldown fetch no extra S1a clip, and the egg nod still fits after", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    const poster = () =>
+      cy.get('.scene_hits--laptop [data-object="queen-poster"]').first();
+    setHeroMs(msAtFrame(40));
+    poster().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
+        "s1a.k72",
+      ]),
+    );
+    waitDecodable("s1a.k72");
+    setHeroMs(msAtFrame(72)); // the glance starts (6 s): cooldown to 36 s
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "s1a.k72",
+    );
+    // Hover again and again inside the cooldown, over two cycles (up to
+    // ~32 s), at frames whose next join is each of the other variants.
+    const during: [number, number][] = [
+      [96, 0],
+      [130, 0],
+      [170, 0],
+      [20, 1],
+      [60, 1],
+      [100, 1],
+      [140, 1],
+      [175, 1],
+    ];
+    for (const [f, cycle] of during) {
+      setHeroMs(msAtFrame(f, cycle));
+      poster().blur();
+      poster().focus();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+      cy.wait(350);
+      cy.get(".hero").should(
+        "have.attr",
+        "data-reaction",
+        "glance-up:cooldown",
+      );
+    }
+    cy.wrap(requested).should((r) =>
+      expect([
+        ...new Set(r.filter((id) => id.startsWith("s1a."))),
+      ]).to.deep.equal(["s1a.k72"]),
+    );
+    // The last poster visit counts for the egg: the speakers now fetch the
+    // nod, and the visit stays inside the per-visit budget. (Focus moves
+    // straight on: a blur first would leave the hero and disarm the egg.)
+    cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
+    cy.wrap(requested).should("include", "nod.k180");
+    cy.get(".hero").should("not.have.attr", "data-budget");
+    cy.get(".hero")
+      .invoke("attr", "data-bytes")
+      .then(Number)
+      .should("be.lte", 970 * 1024);
+    cy.wrap(requested).should((r) => {
+      const ids = [...new Set(r.filter((id) => id !== "typing"))].sort();
+      expect(ids).to.deep.equal(["nod.k180", "s1a.k72"]);
+    });
+  });
+
   it("Save-Data: still only, no player, no media", () => {
     const requested = visitHome({ effectiveType: "4g", saveData: true });
     cy.get(".scene-still_img").should("be.visible");
