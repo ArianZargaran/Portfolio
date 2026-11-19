@@ -259,4 +259,42 @@ describe("HeroPlayer stale first-frame callback (review finding 5)", () => {
     tick(20);
     expect(root.dataset.shown).toBe("nod.k180");
   });
+
+  const hideShow = () => {
+    hidden = true;
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    hidden = false;
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+  };
+
+  it("a stale prepare play() rejection cannot release a newer prepare", async () => {
+    const { container } = render(<HeroPlayer rotationPrefetch rotationNod />);
+    const root = container.querySelector<HTMLElement>("[data-shown]")!;
+    const nod = container.querySelector<HTMLVideoElement>(
+      '[data-clip="nod.k180"]',
+    )!;
+    let rejectOld!: (e: Error) => void;
+    const play = vi.spyOn(nod, "play").mockImplementationOnce(
+      () =>
+        new Promise<void>((_, reject) => {
+          rejectOld = reject;
+        }),
+    );
+    tick(33_020);
+    await flush();
+    expect(play).toHaveBeenCalledTimes(1); // prepare #1: play still pending
+    hideShow();
+    tick(20);
+    await flush();
+    const cb = frameCbs.filter((f) => f.el === nod);
+    expect(cb).toHaveLength(1); // only prepare #2 got a first-frame callback
+    act(() => cb[0].cb());
+    tick(20);
+    expect(root.dataset.shown).toBe("nod.k180");
+
+    await act(async () => rejectOld(new Error("old prepare failed late")));
+    tick(40);
+    expect(play).toHaveBeenCalledTimes(2); // no third prepare after a stale release
+    expect(root.dataset.shown).toBe("nod.k180");
+  });
 });
