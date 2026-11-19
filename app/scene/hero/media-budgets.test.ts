@@ -74,5 +74,39 @@ describe("check-media (M8)", () => {
       expect(r.stdout).toMatch(/worst-case av1 visit .*: 440\.0 kB/);
       expect(r.status).toBe(0);
     });
+
+    // Review N1: repeated glances in one visit. The runtime keeps the egg
+    // nod affordable, so the model admits floor((768 - 330 - 116) / 110) = 2
+    // variants and the peak stays inside the cap whatever the egg's timing.
+    const multiGlance = () => {
+      clip("typing.av1.mp4", 330_000);
+      clip("nod.k180.av1.mp4", 116_000);
+      for (const k of [0, 36, 72, 108, 144, 180])
+        clip(`s1a.k${k}.${String(k).padStart(8, "0")}.av1.mp4`, 110_000);
+    };
+
+    it("models repeated glances: the runtime never exceeds the visit cap and the egg nod still fits", () => {
+      multiGlance();
+      const r = run("--dir", dir, "--no-manifest");
+      for (const when of ["egg after", "egg first"])
+        expect(r.stdout).toContain(
+          `ok   multi-glance av1 visit (4x every variant, largest first, ${when}): 2 variant(s) + nod.k180 fetched, runtime peak 666.0 kB / 768.0 kB`,
+        );
+      expect(r.stdout).toMatch(/info every clip in one visit .*: 1106\.0 kB/);
+      expect(r.status).toBe(0);
+    });
+
+    it("fails the multi-glance case when not even one glance fits beside the egg", () => {
+      multiGlance();
+      const budgets = JSON.parse(readFileSync("media-budgets.json", "utf8"));
+      budgets.visitBudget = { av1: 500_000, h264: 993_280 };
+      const file = path.join(dir, "budgets.json");
+      writeFileSync(file, JSON.stringify(budgets));
+      const r = run("--budgets", file, "--dir", dir, "--no-manifest");
+      expect(r.status).toBe(1);
+      expect(r.stdout).toMatch(
+        /FAIL multi-glance av1 \(egg after\): at least one glance fits/,
+      );
+    });
   });
 });
