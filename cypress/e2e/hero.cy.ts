@@ -131,21 +131,55 @@ describe("hero motion (stub clips)", () => {
       .should((v) =>
         expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2),
       );
-    // Keep each foreign join pinned for several animation frames, so an
-    // erroneous transient cut-in cannot pass via an assertion before a tick.
+    // Hold each foreign join long enough for a wrong cut-in to become
+    // visible (review p2 M1: 4 rAFs, ~65 ms, was shorter than play() + first
+    // frame). The hero clock stays pinned on the join; real decode runs. Each
+    // hold lasts at least HOLD_FRAMES animation frames AND HOLD_MS real time,
+    // and if the nod <video> fires `playing` during it, AFTER_PLAYING more
+    // frames so its first-frame callback can land. Every frame asserts that
+    // the base is shown and the nod element is not switched on.
+    const HOLD_FRAMES = 30;
+    const HOLD_MS = 500;
+    const AFTER_PLAYING = 15;
     for (const f of [0, 36, 72, 108, 144, 176, 179]) {
       setHeroMs(msAtFrame(f));
       cy.window().then(
+        { timeout: 10_000 },
         (w) =>
-          new Cypress.Promise<void>((resolve) => {
-            let n = 4;
-            const frame = () => {
-              expect(
-                w.document.querySelector(".hero")?.getAttribute("data-shown"),
-                `f${f}`,
-              ).to.eq("base");
-              if (--n) w.requestAnimationFrame(frame);
+          new Cypress.Promise<void>((resolve, reject) => {
+            const nod = [...w.document.querySelectorAll("video")].find((v) =>
+              /nod\.k180/.test(
+                v.querySelector("source")?.getAttribute("src") ?? "",
+              ),
+            );
+            const t0 = Date.now(); // real time (performance.now is pinned)
+            let frames = 0;
+            let playingAt: number | null = null;
+            const onPlaying = () => (playingAt ??= frames);
+            nod?.addEventListener("playing", onPlaying);
+            const done = (err?: unknown) => {
+              nod?.removeEventListener("playing", onPlaying);
+              if (err) reject(err as Error);
               else resolve();
+            };
+            const frame = () => {
+              try {
+                expect(
+                  w.document.querySelector(".hero")?.getAttribute("data-shown"),
+                  `f${f} (hold frame ${frames})`,
+                ).to.eq("base");
+                expect(nod?.hasAttribute("data-on"), `f${f} nod data-on`).to.eq(
+                  false,
+                );
+              } catch (e) {
+                return done(e);
+              }
+              frames++;
+              const held = frames >= HOLD_FRAMES && Date.now() - t0 >= HOLD_MS;
+              const settled =
+                playingAt === null || frames - playingAt >= AFTER_PLAYING;
+              if (held && settled) done();
+              else w.requestAnimationFrame(frame);
             };
             w.requestAnimationFrame(frame);
           }),
