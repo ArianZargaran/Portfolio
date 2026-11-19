@@ -306,6 +306,54 @@ export function step(
   return next;
 }
 
+export type ReactionPlan =
+  | { ok: true; action: ActionDef; occ: Occurrence; join: number }
+  | {
+      ok: false;
+      reason:
+        | Extract<RequestResult, { accepted: false }>["reason"]
+        | "no-join"
+        | "foreign-entry";
+    };
+
+/**
+ * Dry run, BEFORE any fetch (review N1): would a request for `id` made now
+ * be accepted (freeze, unknown, once per visit, the 30 s same-reaction
+ * cooldown, an already playing or locked slot, priority), and which variant
+ * would it actually play (the join `step` would pick, given the 6 s gap /
+ * 6 per minute cooldowns and whatever is busy until `busyUntil`), on its own
+ * entry? The player fetches only `action` and only when `ok`, so a hover
+ * during the cooldown or with no usable join downloads nothing. Pure: the
+ * queue passed in is not changed.
+ */
+export function planReaction(
+  q: QueueState,
+  id: ReactionId,
+  t: number,
+  abs: number,
+  busyUntil = 0,
+  env: QueueEnv = {},
+): ReactionPlan {
+  const r = request(q, id, t, env);
+  if (!r.accepted) return { ok: false, reason: r.reason };
+  // Only the new request in the slot matters for the plan; a reaction
+  // already playing still delays it (step reads q.playing).
+  const s = step(r.state, t, abs, busyUntil, env);
+  const slot = s.slot?.id === id ? s.slot : undefined;
+  const played = s.playing?.id === id && !q.playing ? s.playing : undefined;
+  const occ = slot?.occ ?? played?.occ;
+  const join = slot?.join ?? (played ? played.occ.start : undefined);
+  if (!occ || join === undefined) return { ok: false, reason: "no-join" };
+  const cfg = env.cfg ?? HERO_JOIN;
+  if (
+    mod(occ.start + occ.action.clip.firstFrame, cfg.loopFrames) !==
+      occ.action.entry ||
+    mod(join, cfg.loopFrames) !== occ.action.entry
+  )
+    return { ok: false, reason: "foreign-entry" };
+  return { ok: true, action: occ.action, occ, join };
+}
+
 /**
  * The variant a request made now would most likely play: the one for the
  * next join reachable from abs + LEAD_FRAMES. Intent fetch (M3) loads only

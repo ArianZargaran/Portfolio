@@ -63,4 +63,42 @@ describe("per-visit byte budget (0.75 / 0.97 MB)", () => {
       "h264",
     );
   });
+  it("repeated glances (review N1): base + the egg nod reserved + at most 3 S1a variants, the nod still fits after, in both codecs", () => {
+    const s1a = Object.values(ACTIONS)
+      .filter((a) => a.family === "s1a")
+      .sort((a, b) => a.entry - b.entry);
+    const nod = ACTIONS["nod.k180"]!.clip;
+    for (const codec of ["av1", "h264"] as const) {
+      const b = createBudget();
+      b.setCodec(codec);
+      expect(b.charge(BASE_LOOP.clip)).toBe(true);
+      const took: string[] = [];
+      for (const a of [...s1a, ...s1a]) {
+        if (!b.canFetchKeeping(a.clip, [nod])) continue;
+        expect(b.charge(a.clip)).toBe(true);
+        if (!took.includes(a.id)) took.push(a.id);
+      }
+      expect({ codec, glances: took.length }).toEqual({ codec, glances: 3 });
+      expect(b.canFetch(nod)).toBe(true); // the egg still fits
+      expect(b.charge(nod)).toBe(true);
+      expect(b.spent).toBeLessThanOrEqual(VISIT_BUDGET_BYTES[codec]);
+      // Without the reserve a 4th variant would fit and starve the nod.
+      const greedy = createBudget();
+      greedy.setCodec(codec);
+      greedy.charge(BASE_LOOP.clip);
+      s1a.slice(0, 4).forEach((a) => greedy.charge(a.clip));
+      expect(greedy.canFetch(nod)).toBe(false);
+    }
+  });
+
+  it("canFetchKeeping ignores a reserve that is the clip itself or already fetched", () => {
+    const nod = ACTIONS["nod.k180"]!.clip;
+    const b = createBudget();
+    b.setCodec("av1");
+    b.charge(BASE_LOOP.clip);
+    expect(b.canFetchKeeping(nod, [nod])).toBe(b.canFetch(nod));
+    b.charge(nod);
+    const s = ACTIONS["s1a.k0"]!.clip;
+    expect(b.canFetchKeeping(s, [nod])).toBe(b.canFetch(s));
+  });
 });

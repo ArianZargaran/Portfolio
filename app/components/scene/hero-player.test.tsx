@@ -363,3 +363,99 @@ describe("HeroPlayer stale first-frame callback (review finding 5)", () => {
     expect(root.dataset.shown).toBe("nod.k180");
   });
 });
+
+describe("HeroPlayer glance: plan before fetch (review N1)", () => {
+  type Cb = () => void;
+  let frameCbs: { el: HTMLVideoElement; cb: Cb }[];
+  let load: ReturnType<typeof vi.fn>;
+  const original = Object.getOwnPropertyDescriptor(
+    HTMLVideoElement.prototype,
+    "requestVideoFrameCallback",
+  );
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: [
+        "performance",
+        "requestAnimationFrame",
+        "cancelAnimationFrame",
+        "setTimeout",
+        "clearTimeout",
+      ],
+    });
+    frameCbs = [];
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    HTMLMediaElement.prototype.pause = vi.fn();
+    load = vi.fn();
+    HTMLMediaElement.prototype.load = load as () => void;
+    // First-frame callbacks are held: only a primed element can be ready.
+    HTMLVideoElement.prototype.requestVideoFrameCallback = function (
+      this: HTMLVideoElement,
+      cb: VideoFrameRequestCallback,
+    ) {
+      frameCbs.push({
+        el: this,
+        cb: () => cb(0, {} as VideoFrameCallbackMetadata),
+      });
+      return frameCbs.length;
+    };
+  });
+  afterEach(() => {
+    if (original)
+      Object.defineProperty(
+        HTMLVideoElement.prototype,
+        "requestVideoFrameCallback",
+        original,
+      );
+    else
+      delete (
+        HTMLVideoElement.prototype as { requestVideoFrameCallback?: unknown }
+      ).requestVideoFrameCallback;
+    vi.useRealTimers();
+  });
+  const tick = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+  const glance = () => {
+    act(() => intentHeroReaction("glance-up"));
+    act(() => requestHeroReaction("glance-up"));
+  };
+  const s1a = (c: HTMLElement) =>
+    (fetched(c) as string[]).filter((id) => id.startsWith("s1a."));
+
+  it("hovers during the 30 s cooldown fetch nothing; after it, the next variant", () => {
+    const { container } = render(<HeroPlayer />);
+    const root = container.querySelector<HTMLElement>(".hero")!;
+    glance(); // ~f0 -> s1a.k36, starts at f36 (3 s)
+    expect(s1a(container)).toEqual(["s1a.k36"]);
+    expect(load).toHaveBeenCalledTimes(1);
+    tick(4_000); // the glance is playing / has started
+    for (let i = 0; i < 12; i++) {
+      glance(); // every ~2.4 s until ~32 s: all inside the cooldown
+      expect(root.dataset.reaction).toBe("glance-up:cooldown");
+      tick(2_400);
+    }
+    expect(s1a(container)).toEqual(["s1a.k36"]);
+    expect(load).toHaveBeenCalledTimes(1);
+    tick(1_500); // ~34.3 s > 3 s + 30 s
+    glance();
+    expect(s1a(container)).toHaveLength(2);
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+
+  it("repeated glances stop at 3 variants (H.264 sizes) and the egg nod still fits", () => {
+    const { container } = render(<HeroPlayer />);
+    const root = container.querySelector<HTMLElement>(".hero")!;
+    for (let i = 0; i < 6; i++) {
+      glance();
+      tick(33_500); // past each glance's cooldown
+    }
+    expect(s1a(container)).toHaveLength(3);
+    expect(root.dataset.reaction).toBe("glance-up:budget");
+    const bytes = Number(root.dataset.bytes);
+    expect(bytes).toBeLessThanOrEqual(993_280 - 147_578);
+    act(() => heroHotspot("queen-poster", "visit"));
+    act(() => heroHotspot("speakers", "intent"));
+    expect(fetched(container)).toContain("nod.k180");
+    expect(Number(root.dataset.bytes)).toBe(bytes + 147_578);
+    expect(Number(root.dataset.bytes)).toBeLessThanOrEqual(993_280);
+  });
+
+});

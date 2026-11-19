@@ -27,8 +27,7 @@ import {
   gateRotation,
   initialQueue,
   initialRotationGate,
-  nextVariant,
-  REACTIONS,
+  planReaction,
   request,
   resolveState,
   rotationBusyUntil,
@@ -103,7 +102,7 @@ function ClipVideo({
 
 /**
  * Plays the hero character over the still: the typing loop, with actions
- * (today the nod; S1a/S1b/T2 return when they lock) spliced in on the shared clock. All timing comes from
+ * (the E2 nod and the S1a glance-up; S1b/T2 return when they lock) spliced in on the shared clock. All timing comes from
  * the pure schedule (stateAt/decide); this component only keeps the
  * <video> elements on the frames it asks for. Lazy chunk (see HeroMount).
  */
@@ -181,9 +180,21 @@ export default function HeroPlayer({
       root.dataset.bytes = String(budget.spent);
       return true;
     };
-    // Intent (hover/focus start) fetches the clip the reaction would play
-    // next; the dwell-confirmed request then enqueues it. A request whose
-    // clip cannot be fetched (over budget) is dropped: the loop carries on.
+    /**
+     * A reaction clip (S1a) is fetched only while the E2 egg nod still fits
+     * beside it, so glances can never starve the egg (review N1).
+     */
+    const fetchReactionClip = (a: ActionDef): boolean => {
+      if (actionRefs.current[a.id]?.preload === "auto") return true;
+      if (!budget.canFetchKeeping(a.clip, [EGG.action.clip])) {
+        root.dataset.budget = "full";
+        return false;
+      }
+      return fetchClip(a);
+    };
+    // Frame up to which a live rotation clip or committed egg nod holds the
+    // stage (from the last tick), for planning a reaction's join.
+    let busyUntil = 0;
     // E2 egg (M4), outside the queue. Hotspot visits come from the event
     // wiring (M5); a completed sequence arms the nod on the next frame,
     // once the queue has scheduled T6 (so the nod waits for its end).
@@ -208,12 +219,24 @@ export default function HeroPlayer({
       else leaveHero();
     });
 
+    // Intent (hover/focus, dwell-confirmed) and the request first dry-run
+    // the queue (planReaction: freeze, cooldowns, playing/locked slot, the
+    // join step would pick, own entry) and only then fetch that one variant,
+    // keeping the egg nod affordable. A refused plan or an unaffordable clip
+    // fetches nothing and the request is dropped: the loop carries on.
     const offReaction = onHeroReaction((id, kind) => {
       if (dead || frozenRef.current || document.hidden) return;
-      const def = REACTIONS[id];
-      const a = def && nextVariant(def, stateAt(clock.now()).abs);
-      if (a && !fetchClip(a)) return;
-      if (kind === "request") queue = request(queue, id, clock.now()).state;
+      const t = clock.now();
+      const plan = planReaction(queue, id, t, stateAt(t).abs, busyUntil);
+      root.dataset.reaction = plan.ok
+        ? `${id}:${plan.action.id}`
+        : `${id}:${plan.reason}`;
+      if (!plan.ok) return;
+      if (!fetchReactionClip(plan.action)) {
+        root.dataset.reaction = `${id}:budget`;
+        return;
+      }
+      if (kind === "request") queue = request(queue, id, t).state;
     });
 
     // The base loop is always visible; an action clip covers it while on.
@@ -282,12 +305,8 @@ export default function HeroPlayer({
       rotGate = gated.gate;
       const rotation = gated.rotation;
       const abs = rotation.abs;
-      queue = step(
-        queue,
-        t,
-        abs,
-        Math.max(rotationBusyUntil(rotation), eggBusyUntil(egg, abs)),
-      );
+      busyUntil = Math.max(rotationBusyUntil(rotation), eggBusyUntil(egg, abs));
+      queue = step(queue, t, abs, busyUntil);
       if (eggPending) {
         eggPending = false;
         const t6 =
@@ -319,7 +338,8 @@ export default function HeroPlayer({
 
       // A reaction rescheduled onto another variant needs that clip too.
       const queued = queue.slot?.occ?.action;
-      if (queued && !fetchClip(queued)) queue = { ...queue, slot: undefined };
+      if (queued && !fetchReactionClip(queued))
+        queue = { ...queue, slot: undefined };
       // The auto-rotation (a DRAFT for Ari, not a reaction) buffers its next
       // clip ahead of the cut-in only behind FEATURE_HERO_ROTATION_PREFETCH.
       const next = nextOccurrence(s.abs, rotationRef.current);

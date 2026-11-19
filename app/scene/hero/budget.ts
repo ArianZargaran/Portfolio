@@ -18,6 +18,11 @@
  * 768,000 / 993,280 B (check:media). A visit that hovers the poster at
  * several different joins fetches more than one S1a variant; this budget
  * then refuses the fetch that would go over, and that glance doesn't play.
+ * A glance is fetched only if the request would be accepted (planReaction,
+ * review N1: nothing during the cooldown) and only while the E2 egg nod
+ * still fits beside it (`canFetchKeeping(clip, [nod])`), so repeated glances
+ * can never starve the egg: base + nod + at most 3 S1a variants per visit in
+ * either codec (check:media's multi-glance case models exactly this).
  */
 import type { Clip, ClipSource } from "./actions";
 
@@ -34,6 +39,11 @@ export interface Budget {
   /** Bytes this clip would cost in the current codec (0 if already fetched). */
   cost(clip: Clip): number;
   canFetch(clip: Clip): boolean;
+  /**
+   * canFetch, while still leaving room for `reserve` (clips not fetched yet
+   * that must stay affordable, e.g. the E2 egg nod while a glance fetches).
+   */
+  canFetchKeeping(clip: Clip, reserve: readonly Clip[]): boolean;
   /** Records the clip as fetched. Returns false (and records nothing) if over. */
   charge(clip: Clip): boolean;
   /** Called once the browser has picked a source for the base loop. */
@@ -59,6 +69,13 @@ export function createBudget(
     },
     cost: (clip) => (fetched.has(clip) ? 0 : sizeFor(clip, codec)),
     canFetch: (clip) => spent() + budget.cost(clip) <= limits[codec],
+    canFetchKeeping: (clip, reserve) =>
+      spent() +
+        budget.cost(clip) +
+        [...new Set(reserve)]
+          .filter((r) => r !== clip)
+          .reduce((n, r) => n + budget.cost(r), 0) <=
+      limits[codec],
     charge(clip) {
       if (!budget.canFetch(clip)) return false;
       fetched.add(clip);
