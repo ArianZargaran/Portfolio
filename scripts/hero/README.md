@@ -17,7 +17,7 @@ The repo root comes from the script's own location, so any clone works. Example:
 
 | Step                                                                          | Script                | Output                                                                           |
 | ----------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------- |
-| 1. Lock check (sha256 of every file in the 5 lock records + locks_now26/27)   | `verify_locks.py`     | `hero-encoding-report/lock_check.json`                                           |
+| 1. Lock check (sha256 of every file in the lock records + locks_now26..29)    | `verify_locks.py`     | `hero-encoding-report/lock_check.json`                                           |
 | 2. Animated-region analysis (also proves frames = plate + layers + armrest)   | `analyze.py`          | `regions.json`, `tools/anim_mask.npy`                                            |
 | 3. Stage crops (copies, never touching the source)                            | `prep.py`             | `work/src/<seq>/{baked,stack}/NNN.png`                                           |
 | 4. Prototype encodes                                                          | `encode.py typing e2` | `work/enc/<seq>/*`, `work/enc/state.json`                                        |
@@ -39,4 +39,4 @@ Outputs go to `$HERO_REPORT/pipeline/`, never into the repo. Acceptance dry run:
 
 Smoke test of a running build: `BASE_URL=http://localhost:3000 OUT=… node scripts/hero-smoke.mjs`.
 
-**v5_2 install (locked, option (a)):** the clips in `app/scene/hero/media/` (`typing`, `nod.k180`) come from `variants.py --loop v5_2`, not from `build_web_media.py`. Their records in `hero-media.build.json` point at `pipeline/m9b-dryrun-v5_2/` and, for the nod at crf 32/21, `pipeline/install-v5_2/`; its `locks` block pins LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2, LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4 and LOCK_POSTER_M2_V3_R2. The S1a/S1b/T2 clips are not locked and live on the local branch `hero-reactions-s1a-s1b-t2`.
+**v5_2 install (locked, option (a)):** the clips in `app/scene/hero/media/` (`typing`, `nod.k180`, and since Ari's t1014s5523 lock `s1a.k0`…`s1a.k180`) come from `variants.py --loop v5_2`, not from `build_web_media.py`. Their records in `hero-media.build.json` point at `pipeline/m9b-dryrun-v5_2/` and, for the nod at crf 32/21, `pipeline/install-v5_2/`; its `locks` block pins LOCK_PAINTED_CHAR_TYPING_LOOP_V5_2, LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4, LOCK_POSTER_M2_V3_R2 and LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2 (s1a records point at `pipeline/m9b-dryrun-v5_2/`, reproduced from the locked frames in `pipeline/s1a-restore/reenc/`). The S1b/T2 clips are not locked and live on the local branch `hero-reactions-s1a-s1b-t2`.

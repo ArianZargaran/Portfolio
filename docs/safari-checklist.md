@@ -44,7 +44,7 @@ Run `npm run build && PORT=3150 node scripts/serve.mjs`, then open `http://local
 - [ ] With Develop → Network → throttling at 3G or "Edge" on a fresh profile (clear website data), it reads `still:throughput-slow`, and no `.mp4` request appears in the Network tab.
 - [ ] After clearing website data and with the cache served (Disable Caches off, second load), if nothing is measurable it reads `frozen:inconclusive`: the scene is paused, and Enter or a click plays it.
 - [ ] Esc freezes instantly; reloading stays frozen with no `.mp4` requests.
-- [ ] Hovering the poster, then the speakers, requests `nod.*.mp4` (Network tab) and nothing before that.
+- [ ] Hovering the poster requests exactly one `s1a.k<join>.*.mp4` (the next join's variant) after the 250 ms dwell, and the glance-up cuts in on that join; then hovering the speakers requests `nod.*.mp4` (Network tab). Nothing is requested before the dwell, and no `s1b`/`t2` file ever.
 - [ ] Leave the tab for 60 s and come back: no black frame on the next cut.
 
 ## 4. Record

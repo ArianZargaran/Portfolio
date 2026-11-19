@@ -82,7 +82,7 @@
       const show = () => ($("out").textContent = JSON.stringify(R, null, 2));
       const status = (s) => ($("status").textContent = s);
       const XO = `${location.protocol}//${location.hostname}:${Number(location.port || 80) + 1}`;
-      // Shipped clip ids from the server (GET /clips): today typing + nod.k180.
+      // Shipped clip ids from the server (GET /clips): today typing, nod.k180 and s1a.k0..k180.
       let CLIPS = ["typing"];
       const actionClip = () => CLIPS.find((c) => c !== "typing") ?? "typing";
       const abs = (u) => new URL(u, location.href).href;

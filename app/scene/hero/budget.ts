@@ -12,9 +12,12 @@
  * that needs it does not play (the still and the loop carry on).
  *
  * "MB" here follows the plan's KiB arithmetic (576 KiB at M3 - nod in
- * rotation 160 + MVP 330 = 746 -> 750 KiB). The locked v5_2 install
- * (typing + nod.k180 only) has a worst case of 448,003 B AV1 / 590,103 B
- * H.264 against these 768,000 / 993,280 B (check:media).
+ * rotation 160 + MVP 330 = 746 -> 750 KiB). The locked install (typing,
+ * nod.k180 and the S1a variants) has a worst case of 538,510 B AV1 /
+ * 709,646 B H.264 (base + nod + the largest S1a variant) against these
+ * 768,000 / 993,280 B (check:media). A visit that hovers the poster at
+ * several different joins fetches more than one S1a variant; this budget
+ * then refuses the fetch that would go over, and that glance doesn't play.
  */
 import type { Clip, ClipSource } from "./actions";
 
