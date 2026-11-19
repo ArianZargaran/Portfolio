@@ -24,6 +24,7 @@ import { mod } from "./clock";
  *   cycle 0: typing only
  *   cycle 1: typing, music nod cutting in at f180 (clip i60-131) into cycle 2
  *   cycle 2: typing (nod returns at the f36 join); no bounce until S1b locks
+ * S1a (glance-up) is a visitor reaction only (queen-poster), never rotated.
  *   cycle 3: typing only
  */
 export type Rotation = (ActionId | null)[];
@@ -208,7 +209,29 @@ export interface Decision {
 }
 
 /**
+ * Join safety, re-checked where the player decides (design A): the base
+ * frame the occurrence's encoded clip comes up on, computed two ways (from
+ * its scheduled start, and from the clock frame and action frame actually
+ * being shown), must both be the variant's own `entry`. A per-entry clip
+ * (S1a, the nod) is opaque with the screen baked in, so anywhere else it
+ * would pop. occurrenceState already refuses such occurrences; this holds
+ * even for a hand-built or corrupted ScheduleState.
+ */
+export function onOwnEntry(
+  s: ScheduleState,
+  base: BaseLoopDef = BASE_LOOP,
+): boolean {
+  const a = s.action;
+  if (!a) return false;
+  const act = a.occurrence.action;
+  const fromStart = mod(a.occurrence.start + act.clip.firstFrame, base.frames);
+  const fromClock = mod(s.abs - a.frame + act.clip.firstFrame, base.frames);
+  return fromStart === act.entry && fromClock === act.entry;
+}
+
+/**
  * Which clip to show, given the schedule and what the player has.
+ * - an occurrence that is not on its own entry join never shows (onOwnEntry).
  * - enter phase: cut in as soon as the action clip has a frame up.
  *   Until then the base loop shows the same pixels, so being late is invisible.
  * - core: keep the action if it is up; if it never came up, skip this
@@ -222,6 +245,7 @@ export function decide(
 ): Decision {
   const a = s.action;
   if (!a || a.clipFrame < 0) return { show: "base" };
+  if (!onOwnEntry(s)) return { show: "base" };
   const id = a.occurrence.action.id;
   const prepare = { action: a.occurrence.action, clipFrame: a.clipFrame };
   if (a.phase === "enter") return { show: actionReady ? id : "base", prepare };
