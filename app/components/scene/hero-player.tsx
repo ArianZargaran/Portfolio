@@ -146,6 +146,9 @@ export default function HeroPlayer({
     // release, so a play()/first-frame callback left over from an earlier
     // prepare (even of the same clip) can never mark a newer one ready.
     let prepareGen = 0;
+    /** True while the prepare (gen, id) is still the live one. */
+    const currentPrepare = (gen: number, id: ActionId) => () =>
+      gen === prepareGen && prepared === id;
     let dead = false;
     // Reaction queue (M2): requests come from the bus, are applied here,
     // and take effect on the next frame.
@@ -349,8 +352,7 @@ export default function HeroPlayer({
         } else if (v && prepared !== action.id) {
           release();
           prepared = action.id;
-          const gen = ++prepareGen;
-          const current = () => gen === prepareGen && prepared === action.id;
+          const current = currentPrepare(++prepareGen, action.id);
           warmed.delete(action.id);
           v.currentTime = frameTime(clipFrame, FPS);
           v.play().then(
@@ -388,7 +390,14 @@ export default function HeroPlayer({
       } else if (!document.hidden) {
         clock.resume();
         void base.play().catch(playFailed);
-        if (action && ready) void action.play().catch(() => release());
+        if (action && ready && prepared) {
+          // Same generation guard as the prepare path: a late rejection of
+          // this resume must not release a newer prepare (review Low 3).
+          const current = currentPrepare(prepareGen, prepared);
+          void action.play().catch(() => {
+            if (current()) release();
+          });
+        }
       }
     };
 

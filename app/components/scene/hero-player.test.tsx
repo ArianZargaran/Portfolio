@@ -297,4 +297,45 @@ describe("HeroPlayer stale first-frame callback (review finding 5)", () => {
     expect(play).toHaveBeenCalledTimes(2); // no third prepare after a stale release
     expect(root.dataset.shown).toBe("nod.k180");
   });
+
+  it("a stale unpause play() rejection cannot release a newer prepare", async () => {
+    const { container, rerender } = render(
+      <HeroPlayer rotationPrefetch rotationNod />,
+    );
+    const root = container.querySelector<HTMLElement>("[data-shown]")!;
+    const nod = container.querySelector<HTMLVideoElement>(
+      '[data-clip="nod.k180"]',
+    )!;
+    tick(33_020);
+    await flush();
+    const cb = frameCbs.filter((f) => f.el === nod);
+    expect(cb).toHaveLength(1);
+    act(() => cb[0].cb());
+    tick(20);
+    expect(root.dataset.shown).toBe("nod.k180");
+
+    let rejectResume!: (e: Error) => void;
+    const play = vi.spyOn(nod, "play").mockImplementationOnce(
+      () =>
+        new Promise<void>((_, reject) => {
+          rejectResume = reject;
+        }),
+    );
+    rerender(<HeroPlayer rotationPrefetch rotationNod frozen />);
+    rerender(<HeroPlayer rotationPrefetch rotationNod />);
+    expect(play).toHaveBeenCalledTimes(1); // unpause #1: play still pending
+    hideShow(); // release, then prepare #2 at the same enter window
+    tick(20);
+    await flush();
+    const newer = frameCbs.filter((f) => f.el === nod);
+    expect(newer).toHaveLength(2);
+    act(() => newer[1].cb());
+    tick(20);
+    expect(root.dataset.shown).toBe("nod.k180");
+
+    await act(async () => rejectResume(new Error("old resume failed late")));
+    tick(40);
+    expect(play).toHaveBeenCalledTimes(2);
+    expect(root.dataset.shown).toBe("nod.k180");
+  });
 });
