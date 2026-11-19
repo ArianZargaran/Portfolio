@@ -70,10 +70,22 @@ function run(q: QueueState, from: number, to: number) {
   return q;
 }
 
-describe("registry on the locked v5_2 install (option (a))", () => {
-  it("ships no reaction clips: S1a/S1b/T2 wait for their locks", () => {
-    expect(REACTIONS).toEqual({});
-    expect(Object.keys(ACTIONS)).toEqual(["nod.k180"]);
+describe("registry on the locked install (v5_2 option (a) + S1a V2)", () => {
+  it("ships only the glance-up reaction (S1a); S1b/T2 wait for their locks", () => {
+    expect(Object.keys(REACTIONS)).toEqual(["glance-up"]);
+    const g = REACTIONS["glance-up"]!;
+    expect(g.priority).toBe(3);
+    expect(g.oncePerVisit).toBeUndefined();
+    // One variant per join, each keyed by its own entry.
+    expect(Object.keys(g.variants).map(Number)).toEqual([...ENTRY_JOINS]);
+    for (const k of ENTRY_JOINS) {
+      expect(g.variants[k]!.id).toBe(`s1a.k${k}`);
+      expect(g.variants[k]!.entry).toBe(k);
+    }
+    expect(entryKs(g)).toEqual([...ENTRY_JOINS]);
+    expect(Object.keys(ACTIONS).filter((id) => /^(s1b|t2)\./.test(id))).toEqual(
+      [],
+    );
     for (const id of ["speaker", "phone", "sip"] as const)
       expect(request(initialQueue(), id, 1)).toMatchObject({
         accepted: false,

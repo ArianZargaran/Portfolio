@@ -17,12 +17,14 @@
  * (`media/<family>.k<k>.<codec>.mp4`), and the player may cut it in ONLY at
  * `entry` (reactions.ts `joinableKs`, join-safety tests in reactions.test.ts).
  *
- * Installed (Ari's lock t1003s5480, option (a) via Atlas): the typing loop
- * and the E2 nod v4 (`nod.k180`). The S1a / S1b / T2 per-entry clips are
- * NOT locked and are not installed; their clips, triggers and tests are kept
- * on the local branch `hero-reactions-s1a-s1b-t2` and come back when they
- * lock. Bounce v2 (inside the v5_2 lock record) is locked as an asset only
- * and does not ship.
+ * Installed: the typing loop and the E2 nod v4 (`nod.k180`) (Ari's lock
+ * t1003s5480, option (a) via Atlas), and the S1a glance-up, one baked clip
+ * per join `s1a.k0` .. `s1a.k180` (Ari's lock t1014s5523, "Lock just the
+ * glance-up for poster hover", LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2).
+ * The S1b / T2 per-entry clips are NOT locked and are not installed;
+ * their clips, triggers and tests are kept on the local branch
+ * `hero-reactions-s1a-s1b-t2` and come back when they lock. Bounce v2
+ * (inside the v5_2 lock record) is locked as an asset only and does not ship.
  *
  * To add an action: render and prove it with scripts/hero/variants.py, copy
  * the passing encodes into media/, record them in hero-media.build.json and
@@ -64,11 +66,11 @@ export type EntryJoin = (typeof ENTRY_JOINS)[number];
 
 /**
  * Action families: one per piece of art, one clip per entry within it.
- * Only the nod is installed (S1a / S1b / T2 live on hero-reactions-s1a-s1b-t2
+ * Installed: the nod and S1a (S1b / T2 live on hero-reactions-s1a-s1b-t2
  * until they lock).
  */
-export type ActionFamily = "nod";
-export type ActionId = "nod.k180";
+export type ActionFamily = "nod" | "s1a";
+export type ActionId = "nod.k180" | `s1a.k${EntryJoin}`;
 
 export interface ActionDef {
   id: ActionId;
@@ -113,6 +115,12 @@ export const CLIP_BYTES: Record<
 > = {
   typing: { av1: 332_028, h264: 442_525 },
   "nod.k180": { av1: 115_975, h264: 147_578 },
+  "s1a.k0": { av1: 88_436, h264: 117_692 },
+  "s1a.k36": { av1: 89_515, h264: 119_543 },
+  "s1a.k72": { av1: 90_003, h264: 117_895 },
+  "s1a.k108": { av1: 89_135, h264: 117_884 },
+  "s1a.k144": { av1: 89_636, h264: 117_960 },
+  "s1a.k180": { av1: 90_507, h264: 117_129 },
 };
 
 /* AV1 first (about 25% smaller at the same quality; Chrome, Edge, Firefox,
@@ -142,8 +150,9 @@ export const BASE_LOOP: BaseLoopDef = {
   clip: { sources: sources("typing"), firstFrame: 0, frames: 216 },
 };
 
-/* Lock records the installed clips come from (Ari, card t1003s5480; verified
-   against portfolio-brain tools/locks_now28.sha, see docs/hero-player.md).
+/* Lock records the installed clips come from (Ari, cards t1003s5480 and
+   t1014s5523; verified against portfolio-brain tools/locks_now29.sha by
+   scripts/hero/verify_locks.py, see docs/hero-player.md).
    THE single source of truth for these ids and shas: join-config.ts derives
    V5_2_LOCK_RECORD / V5_2_LOCK_SHA256 from LOCK_RECORDS.typing, and
    media-files.test.ts checks hero-media.build.json's `locks` block against it. */
@@ -156,12 +165,60 @@ export const LOCK_RECORDS = {
     record: "LOCK_PAINTED_CHAR_ACTION_E2_NOD_V4",
     sha256: "08dcd66c76b505ae386532870beabbae7ace72b27c576a88cf7e53a5375727dc",
   },
+  s1a: {
+    record: "LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2",
+    sha256: "6de9b1acea9264c7f62a4c5d46f72c00bd2af177b9b646b0a9a151b185538027",
+  },
 } as const;
 
 const lockString = (l: { record: string; sha256: string }) =>
   `${l.record} (sha256 ${l.sha256})`;
 
-export const ACTIONS: Record<ActionId, ActionDef> = {
+/**
+ * A t995 per-entry variant: 36 frames, clip frame i over base frame k + i,
+ * returning on the join k + 36. Windows measured against the v5_2 loop with
+ * the splice-proof rule (p99.9 <= 4, 0 px > 8): only frame 0 equals the loop
+ * at the start (so the ONLY cut-in point is the entry join k itself), and
+ * the last `exitFrames` frames at the end
+ * ($HERO_REPORT/pipeline/m9b-dryrun-v5_2/identity_windows.json).
+ */
+const variant = (
+  family: "s1a",
+  k: EntryJoin,
+  label: string,
+  exitFrames: number,
+  lock: string,
+): ActionDef => {
+  const id = `${family}.k${k}` as ActionId;
+  return {
+    id,
+    family,
+    entry: k,
+    label: `${label} (entry f${k})`,
+    frames: 36,
+    fps: 12,
+    spliceOffset: k,
+    enterWindow: [0, 0],
+    exitWindow: [36 - exitFrames, 35],
+    clip: { sources: sources(id), firstFrame: 0, frames: 36 },
+    lock,
+  };
+};
+
+const entries = (
+  family: "s1a",
+  label: string,
+  exitFrames: number,
+  lock: string,
+): Record<string, ActionDef> =>
+  Object.fromEntries(
+    ENTRY_JOINS.map((k) => {
+      const a = variant(family, k, label, exitFrames, lock);
+      return [a.id, a];
+    }),
+  );
+
+export const ACTIONS = {
   /* E2 nod v4: the locked E2 v3 head on the v5_2 hands. The clip is the
      home-pose sub-clip i60-131: i60 is the home pose (lands on f180), i131 is
      loop f35, back on the f36 join. Its spill on the character is lit by
@@ -180,7 +237,14 @@ export const ACTIONS: Record<ActionId, ActionDef> = {
     clip: { sources: sources("nod.k180"), firstFrame: 60, frames: 72 },
     lock: lockString(LOCK_RECORDS.nod),
   },
-};
+  /* S1a glance-up v2 (queen-poster hover/focus, reactions.ts "glance-up"):
+     one baked opaque crop per join, screen included. Each is clean ONLY at
+     its own entry (lock review locks_now29 §3 note B: at a foreign entry
+     the crop differs by 69-15,688 px > 8 on the screen and spill), so it may
+     cut in only at f`entry` (validateAction, joinableKs, step, and the
+     occurrenceState / decide guards in schedule.ts). */
+  ...entries("s1a", "Glance up (S1a v2)", 4, lockString(LOCK_RECORDS.s1a)),
+} as Record<ActionId, ActionDef>;
 
 /** The nod (E2 egg, optional rotation slot). */
 export const NOD = ACTIONS["nod.k180"];

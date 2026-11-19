@@ -23,16 +23,18 @@ describe("per-visit byte budget (0.75 / 0.97 MB)", () => {
       const b = createBudget();
       b.setCodec(codec);
       expect(b.charge(BASE_LOOP.clip)).toBe(true);
-      for (const f of ["nod"] as const)
+      for (const f of ["nod", "s1a"] as const)
         expect(b.charge(largest(f, codec).clip)).toBe(true);
       expect(b.spent).toBeLessThanOrEqual(VISIT_BUDGET_BYTES[codec]);
       spent[codec] = b.spent;
     }
-    // 448.0 kB AV1 / 590.1 kB H.264 (check:media's worst case): typing + nod.k180.
-    expect(spent).toEqual({ av1: 448_003, h264: 590_103 });
-    // Only the nod family is installed (S1a/S1b/T2 wait for their locks).
+    // 538.5 kB AV1 / 709.6 kB H.264 (check:media's worst case): typing +
+    // nod.k180 + the largest S1a variant (s1a.k180 AV1 90,507 B, s1a.k36
+    // H.264 119,543 B).
+    expect(spent).toEqual({ av1: 538_510, h264: 709_646 });
+    // nod and S1a are installed (S1b/T2 wait for their locks).
     expect(new Set(Object.values(ACTIONS).map((a) => a.family))).toEqual(
-      new Set(["nod"]),
+      new Set(["nod", "s1a"]),
     );
   });
 

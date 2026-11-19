@@ -43,21 +43,43 @@ describe("HeroPlayer intent fetch (M3)", () => {
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
 
-    // No reaction clip is installed (S1a/S1b/T2 wait for their locks), so
-    // no reaction intent fetches anything.
+    // Reactions without a clip (S1b/T2 wait for their locks; speaker,
+    // phone and sip have no art) fetch nothing.
     for (const id of ["speaker", "phone", "sip"] as const)
       act(() => intentHeroReaction(id));
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
+
+    // Design A: the S1a intent fetches ONLY the variant for the next
+    // reachable join (clock ~f0 -> f36), never the other five.
+    act(() => intentHeroReaction("glance-up"));
+    expect(fetched(container)).toEqual(["typing", "s1a.k36"]);
+    expect(load).toHaveBeenCalledTimes(1);
+    // typing + s1a.k36, charged at H.264 sizes until the codec is known
+    expect(container.querySelector(".hero")?.getAttribute("data-bytes")).toBe(
+      String(442_525 + 119_543),
+    );
+    act(() => intentHeroReaction("glance-up")); // already buffered: no refetch
+    expect(load).toHaveBeenCalledTimes(1);
   });
 
-  it("mounts only the installed clips: typing and nod.k180", () => {
+  it("mounts only the installed clips: typing, nod.k180 and the six S1a variants", () => {
     const { container } = render(<HeroPlayer />);
     expect(
       videos(container)
         .map((v) => NAMES.get(v.src))
         .sort(),
-    ).toEqual(["nod.k180", "typing"].sort());
+    ).toEqual(
+      [
+        "nod.k180",
+        "typing",
+        ...[0, 36, 72, 108, 144, 180].map((k) => `s1a.k${k}`),
+      ].sort(),
+    );
+    // No S1b / T2 clip is mounted (not locked).
+    expect(videos(container).some((v) => /\/(s1b|t2)\./.test(v.src))).toBe(
+      false,
+    );
   });
 
   it("ignores intents for reactions without clips, and while frozen", () => {
@@ -66,6 +88,8 @@ describe("HeroPlayer intent fetch (M3)", () => {
     expect(fetched(container)).toEqual(["typing"]);
     rerender(<HeroPlayer frozen />);
     act(() => intentHeroReaction("phone"));
+    act(() => intentHeroReaction("glance-up")); // frozen: nothing
+    expect(fetched(container)).toEqual(["typing"]);
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
   });

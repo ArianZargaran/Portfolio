@@ -46,8 +46,8 @@ describe("shipped hero clips match the registry", () => {
   });
 
   it("stays small enough to commit (< 4 MB for every clip together)", () => {
-    // Design A ships one baked clip per entry; the locked install has 2
-    // clips x 2 codecs (about 1.04 MB in git). A visit fetches far less (the base plus at most one
+    // Design A ships one baked clip per entry; the locked install has 8
+    // clips x 2 codecs (about 2.29 MB in git). A visit fetches far less (the base plus at most one
     // variant per action, budget.ts / check:media).
     const total = Object.values(manifest.clips).reduce(
       (a, c) => a + c.bytes,
@@ -87,15 +87,43 @@ describe("lock ids and shas have one source (LOCK_RECORDS)", () => {
   });
 
   it("every installed action cites its LOCK_RECORDS entry", () => {
+    const byFamily = { nod: LOCK_RECORDS.nod, s1a: LOCK_RECORDS.s1a } as const;
     for (const a of Object.values(ACTIONS)) {
-      expect(a.lock).toBe(
-        `${LOCK_RECORDS.nod.record} (sha256 ${LOCK_RECORDS.nod.sha256})`,
-      );
+      const l = byFamily[a.family];
+      expect(a.lock).toBe(`${l.record} (sha256 ${l.sha256})`);
     }
+  });
+
+  it("the S1a lock is the one Ari approved (t1014s5523, locks_now29)", () => {
+    expect(LOCK_RECORDS.s1a).toEqual({
+      record: "LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2",
+      sha256:
+        "6de9b1acea9264c7f62a4c5d46f72c00bd2af177b9b646b0a9a151b185538027",
+    });
   });
 
   it("hero-media.build.json's locks block agrees with LOCK_RECORDS", () => {
     expect(manifest.locks.typing).toMatchObject(LOCK_RECORDS.typing);
     expect(manifest.locks.nod_v4).toMatchObject(LOCK_RECORDS.nod);
+    expect(manifest.locks.s1a).toMatchObject(LOCK_RECORDS.s1a);
+  });
+
+  it("every S1a clip file is the one baked for its entry (s1a.k<entry>.*)", () => {
+    for (const a of Object.values(ACTIONS).filter((x) => x.family === "s1a")) {
+      expect(a.id).toBe(`s1a.k${a.entry}`);
+      for (const s of a.clip.sources)
+        expect(path.basename(s.src).startsWith(`s1a.k${a.entry}.`)).toBe(true);
+      const m = manifest.clips as Record<string, { join?: number }>;
+      expect(m[`s1a.k${a.entry}.av1.mp4`].join).toBe(a.entry);
+      expect(m[`s1a.k${a.entry}.h264.mp4`].join).toBe(a.entry);
+    }
+  });
+
+  it("ships no S1b or T2 media (not locked)", () => {
+    const files = readdirSync(MEDIA_DIR);
+    expect(files.filter((f) => /^(s1b|t2|bounce)\./.test(f))).toEqual([]);
+    expect(
+      Object.keys(manifest.clips).filter((f) => /^(s1b|t2|bounce)\./.test(f)),
+    ).toEqual([]);
   });
 });

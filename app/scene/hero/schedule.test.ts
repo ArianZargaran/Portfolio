@@ -85,8 +85,17 @@ describe("registry", () => {
   });
 
   it("design A: one baked clip per entry, each spliced on its own join", () => {
-    // Locked install (t1003s5480, option (a)): only the nod v4 clip ships.
-    expect(Object.keys(ACTIONS)).toEqual(["nod.k180"]);
+    // Locked installs: the nod v4 clip (t1003s5480) and one S1a v2 clip per
+    // join (t1014s5523).
+    expect(Object.keys(ACTIONS)).toEqual([
+      "nod.k180",
+      "s1a.k0",
+      "s1a.k36",
+      "s1a.k72",
+      "s1a.k108",
+      "s1a.k144",
+      "s1a.k180",
+    ]);
     for (const a of [...Object.values(ACTIONS), fx72, fx36]) {
       expect(a.id).toBe(`${a.family}.k${a.entry}`);
       // The clip's first frame sits on its entry join.

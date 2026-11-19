@@ -15,9 +15,11 @@
  *   request, in that order. Leaving before the dwell sends nothing, so a
  *   quick swipe fetches nothing (review N3). Touch never hovers; a tap
  *   navigates.
- * - No poster reaction, idle/return reaction or 45 s doze timer on this
- *   install: S1a / S1b / T2 are unlocked, preserved on the local branch
- *   hero-reactions-s1a-s1b-t2. Poster visits still arm the E2 egg normally.
+ * - Hover/focus on queen-poster: glance-up (S1a, locked t1014s5523),
+ *   fetched on intent (only the variant for the next reachable join). The
+ *   poster visit also arms the E2 egg, as before.
+ * - No idle/return reaction or 45 s doze timer on this install: S1b / T2
+ *   are unlocked, preserved on the local branch hero-reactions-s1a-s1b-t2.
  * - Pointer and focus both out of the scene: "leave" (disarms the E2 egg).
  *
  * Sip stays off until S4 exists (planned timer-only at 90 s, not 45 s).
@@ -36,6 +38,7 @@ import type { ReactionId } from "./reactions";
 
 /** Hotspot id -> reaction it triggers (hit-areas.ts ids). Data, not code. */
 export const HOTSPOT_REACTIONS: Readonly<Record<string, ReactionId>> = {
+  "queen-poster": "glance-up",
   speakers: "speaker",
   phone: "phone",
 };

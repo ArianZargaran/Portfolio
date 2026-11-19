@@ -37,12 +37,13 @@
  *   `step` refuses to start a variant whose entry is not the join it lands
  *   on, whatever the registry says.
  *
- * Installed reactions: none yet. The S1a glance-up (queen poster), S1b
- * strong bounce (idle / return) and T2 doze (45 s) are not locked
- * (t1003s5480 locked only the v5_2 loop, nod v4 and bounce v2), so their
- * clips, triggers and tests are kept on the local branch
- * `hero-reactions-s1a-s1b-t2` and the queue refuses every request as
- * "unknown" until clips are registered here. The E2 nod is not a reaction.
+ * Installed reactions: the S1a glance-up (queen-poster hover/focus), locked
+ * by Ari (t1014s5523, LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2), with one
+ * baked variant per join; it plays only at the join a variant is baked for.
+ * The S1b strong bounce (idle / return) and T2 doze (45 s) are not locked,
+ * so their clips, triggers and tests are kept on the local branch
+ * `hero-reactions-s1a-s1b-t2` and the queue refuses them (and speaker /
+ * phone / sip) as "unknown". The E2 nod is not a reaction.
  */
 import {
   ACTIONS,
@@ -62,16 +63,16 @@ import {
 
 /**
  * Reaction ids (PLAN §3). T6/S5/S4 (speaker, phone, sip) are typed and get
- * entries when their clips exist. `glance-up` (S1a), `strong-bounce` (S1b)
- * and `doze` (T2) come back with their clips from hero-reactions-s1a-s1b-t2.
+ * entries when their clips exist. `strong-bounce` (S1b) and `doze` (T2) come
+ * back with their clips from hero-reactions-s1a-s1b-t2 once they lock.
  */
-export type ReactionId = "speaker" | "phone" | "sip";
+export type ReactionId = "glance-up" | "speaker" | "phone" | "sip";
 
 export interface ReactionDef {
   id: ReactionId;
   /**
    * Higher wins the queue slot (PLAN §3: idle/return 1, timers 2, hotspots 3):
-   * sip 2, speaker / phone 3.
+   * sip 2, glance-up / speaker / phone 3.
    */
   priority: number;
   /**
@@ -123,13 +124,19 @@ export const variantsOf = (
   );
 
 /**
- * Registry (v5_2, design A). Empty on this install: the only installed
- * action is the nod, which is the E2 egg (egg.ts), not a reaction. Entries
- * come back with their locked clips (hero-reactions-s1a-s1b-t2:
- * glance-up = variantsOf("s1a"), strong-bounce = variantsOf("s1b"),
- * doze = variantsOf("t2"), oncePerVisit).
+ * Registry (v5_2, design A). The nod is the E2 egg (egg.ts), not a reaction.
+ * glance-up (S1a) has a baked clip for every join, keyed by its own entry
+ * (variantsOf -> joinableKs, so a key can only ever be the variant's own
+ * entry). strong-bounce = variantsOf("s1b") and doze = variantsOf("t2"),
+ * oncePerVisit, come back from hero-reactions-s1a-s1b-t2 when they lock.
  */
-export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {};
+export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {
+  "glance-up": {
+    id: "glance-up",
+    priority: 3,
+    variants: variantsOf("s1a"),
+  },
+};
 
 /**
  * Join points a reaction may be scheduled at: the registry keys whose clip
@@ -356,6 +363,7 @@ export function rotationBusyUntil(rotation: ScheduleState): number {
  */
 export const FAMILY_REACTION: Record<ActionFamily, ReactionId | "nod"> = {
   nod: "nod",
+  s1a: "glance-up",
 };
 export const cooldownKey = (a: ActionDef): string =>
   FAMILY_REACTION[a.family] ?? a.family;
