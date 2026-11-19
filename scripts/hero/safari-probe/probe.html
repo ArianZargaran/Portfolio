@@ -99,8 +99,12 @@
       // END gateFresh
       // BEGIN s1aProbe: isPrimed is a copy of app/scene/hero/warm.ts (kept
       // in sync, with the rest of this block, by
-      // app/scene/hero/net-gate-probe.test.ts).
+      // app/scene/hero/safari-probe-s1a.test.ts).
       const FRAME_MS = 1000 / 12; // one frame at 12 fps: S1a's enter window
+      // A primed clip is shown on frame 0 before play() resolves. If play()
+      // takes longer than the player's drift limit (MAX_DRIFT_FRAMES 1.5 =
+      // 125 ms), the character holds on frame 0 and then jumps (review R2).
+      const PRIMED_PLAY_MAX_MS = 125;
       function isPrimed(v, clipFrame, fps) {
         if (v.readyState < 2 || v.seeking || !v.paused) return false;
         return Math.floor(v.currentTime * fps + 1e-6) === clipFrame;
@@ -121,9 +125,20 @@
         const notPrimed = rows.filter((r) => !r.primed).map((r) => r.clip);
         if (notPrimed.length)
           return `PROBLEM: not decoded on its first frame after the warm seek (${notPrimed.join(", ")}): the glance may miss its one-frame join`;
+        const slow = rows.filter(
+          (r) => r.primedPlayMs != null && r.primedPlayMs > PRIMED_PLAY_MAX_MS,
+        );
+        if (slow.length)
+          return `PROBLEM: primed play() slower than ${PRIMED_PLAY_MAX_MS} ms (${slow.map((r) => `${r.clip} ${r.primedPlayMs} ms`).join(", ")}): the glance would hold on frame 0, then jump`;
         const cold = rows.map((r) => r.coldMs).filter((x) => x != null);
         const worst = cold.length ? Math.max(...cold) : null;
-        return `ok: primed on every S1a clip (cut-in 0 ms)${
+        const play = rows.map((r) => r.primedPlayMs).filter((x) => x != null);
+        const playMax = play.length ? Math.max(...play) : null;
+        return `ok: primed on every S1a clip (cut-in 0 ms${
+          playMax == null
+            ? ""
+            : `, play() max ${playMax.toFixed(1)} ms <= ${PRIMED_PLAY_MAX_MS} ms`
+        })${
           worst == null
             ? ""
             : worst <= FRAME_MS
@@ -469,6 +484,7 @@
         const cold = rows.map((r) => r.coldMs).filter((x) => x != null);
         R.s1aCutIn = {
           frameMs: +FRAME_MS.toFixed(1),
+          primedPlayMaxMs: PRIMED_PLAY_MAX_MS,
           rows,
           coldP95: pct(cold, 0.95),
           verdict: s1aCutInVerdict(rows),

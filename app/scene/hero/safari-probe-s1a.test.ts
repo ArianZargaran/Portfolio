@@ -79,4 +79,39 @@ describe("Safari probe S1a cut-in row (review N2)", () => {
       probe.s1aCutInVerdict([row("s1a.k0"), row("s1a.k36", 40, false)]),
     ).toMatch(/^PROBLEM: .*s1a\.k36/);
   });
+
+  it("verdict flags a primed play() slower than ~125 ms (the player's 1.5-frame drift limit, review R2)", () => {
+    const row = (clip: string, primedPlayMs: number) => ({
+      clip,
+      primed: true,
+      primedPlayMs,
+      coldMs: 40,
+    });
+    expect(probe.s1aCutInVerdict([row("s1a.k0", 125)])).toMatch(
+      /^ok: primed on every S1a clip \(cut-in 0 ms, play\(\) max 125\.0 ms <= 125 ms\)/,
+    );
+    expect(
+      probe.s1aCutInVerdict([row("s1a.k0", 60), row("s1a.k72", 125.1)]),
+    ).toMatch(
+      /^PROBLEM: primed play\(\) slower than 125 ms \(s1a\.k72 125\.1 ms\)/,
+    );
+    // Not primed is still reported first.
+    expect(
+      probe.s1aCutInVerdict([{ ...row("s1a.k0", 300), primed: false }]),
+    ).toMatch(/^PROBLEM: not decoded/);
+  });
+
+  it("the threshold equals the player's drift limit (1.5 frames at 12 fps)", () => {
+    const player = readFileSync(
+      path.resolve(__dirname, "../../components/scene/hero-player.tsx"),
+      "utf8",
+    );
+    const drift = Number(
+      /const MAX_DRIFT_FRAMES = ([\d.]+);/.exec(player)?.[1],
+    );
+    const max = Number(
+      /const PRIMED_PLAY_MAX_MS = (\d+);/.exec(src ?? "")?.[1],
+    );
+    expect(max).toBe(Math.round((drift * 1000) / 12));
+  });
 });
