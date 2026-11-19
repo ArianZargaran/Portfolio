@@ -49,3 +49,28 @@ export function warmTargets(
   }
   return out;
 }
+
+/** What isPrimed reads from a <video> (so it is testable without media). */
+export interface PrimeProbe {
+  readyState: number;
+  seeking: boolean;
+  paused: boolean;
+  currentTime: number;
+}
+
+/**
+ * Review N2: a warmed element that is paused, not seeking, has its current
+ * frame decoded (HAVE_CURRENT_DATA) and sits on `clipFrame` already shows
+ * exactly the pixels the cut-in needs (clip frame 0 equals the base at the
+ * join). The player treats it as ready at once instead of waiting for a
+ * fresh play() + first-frame callback, which for a one-frame enter window
+ * (S1a: [0, 0], 83 ms at 12 fps) can miss the join.
+ */
+export function isPrimed(
+  v: PrimeProbe,
+  clipFrame: number,
+  fps: number,
+): boolean {
+  if (v.readyState < 2 || v.seeking || !v.paused) return false;
+  return Math.floor(v.currentTime * fps + 1e-6) === clipFrame;
+}

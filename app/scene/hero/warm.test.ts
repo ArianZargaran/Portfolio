@@ -1,7 +1,13 @@
 import { fixtureVariant } from "./__fixtures__/actions";
 import { ACTIONS, type ActionDef } from "./actions";
 import type { Occurrence } from "./schedule";
-import { WARM_FRAMES, WARM_MAX_ACTIONS, warmTargets } from "./warm";
+import {
+  isPrimed,
+  WARM_FRAMES,
+  WARM_MAX_ACTIONS,
+  warmTargets,
+  type PrimeProbe,
+} from "./warm";
 
 const FX72 = fixtureVariant(72);
 const REG: Record<string, ActionDef> = { ...ACTIONS, [FX72.id]: FX72 };
@@ -36,5 +42,26 @@ describe("warm hidden videos (M6)", () => {
     expect(
       warmTargets(90, [occ("nod.k180", 95), occ("fx.k72", 96)], 12, 1),
     ).toHaveLength(1);
+  });
+});
+
+describe("isPrimed (review N2: a paused, decoded first frame is ready)", () => {
+  const v = (o: Partial<PrimeProbe> = {}): PrimeProbe => ({
+    readyState: 2,
+    seeking: false,
+    paused: true,
+    currentTime: 0.04, // the warm pool seeks to frameTime(0) = half a frame
+    ...o,
+  });
+  it("paused on frame 0 with the current frame decoded: primed", () => {
+    expect(isPrimed(v(), 0, 12)).toBe(true);
+    expect(isPrimed(v({ readyState: 4 }), 0, 12)).toBe(true);
+  });
+  it("not decoded, still seeking, playing, or on another frame: not primed", () => {
+    expect(isPrimed(v({ readyState: 1 }), 0, 12)).toBe(false);
+    expect(isPrimed(v({ seeking: true }), 0, 12)).toBe(false);
+    expect(isPrimed(v({ paused: false }), 0, 12)).toBe(false);
+    expect(isPrimed(v({ currentTime: 0.125 }), 0, 12)).toBe(false);
+    expect(isPrimed(v(), 1, 12)).toBe(false);
   });
 });

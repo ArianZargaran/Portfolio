@@ -45,7 +45,7 @@ import {
   type Shown,
 } from "~/scene/hero/schedule";
 import { wireTriggers } from "~/scene/hero/triggers";
-import { warmTargets } from "~/scene/hero/warm";
+import { isPrimed, warmTargets } from "~/scene/hero/warm";
 
 const FPS = BASE_LOOP.fps;
 /** Re-seek a clip only when it is this many frames off the clock. */
@@ -370,11 +370,19 @@ export default function HeroPlayer({
         if (v && v.preload !== "auto") {
           if (prepared) release();
         } else if (v && prepared !== action.id) {
+          // Review N2: an element held paused on this very frame, decoded
+          // (the warm pool leaves it there just before the join, and its
+          // `warmed` mark is already pruned by now), already shows the
+          // cut-in pixels: ready now, no seek (a seek would throw the
+          // decoded frame away). isPrimed reads the element's real state.
+          const primed = isPrimed(v, clipFrame, FPS);
           release();
           prepared = action.id;
           const current = currentPrepare(++prepareGen, action.id);
           warmed.delete(action.id);
-          v.currentTime = frameTime(clipFrame, FPS);
+          if (primed) ready = true;
+          else v.currentTime = frameTime(clipFrame, FPS);
+          root.dataset.primed = primed ? action.id : "";
           v.play().then(
             () =>
               onFirstFrame(v, () => {

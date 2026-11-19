@@ -413,6 +413,11 @@ describe("HeroPlayer glance: plan before fetch (review N1)", () => {
     vi.useRealTimers();
   });
   const tick = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+  const flush = () =>
+    act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
   const glance = () => {
     act(() => intentHeroReaction("glance-up"));
     act(() => requestHeroReaction("glance-up"));
@@ -458,4 +463,49 @@ describe("HeroPlayer glance: plan before fetch (review N1)", () => {
     expect(Number(root.dataset.bytes)).toBeLessThanOrEqual(993_280);
   });
 
+  it("a warmed S1a element paused on its first frame cuts in on its join with no new decode", async () => {
+    const { container } = render(<HeroPlayer />);
+    const root = container.querySelector<HTMLElement>(".hero")!;
+    const k36 = container.querySelector<HTMLVideoElement>(
+      '[data-clip="s1a.k36"]',
+    )!;
+    Object.defineProperty(k36, "readyState", { get: () => 2 });
+    Object.defineProperty(k36, "seeking", { get: () => false });
+    Object.defineProperty(k36, "paused", { get: () => true });
+    let t = 0;
+    let seeks = 0;
+    Object.defineProperty(k36, "currentTime", {
+      get: () => t,
+      set: (v: number) => {
+        t = v;
+        seeks++;
+      },
+    });
+    glance();
+    let shownAt = -1;
+    for (let ms = 0; ms < 3_400 && shownAt < 0; ms += 20) {
+      tick(20);
+      await flush();
+      if (root.dataset.shown === "s1a.k36") shownAt = ms;
+    }
+    expect(root.dataset.primed).toBe("s1a.k36");
+    expect(shownAt).toBeGreaterThan(2_900); // on the f36 join (3 s) ...
+    expect(shownAt).toBeLessThan(3_100);
+    // ... without a first-frame callback (none is ever fired here) and with
+    // no re-seek: the only seek is the warm pool's, to frame 0.
+    expect(t).toBeCloseTo(0.5 / 12);
+    expect(seeks).toBe(1);
+  });
+
+  it("not primed (nothing decoded yet): waits for its own first frame", async () => {
+    const { container } = render(<HeroPlayer />);
+    const root = container.querySelector<HTMLElement>(".hero")!;
+    glance();
+    for (let ms = 0; ms < 3_100; ms += 20) {
+      tick(20);
+      await flush();
+    }
+    expect(root.dataset.primed).toBe("");
+    expect(root.dataset.shown).toBe("base");
+  });
 });
