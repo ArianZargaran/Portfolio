@@ -18,7 +18,7 @@ npm run probe:safari -- --help          # usage
 3. Results land in `scripts/hero/safari-probe/results/run-*.json` on the Mac (gitignored). Send those files to Forge via Atlas. They hold only the browser's user agent and the measurements.
 4. Stop the server with Ctrl-C.
 
-The probe serves the shipped `app/scene/hero/media/*.mp4` with HTTP Range (Safari needs 206 responses for `<video>`) and the laptop still. A second port (+1) acts as a cross-origin host, with and without `Timing-Allow-Origin`. `?cache=reval` answers repeat loads with 304s, and `GET /clips` lists the shipped clip ids (`typing`, `nod.k180` and `s1a.k0`…`s1a.k180`). The codec and autoplay checks load the first action clip, the warm check holds what the player's pool can (`typing`, `nod.k180` and one S1a variant), and the S1a cut-in check loads every S1a variant.
+The probe serves the shipped `app/scene/hero/media/*.mp4` with HTTP Range (Safari needs 206 responses for `<video>`) and the laptop still. A second port (+1) acts as a cross-origin host, with and without `Timing-Allow-Origin`. `?cache=reval` answers repeat loads with 304s, and `GET /clips` lists the shipped clip ids (`typing`, `nod.k180`, `s1a.k0`…`s1a.k180` and `t6.k0`…`t6.k180`). The codec and autoplay checks load the first action clip, the warm check holds what the player's pool can (`typing`, `nod.k180` and one S1a variant), and the S1a cut-in check loads every S1a variant. T6 has no probe row of its own: its enter window is two frames (f+0, f+1), so the S1a one-frame row is the stricter test of the same priming path.
 
 ## 2. What it measures and what decides
 
@@ -45,7 +45,8 @@ Run `npm run build && PORT=3150 node scripts/serve.mjs`, then open `http://local
 - [ ] With Develop → Network → throttling at 3G or "Edge" on a fresh profile (clear website data), it reads `still:throughput-slow`, and no `.mp4` request appears in the Network tab.
 - [ ] After clearing website data and with the cache served (Disable Caches off, second load), if nothing is measurable it reads `frozen:inconclusive`: the scene is paused, and Enter or a click plays it.
 - [ ] Esc freezes instantly; reloading stays frozen with no `.mp4` requests.
-- [ ] Hovering the poster requests exactly one `s1a.k<join>.*.mp4` (the next join's variant) after the 250 ms dwell, and the glance-up cuts in on that join; then hovering the speakers requests `nod.*.mp4` (Network tab). Nothing is requested before the dwell, and no `s1b`/`t2` file ever.
+- [ ] Hovering the poster requests exactly one `s1a.k<join>.*.mp4` (the next join's variant) after the 250 ms dwell, and the glance-up cuts in on that join; then hovering the speakers within 10 s requests `nod.*.mp4` and exactly one `t6.k<join>.*.mp4` (Network tab): the speaker groove cuts in on that join and the nod follows at the first f180 after it. Nothing is requested before the dwell, and no `s1b`/`t2` file ever.
+- [ ] Hovering the speakers alone (no poster first), and Tab-focusing them, each request exactly one `t6.k<join>.*.mp4` and no `nod.*.mp4`; the groove cuts in on that join with no hover hint or pause control appearing.
 - [ ] Hover the poster again (move away and back) several times during the next 30 s: no new `s1a.*.mp4` request appears (the glance is in its cooldown). After 30 s the next hover requests one variant again.
 - [ ] Leave the tab for 60 s and come back: no black frame on the next cut.
 

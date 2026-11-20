@@ -120,7 +120,7 @@ describe("check-media (M8)", () => {
       expect(r.status).toBe(0);
     });
 
-    it("fails the multi-glance case when not even one glance fits beside the egg", () => {
+    it("fails the multi-hover case when not even one hotspot clip fits beside the egg", () => {
       multiGlance();
       const budgets = JSON.parse(readFileSync("media-budgets.json", "utf8"));
       budgets.visitBudget = { av1: 500_000, h264: 993_280 };

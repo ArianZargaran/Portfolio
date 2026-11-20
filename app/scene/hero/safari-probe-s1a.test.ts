@@ -32,6 +32,7 @@ const probe = new Function(
 const SHIPPED = [
   "nod.k180",
   ...[0, 36, 72, 108, 144, 180].map((k) => `s1a.k${k}`),
+  ...[0, 36, 72, 108, 144, 180].map((k) => `t6.k${k}`),
   "typing",
 ];
 
