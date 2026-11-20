@@ -6,12 +6,13 @@
 // is tested against), and that the worst-case visit fits the per-visit
 // budget: every clip of a single-variant action, and the largest variant of
 // a multi-variant one (`<action>.k<join>.<codec>.mp4`; intent fetch loads
-// one variant per visit). It also models repeated glances in one visit
-// (review N1): the player's runtime budget fetches a variant only while
-// every single-clip action (the E2 egg nod) still fits beside it
-// (budget.canFetchKeeping), so the runtime total, under any number of
-// glances in the worst (largest-first) order, with the egg before or after
-// them, must never exceed the per-visit cap. Exits 1 on any failure.
+// one variant per visit). It also models repeated hotspot hovers in one
+// visit (review N1; S1a glances and T6 grooves): the player's runtime budget
+// fetches a variant only while every single-clip action (the E2 egg nod)
+// still fits beside it (budget.canFetchKeeping), so the runtime total,
+// under any number of hovers in the worst (largest-first) order or one
+// family before the other, with the egg before or after them, must never
+// exceed the per-visit cap. Exits 1 on any failure.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
@@ -78,9 +79,9 @@ for (const codec of ["av1", "h264"]) {
     `worst-case ${codec} visit (base + one variant per action): ${kB(total)} / ${kB(cap)}`,
   );
 }
-// Multi-glance runtime model (mirrors app/scene/hero/budget.ts and the
+// Multi-hover runtime model (mirrors app/scene/hero/budget.ts and the
 // player's fetchReactionClip). Base and single-clip groups (the egg nod)
-// are the reserve; multi-variant groups (S1a) are the glances.
+// are the reserve; multi-variant groups (S1a, T6) are the hotspot hovers.
 const GLANCE_ROUNDS = 4; // every variant asked for 4 times over: >> any visit
 for (const codec of ["av1", "h264"]) {
   const cap = budgets.visitBudget[codec];
@@ -91,44 +92,71 @@ for (const codec of ["av1", "h264"]) {
   const multi = groups.filter(([, c]) => c.length > 1);
   if (!multi.length) continue;
   const reserve = single.map(([, c]) => c[0]);
-  const glances = multi.flatMap(([, c]) => c).sort((a, b) => b.bytes - a.bytes);
-  for (const eggFirst of [false, true]) {
-    const fetched = new Set();
-    let spent = 0;
-    let peak = 0;
-    const charge = (c) => {
-      if (fetched.has(c.name)) return;
-      fetched.add(c.name);
-      spent += c.bytes;
-      peak = Math.max(peak, spent);
-    };
-    const cost = (c) => (fetched.has(c.name) ? 0 : c.bytes);
-    base.forEach(([, c]) => c.forEach(charge));
-    const egg = () =>
-      reserve.forEach((r) => spent + cost(r) <= cap && charge(r));
-    if (eggFirst) egg();
-    let n = 0;
-    for (let round = 0; round < GLANCE_ROUNDS; round++)
-      for (const c of glances) {
-        const keep = reserve.reduce((a, r) => a + cost(r), 0);
-        if (spent + cost(c) + keep <= cap) {
-          if (!fetched.has(c.name)) n++;
-          charge(c);
+  const bySize = (a, b) => b.bytes - a.bytes;
+  // Orders: every variant largest first, and each family (largest first)
+  // ahead of the others.
+  const orders = [
+    ["largest first", multi.flatMap(([, c]) => c).sort(bySize)],
+    ...multi.map(([g]) => [
+      `${g} first`,
+      [
+        ...clips[codec].get(g).slice().sort(bySize),
+        ...multi
+          .filter(([h]) => h !== g)
+          .flatMap(([, c]) => c)
+          .sort(bySize),
+      ],
+    ]),
+  ];
+  for (const [order, glances] of orders)
+    for (const eggFirst of [false, true]) {
+      const fetched = new Set();
+      let spent = 0;
+      let peak = 0;
+      const charge = (c) => {
+        if (fetched.has(c.name)) return;
+        fetched.add(c.name);
+        spent += c.bytes;
+        peak = Math.max(peak, spent);
+      };
+      const cost = (c) => (fetched.has(c.name) ? 0 : c.bytes);
+      base.forEach(([, c]) => c.forEach(charge));
+      const egg = () =>
+        reserve.forEach((r) => spent + cost(r) <= cap && charge(r));
+      if (eggFirst) egg();
+      let n = 0;
+      for (let round = 0; round < GLANCE_ROUNDS; round++)
+        for (const c of glances) {
+          const keep = reserve.reduce((a, r) => a + cost(r), 0);
+          if (spent + cost(c) + keep <= cap) {
+            if (!fetched.has(c.name)) n++;
+            charge(c);
+          }
         }
-      }
-    const eggFits = reserve.every((r) => spent + cost(r) <= cap);
-    if (!eggFirst) egg();
-    const when = eggFirst ? "egg first" : "egg after";
-    report(
-      peak <= cap && eggFits && reserve.every((r) => fetched.has(r.name)),
-      `multi-glance ${codec} visit (${GLANCE_ROUNDS}x every variant, largest first, ${when}): ` +
-        `${n} variant(s) + ${reserve.map((r) => r.name).join(", ")} fetched, runtime peak ${kB(peak)} / ${kB(cap)}`,
-    );
-    report(n >= 1, `multi-glance ${codec} (${when}): at least one glance fits`);
-  }
+      const eggFits = reserve.every((r) => spent + cost(r) <= cap);
+      if (!eggFirst) egg();
+      const when = eggFirst ? "egg first" : "egg after";
+      const per = multi
+        .map(([g, c]) => `${g} ${c.filter((x) => fetched.has(x.name)).length}`)
+        .join(", ");
+      report(
+        peak <= cap && eggFits && reserve.every((r) => fetched.has(r.name)),
+        `multi-hover ${codec} visit (${GLANCE_ROUNDS}x every variant, ${order}, ${when}): ` +
+          `${n} variant(s) [${per}] + ${reserve.map((r) => r.name).join(", ")} fetched, runtime peak ${kB(peak)} / ${kB(cap)}`,
+      );
+      report(
+        n >= 1,
+        `multi-hover ${codec} (${order}, ${when}): at least one hover fits`,
+      );
+    }
   // Without the egg reserve one more glance would fit and starve the egg,
   // and fetching every variant would not fit at all: the gate is load-bearing.
-  const all = base.flatMap(([, c]) => c).concat(glances, reserve);
+  const all = base
+    .flatMap(([, c]) => c)
+    .concat(
+      multi.flatMap(([, c]) => c),
+      reserve,
+    );
   const everything = all.reduce((a, c) => a + c.bytes, 0);
   rows.push(
     `info every clip in one visit (no runtime gate) ${codec}: ${kB(everything)} / ${kB(cap)}${everything > cap ? " (over: the runtime gate is what keeps a visit inside the cap)" : ""}`,

@@ -18,6 +18,30 @@ describe("check-media (M8)", () => {
     expect(r.status).toBe(0);
   });
 
+  it("on the shipped clips (typing, nod, 6 S1a, 6 T6): worst case and multi-hover inside the caps", () => {
+    const r = run();
+    expect(r.stdout).toContain(
+      "ok   worst-case av1 visit (base + one variant per action): 632.2 kB / 768.0 kB",
+    );
+    expect(r.stdout).toContain(
+      "ok   worst-case h264 visit (base + one variant per action): 836.1 kB / 993.3 kB",
+    );
+    // At most 3 hotspot variants (any mix of S1a / T6) beside the egg nod.
+    for (const when of ["egg after", "egg first"]) {
+      for (const order of ["largest first", "t6 first"]) {
+        expect(r.stdout).toContain(
+          `ok   multi-hover av1 visit (4x every variant, ${order}, ${when}): 3 variant(s) [s1a 0, t6 3] + nod.k180 fetched, runtime peak 727.7 kB / 768.0 kB`,
+        );
+        expect(r.stdout).toContain(
+          `ok   multi-hover h264 visit (4x every variant, ${order}, ${when}): 3 variant(s) [s1a 0, t6 3] + nod.k180 fetched, runtime peak 968.7 kB / 993.3 kB`,
+        );
+      }
+      expect(r.stdout).toContain(
+        `ok   multi-hover av1 visit (4x every variant, s1a first, ${when}): 3 variant(s) [s1a 3, t6 0] + nod.k180 fetched, runtime peak 718.1 kB / 768.0 kB`,
+      );
+    }
+  });
+
   it("has no exceptions (the nod fits the reaction cap since the v5_2 install)", () => {
     const b = JSON.parse(readFileSync("media-budgets.json", "utf8")) as {
       exceptions: Record<string, unknown>;
@@ -75,7 +99,7 @@ describe("check-media (M8)", () => {
       expect(r.status).toBe(0);
     });
 
-    // Review N1: repeated glances in one visit. The runtime keeps the egg
+    // Review N1: repeated hovers in one visit. The runtime keeps the egg
     // nod affordable, so the model admits floor((768 - 330 - 116) / 110) = 2
     // variants and the peak stays inside the cap whatever the egg's timing.
     const multiGlance = () => {
@@ -90,7 +114,7 @@ describe("check-media (M8)", () => {
       const r = run("--dir", dir, "--no-manifest");
       for (const when of ["egg after", "egg first"])
         expect(r.stdout).toContain(
-          `ok   multi-glance av1 visit (4x every variant, largest first, ${when}): 2 variant(s) + nod.k180 fetched, runtime peak 666.0 kB / 768.0 kB`,
+          `ok   multi-hover av1 visit (4x every variant, largest first, ${when}): 2 variant(s) [s1a 2] + nod.k180 fetched, runtime peak 666.0 kB / 768.0 kB`,
         );
       expect(r.stdout).toMatch(/info every clip in one visit .*: 1106\.0 kB/);
       expect(r.status).toBe(0);
@@ -105,8 +129,28 @@ describe("check-media (M8)", () => {
       const r = run("--budgets", file, "--dir", dir, "--no-manifest");
       expect(r.status).toBe(1);
       expect(r.stdout).toMatch(
-        /FAIL multi-glance av1 \(egg after\): at least one glance fits/,
+        /FAIL multi-hover av1 \(largest first, egg after\): at least one hover fits/,
       );
+    });
+
+    it("models two hotspot families (S1a + T6) in every order: never over the cap, the egg nod always fits", () => {
+      multiGlance();
+      for (const k of [0, 36, 72, 108, 144, 180])
+        clip(`t6.k${k}.av1.mp4`, 100_000);
+      const r = run("--dir", dir, "--no-manifest");
+      // 768 - 330 - 116 = 322 kB for hovers: at most 3 (2 x 110 + 1 x 100,
+      // or 3 x 100), whichever family comes first.
+      for (const when of ["egg after", "egg first"]) {
+        expect(r.stdout).toContain(
+          `ok   multi-hover av1 visit (4x every variant, largest first, ${when}): 3 variant(s) [s1a 2, t6 1] + nod.k180 fetched, runtime peak 766.0 kB / 768.0 kB`,
+        );
+        expect(r.stdout).toContain(
+          `ok   multi-hover av1 visit (4x every variant, t6 first, ${when}): 3 variant(s) [s1a 0, t6 3] + nod.k180 fetched, runtime peak 746.0 kB / 768.0 kB`,
+        );
+      }
+      expect(r.stdout).toMatch(/worst-case av1 visit .*: 656\.0 kB/);
+      expect(r.stdout).not.toMatch(/FAIL/);
+      expect(r.status).toBe(0);
     });
   });
 });
