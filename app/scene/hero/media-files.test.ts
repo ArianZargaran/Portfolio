@@ -155,9 +155,8 @@ describe("lock ids and shas have one source (LOCK_RECORDS)", () => {
     BRAIN,
     "scenes/home-office.desk.coding.dusk.clear/m2/variants/char_painted/LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3.json",
   );
-  it.skipIf(!existsSync(T6_LOCK))(
-    "the 12 T6 files are byte-identical to the T6 v3 lock's encodes",
-    () => {
+  describe.skipIf(!existsSync(T6_LOCK))("T6 v3 lock (design brain)", () => {
+    it("the 12 T6 files are byte-identical to the T6 v3 lock's encodes", () => {
       const raw = readFileSync(T6_LOCK);
       expect(createHash("sha256").update(raw).digest("hex")).toBe(
         LOCK_RECORDS.t6.sha256,
@@ -189,8 +188,8 @@ describe("lock ids and shas have one source (LOCK_RECORDS)", () => {
           n++;
         }
       expect(n).toBe(12);
-    },
-  );
+    });
+  });
 
   it("ships no S1b or T2 media (not locked)", () => {
     const files = readdirSync(MEDIA_DIR);
