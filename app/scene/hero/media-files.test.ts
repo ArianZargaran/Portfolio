@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -46,9 +47,10 @@ describe("shipped hero clips match the registry", () => {
   });
 
   it("stays small enough to commit (< 4 MB for every clip together)", () => {
-    // Design A ships one baked clip per entry; the locked install has 8
-    // clips x 2 codecs (about 2.29 MB in git). A visit fetches far less (the base plus at most one
-    // variant per action, budget.ts / check:media).
+    // Design A ships one baked clip per entry; the locked install has 14
+    // clips x 2 codecs (3,595,051 B in git: typing, nod, 6 S1a, 6 T6).
+    // A visit fetches far less (the base plus a few variants, budget.ts /
+    // check:media).
     const total = Object.values(manifest.clips).reduce(
       (a, c) => a + c.bytes,
       0,
@@ -131,6 +133,64 @@ describe("lock ids and shas have one source (LOCK_RECORDS)", () => {
       expect(m[`s1a.k${a.entry}.h264.mp4`].join).toBe(a.entry);
     }
   });
+
+  it("every T6 clip file is the one baked for its entry (t6.k<entry>.*)", () => {
+    const t6 = Object.values(ACTIONS).filter((x) => x.family === "t6");
+    expect(t6.map((a) => a.entry)).toEqual([0, 36, 72, 108, 144, 180]);
+    for (const a of t6) {
+      expect(a.id).toBe(`t6.k${a.entry}`);
+      for (const s of a.clip.sources)
+        expect(path.basename(s.src).startsWith(`t6.k${a.entry}.`)).toBe(true);
+      const m = manifest.clips as Record<string, { join?: number }>;
+      expect(m[`t6.k${a.entry}.av1.mp4`].join).toBe(a.entry);
+      expect(m[`t6.k${a.entry}.h264.mp4`].join).toBe(a.entry);
+    }
+  });
+
+  // The shipped T6 files must be the lock's own encodes, byte for byte
+  // (Ari t1029s5606: use the locked assets only). Needs the read-only design
+  // brain (HERO_BRAIN, default /workspace/portfolio-brain); skipped without.
+  const BRAIN = process.env.HERO_BRAIN ?? "/workspace/portfolio-brain";
+  const T6_LOCK = path.join(
+    BRAIN,
+    "scenes/home-office.desk.coding.dusk.clear/m2/variants/char_painted/LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3.json",
+  );
+  it.skipIf(!existsSync(T6_LOCK))(
+    "the 12 T6 files are byte-identical to the T6 v3 lock's encodes",
+    () => {
+      const raw = readFileSync(T6_LOCK);
+      expect(createHash("sha256").update(raw).digest("hex")).toBe(
+        LOCK_RECORDS.t6.sha256,
+      );
+      const lock = JSON.parse(raw.toString("utf8")) as {
+        variants: Record<
+          string,
+          {
+            entry_k: number;
+            encodes: Record<
+              "av1" | "h264",
+              { path: string; bytes: number; sha256: string }
+            >;
+          }
+        >;
+      };
+      let n = 0;
+      for (const v of Object.values(lock.variants))
+        for (const codec of ["av1", "h264"] as const) {
+          const e = v.encodes[codec];
+          const name = `t6.k${v.entry_k}.${codec}.mp4`;
+          expect(path.basename(e.path)).toBe(name);
+          const buf = readFileSync(path.join(MEDIA_DIR, name));
+          expect(buf.length).toBe(e.bytes);
+          expect(createHash("sha256").update(buf).digest("hex")).toBe(e.sha256);
+          expect(
+            (manifest.clips[name] as unknown as { sha256: string }).sha256,
+          ).toBe(e.sha256);
+          n++;
+        }
+      expect(n).toBe(12);
+    },
+  );
 
   it("ships no S1b or T2 media (not locked)", () => {
     const files = readdirSync(MEDIA_DIR);
