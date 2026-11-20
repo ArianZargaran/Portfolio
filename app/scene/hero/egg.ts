@@ -1,9 +1,11 @@
 /**
  * E2 easter egg (PLAN v3.3 §3): visiting the queen poster and then the
- * speakers within 10 s plays the speaker reaction (T6) through the queue as
- * usual, and also arms a nod at the next join it can use (f180: nod v4 is
- * baked for that entry only),
- * after T6 ends. The nod is armed OUTSIDE the reaction queue, so the egg
+ * speakers within 10 s plays the speaker reaction (T6 speaker groove v3,
+ * installed with LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3) through the
+ * queue as usual, and also arms the E2 nod (nod v4, `nod.k180`, installed)
+ * as a one-shot at the next join it can use (f180: nod v4 is baked for that
+ * entry only) at or after T6's clip ends. If T6 cannot be queued (cooldown,
+ * a locked slot, budget) the nod still arms, at the next f180. The nod is armed OUTSIDE the reaction queue, so the egg
  * can never block or delay another reaction:
  *
  * - Until it commits (LEAD_FRAMES before its clip starts) it yields: any other

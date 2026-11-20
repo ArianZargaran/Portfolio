@@ -37,13 +37,16 @@
  *   `step` refuses to start a variant whose entry is not the join it lands
  *   on, whatever the registry says.
  *
- * Installed reactions: the S1a glance-up (queen-poster hover/focus), locked
- * by Ari (t1014s5523, LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2), with one
- * baked variant per join; it plays only at the join a variant is baked for.
+ * Installed reactions, each with one baked variant per join, each playing
+ * only at the join that variant is baked for:
+ * - the S1a glance-up (queen-poster hover/focus), locked by Ari
+ *   (t1014s5523, LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2);
+ * - the T6 speaker groove v3 (speakers hover/focus), locked by Ari
+ *   (t1029s5606, LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3).
  * The S1b strong bounce (idle / return) and T2 doze (45 s) are not locked,
  * so their clips, triggers and tests are kept on the local branch
- * `hero-reactions-s1a-s1b-t2` and the queue refuses them (and speaker /
- * phone / sip) as "unknown". The E2 nod is not a reaction.
+ * `hero-reactions-s1a-s1b-t2` and the queue refuses them (and phone / sip)
+ * as "unknown". The E2 nod is not a reaction.
  */
 import {
   ACTIONS,
@@ -62,8 +65,8 @@ import {
 } from "./schedule";
 
 /**
- * Reaction ids (PLAN §3). T6/S5/S4 (speaker, phone, sip) are typed and get
- * entries when their clips exist. `strong-bounce` (S1b) and `doze` (T2) come
+ * Reaction ids (PLAN §3). S5/S4 (phone, sip) are typed and get entries when
+ * their clips exist. `strong-bounce` (S1b) and `doze` (T2) come
  * back with their clips from hero-reactions-s1a-s1b-t2 once they lock.
  */
 export type ReactionId = "glance-up" | "speaker" | "phone" | "sip";
@@ -125,9 +128,10 @@ export const variantsOf = (
 
 /**
  * Registry (v5_2, design A). The nod is the E2 egg (egg.ts), not a reaction.
- * glance-up (S1a) has a baked clip for every join, keyed by its own entry
- * (variantsOf -> joinableKs, so a key can only ever be the variant's own
- * entry). strong-bounce = variantsOf("s1b") and doze = variantsOf("t2"),
+ * glance-up (S1a) and speaker (T6) have a baked clip for every join, keyed
+ * by its own entry (variantsOf -> joinableKs, so a key can only ever be the
+ * variant's own entry). Both are hotspot reactions, priority 3 (PLAN §3
+ * rows 3 and 7): equal priority, so the newest unlocked request wins. strong-bounce = variantsOf("s1b") and doze = variantsOf("t2"),
  * oncePerVisit, come back from hero-reactions-s1a-s1b-t2 when they lock.
  */
 export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {
@@ -135,6 +139,11 @@ export const REACTIONS: Partial<Record<ReactionId, ReactionDef>> = {
     id: "glance-up",
     priority: 3,
     variants: variantsOf("s1a"),
+  },
+  speaker: {
+    id: "speaker",
+    priority: 3,
+    variants: variantsOf("t6"),
   },
 };
 
@@ -412,6 +421,7 @@ export function rotationBusyUntil(rotation: ScheduleState): number {
 export const FAMILY_REACTION: Record<ActionFamily, ReactionId | "nod"> = {
   nod: "nod",
   s1a: "glance-up",
+  t6: "speaker",
 };
 export const cooldownKey = (a: ActionDef): string =>
   FAMILY_REACTION[a.family] ?? a.family;

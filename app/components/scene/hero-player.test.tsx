@@ -43,9 +43,9 @@ describe("HeroPlayer intent fetch (M3)", () => {
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
 
-    // Reactions without a clip (S1b/T2 wait for their locks; speaker,
-    // phone and sip have no art) fetch nothing.
-    for (const id of ["speaker", "phone", "sip"] as const)
+    // Reactions without a clip (S1b/T2 wait for their locks; phone and sip
+    // have no art) fetch nothing.
+    for (const id of ["phone", "sip"] as const)
       act(() => intentHeroReaction(id));
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();
@@ -63,7 +63,7 @@ describe("HeroPlayer intent fetch (M3)", () => {
     expect(load).toHaveBeenCalledTimes(1);
   });
 
-  it("mounts only the installed clips: typing, nod.k180 and the six S1a variants", () => {
+  it("mounts only the installed clips: typing, nod.k180, the six S1a and the six T6 variants", () => {
     const { container } = render(<HeroPlayer />);
     expect(
       videos(container)
@@ -74,6 +74,7 @@ describe("HeroPlayer intent fetch (M3)", () => {
         "nod.k180",
         "typing",
         ...[0, 36, 72, 108, 144, 180].map((k) => `s1a.k${k}`),
+        ...[0, 36, 72, 108, 144, 180].map((k) => `t6.k${k}`),
       ].sort(),
     );
     // No S1b / T2 clip is mounted (not locked).
@@ -84,11 +85,12 @@ describe("HeroPlayer intent fetch (M3)", () => {
 
   it("ignores intents for reactions without clips, and while frozen", () => {
     const { container, rerender } = render(<HeroPlayer />);
-    act(() => intentHeroReaction("speaker")); // no clip yet
+    act(() => intentHeroReaction("phone")); // no clip yet
     expect(fetched(container)).toEqual(["typing"]);
     rerender(<HeroPlayer frozen />);
     act(() => intentHeroReaction("phone"));
     act(() => intentHeroReaction("glance-up")); // frozen: nothing
+    act(() => intentHeroReaction("speaker")); // frozen: nothing
     expect(fetched(container)).toEqual(["typing"]);
     expect(fetched(container)).toEqual(["typing"]);
     expect(load).not.toHaveBeenCalled();

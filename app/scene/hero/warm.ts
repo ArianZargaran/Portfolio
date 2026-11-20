@@ -64,7 +64,7 @@ export interface PrimeProbe {
  * exactly the pixels the cut-in needs (clip frame 0 equals the base at the
  * join). The player treats it as ready at once instead of waiting for a
  * fresh play() + first-frame callback, which for a one-frame enter window
- * (S1a: [0, 0], 83 ms at 12 fps) can miss the join.
+ * (S1a: [0, 0], 83 ms at 12 fps; T6: [0, 1]) can miss the join.
  */
 export function isPrimed(
   v: PrimeProbe,

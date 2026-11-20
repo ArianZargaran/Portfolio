@@ -85,8 +85,8 @@ describe("registry", () => {
   });
 
   it("design A: one baked clip per entry, each spliced on its own join", () => {
-    // Locked installs: the nod v4 clip (t1003s5480) and one S1a v2 clip per
-    // join (t1014s5523).
+    // Locked installs: the nod v4 clip (t1003s5480), one S1a v2 clip per
+    // join (t1014s5523) and one T6 v3 clip per join (t1029s5606).
     expect(Object.keys(ACTIONS)).toEqual([
       "nod.k180",
       "s1a.k0",
@@ -95,6 +95,12 @@ describe("registry", () => {
       "s1a.k108",
       "s1a.k144",
       "s1a.k180",
+      "t6.k0",
+      "t6.k36",
+      "t6.k72",
+      "t6.k108",
+      "t6.k144",
+      "t6.k180",
     ]);
     for (const a of [...Object.values(ACTIONS), fx72, fx36]) {
       expect(a.id).toBe(`${a.family}.k${a.entry}`);

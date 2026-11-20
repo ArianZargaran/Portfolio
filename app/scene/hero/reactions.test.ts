@@ -70,9 +70,18 @@ function run(q: QueueState, from: number, to: number) {
   return q;
 }
 
-describe("registry on the locked install (v5_2 option (a) + S1a V2)", () => {
-  it("ships only the glance-up reaction (S1a); S1b/T2 wait for their locks", () => {
-    expect(Object.keys(REACTIONS)).toEqual(["glance-up"]);
+describe("registry on the locked install (v5_2 option (a) + S1a V2 + T6 v3)", () => {
+  it("ships the glance-up (S1a) and speaker (T6) reactions; S1b/T2 wait for their locks", () => {
+    expect(Object.keys(REACTIONS)).toEqual(["glance-up", "speaker"]);
+    const sp = REACTIONS.speaker!;
+    expect(sp.priority).toBe(3);
+    expect(sp.oncePerVisit).toBeUndefined();
+    expect(Object.keys(sp.variants).map(Number)).toEqual([...ENTRY_JOINS]);
+    for (const k of ENTRY_JOINS) {
+      expect(sp.variants[k]!.id).toBe(`t6.k${k}`);
+      expect(sp.variants[k]!.entry).toBe(k);
+    }
+    expect(entryKs(sp)).toEqual([...ENTRY_JOINS]);
     const g = REACTIONS["glance-up"]!;
     expect(g.priority).toBe(3);
     expect(g.oncePerVisit).toBeUndefined();
@@ -86,7 +95,8 @@ describe("registry on the locked install (v5_2 option (a) + S1a V2)", () => {
     expect(Object.keys(ACTIONS).filter((id) => /^(s1b|t2)\./.test(id))).toEqual(
       [],
     );
-    for (const id of ["speaker", "phone", "sip"] as const)
+    expect(request(initialQueue(), "speaker", 1).accepted).toBe(true);
+    for (const id of ["phone", "sip"] as const)
       expect(request(initialQueue(), id, 1)).toMatchObject({
         accepted: false,
         reason: "unknown",

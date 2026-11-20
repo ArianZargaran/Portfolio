@@ -87,7 +87,11 @@ describe("lock ids and shas have one source (LOCK_RECORDS)", () => {
   });
 
   it("every installed action cites its LOCK_RECORDS entry", () => {
-    const byFamily = { nod: LOCK_RECORDS.nod, s1a: LOCK_RECORDS.s1a } as const;
+    const byFamily = {
+      nod: LOCK_RECORDS.nod,
+      s1a: LOCK_RECORDS.s1a,
+      t6: LOCK_RECORDS.t6,
+    } as const;
     for (const a of Object.values(ACTIONS)) {
       const l = byFamily[a.family];
       expect(a.lock).toBe(`${l.record} (sha256 ${l.sha256})`);
@@ -102,7 +106,16 @@ describe("lock ids and shas have one source (LOCK_RECORDS)", () => {
     });
   });
 
+  it("the T6 lock is the one Ari approved (t1029s5606, locks_now30)", () => {
+    expect(LOCK_RECORDS.t6).toEqual({
+      record: "LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3",
+      sha256:
+        "129bda2dd2c58afb35151b6a04dba9ac96ed56ed6d280afc0456dbf1673fa709",
+    });
+  });
+
   it("hero-media.build.json's locks block agrees with LOCK_RECORDS", () => {
+    expect(manifest.locks.t6).toMatchObject(LOCK_RECORDS.t6);
     expect(manifest.locks.typing).toMatchObject(LOCK_RECORDS.typing);
     expect(manifest.locks.nod_v4).toMatchObject(LOCK_RECORDS.nod);
     expect(manifest.locks.s1a).toMatchObject(LOCK_RECORDS.s1a);

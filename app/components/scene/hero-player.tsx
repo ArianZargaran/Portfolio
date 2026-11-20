@@ -102,7 +102,8 @@ function ClipVideo({
 
 /**
  * Plays the hero character over the still: the typing loop, with actions
- * (the E2 nod and the S1a glance-up; S1b/T2 return when they lock) spliced in on the shared clock. All timing comes from
+ * (the E2 nod, the S1a glance-up and the T6 speaker groove; S1b/T2 return
+ * when they lock) spliced in on the shared clock. All timing comes from
  * the pure schedule (stateAt/decide); this component only keeps the
  * <video> elements on the frames it asks for. Lazy chunk (see HeroMount).
  */
@@ -181,8 +182,8 @@ export default function HeroPlayer({
       return true;
     };
     /**
-     * A reaction clip (S1a) is fetched only while the E2 egg nod still fits
-     * beside it, so glances can never starve the egg (review N1).
+     * A reaction clip (S1a, T6) is fetched only while the E2 egg nod still
+     * fits beside it, so hovers can never starve the egg (review N1).
      */
     const fetchReactionClip = (a: ActionDef): boolean => {
       if (actionRefs.current[a.id]?.preload === "auto") return true;

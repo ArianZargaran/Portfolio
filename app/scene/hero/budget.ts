@@ -13,16 +13,22 @@
  *
  * "MB" here follows the plan's KiB arithmetic (576 KiB at M3 - nod in
  * rotation 160 + MVP 330 = 746 -> 750 KiB). The locked install (typing,
- * nod.k180 and the S1a variants) has a worst case of 538,510 B AV1 /
- * 709,646 B H.264 (base + nod + the largest S1a variant) against these
- * 768,000 / 993,280 B (check:media). A visit that hovers the poster at
- * several different joins fetches more than one S1a variant; this budget
- * then refuses the fetch that would go over, and that glance doesn't play.
- * A glance is fetched only if the request would be accepted (planReaction,
- * review N1: nothing during the cooldown) and only while the E2 egg nod
- * still fits beside it (`canFetchKeeping(clip, [nod])`), so repeated glances
- * can never starve the egg: base + nod + at most 3 S1a variants per visit in
- * either codec (check:media's multi-glance case models exactly this).
+ * nod.k180, the S1a and the T6 variants) has a worst case of 632,154 B AV1 /
+ * 836,107 B H.264 (base + nod + the largest S1a + the largest T6 variant)
+ * against these 768,000 / 993,280 B (check:media). A visit that hovers a
+ * hotspot at several different joins fetches more than one variant; this
+ * budget then refuses the fetch that would go over, and that reaction
+ * doesn't play. A reaction clip is fetched only if the request would be
+ * accepted (planReaction, review N1: nothing during the cooldown) and only
+ * while the E2 egg nod still fits beside it (`canFetchKeeping(clip, [nod])`),
+ * so repeated hovers can never starve the egg: base + nod + at most 3
+ * hotspot variants per visit (any mix of S1a and T6) in either codec
+ * (check:media's multi-hover case models exactly this). With the 30 s
+ * same-reaction cooldown a third variant takes >= 30 s of hovering (glance,
+ * groove, glance again); any further hotspot variant (e.g. a T6 after three
+ * glances in >= 60 s) is then refused and only that reaction is skipped. A per-family
+ * reserve (one variant of each hotspot reaction always affordable) was
+ * measured at +110 B gzip of hero JS and is not in (docs/hero-player.md).
  */
 import type { Clip, ClipSource } from "./actions";
 

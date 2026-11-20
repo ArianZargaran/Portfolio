@@ -20,7 +20,10 @@
  * Installed: the typing loop and the E2 nod v4 (`nod.k180`) (Ari's lock
  * t1003s5480, option (a) via Atlas), and the S1a glance-up, one baked clip
  * per join `s1a.k0` .. `s1a.k180` (Ari's lock t1014s5523, "Lock just the
- * glance-up for poster hover", LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2).
+ * glance-up for poster hover", LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2),
+ * and the T6 speaker groove v3, one baked clip per join `t6.k0` .. `t6.k180`
+ * (Ari's lock t1029s5606, "Lock the speaker groove v3",
+ * LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3, speakers hover/focus).
  * The S1b / T2 per-entry clips are NOT locked and are not installed;
  * their clips, triggers and tests are kept on the local branch
  * `hero-reactions-s1a-s1b-t2` and come back when they lock. Bounce v2
@@ -66,11 +69,11 @@ export type EntryJoin = (typeof ENTRY_JOINS)[number];
 
 /**
  * Action families: one per piece of art, one clip per entry within it.
- * Installed: the nod and S1a (S1b / T2 live on hero-reactions-s1a-s1b-t2
+ * Installed: the nod, S1a and T6 (S1b / T2 live on hero-reactions-s1a-s1b-t2
  * until they lock).
  */
-export type ActionFamily = "nod" | "s1a";
-export type ActionId = "nod.k180" | `s1a.k${EntryJoin}`;
+export type ActionFamily = "nod" | "s1a" | "t6";
+export type ActionId = "nod.k180" | `s1a.k${EntryJoin}` | `t6.k${EntryJoin}`;
 
 export interface ActionDef {
   id: ActionId;
@@ -121,6 +124,12 @@ export const CLIP_BYTES: Record<
   "s1a.k108": { av1: 89_135, h264: 117_884 },
   "s1a.k144": { av1: 89_636, h264: 117_960 },
   "s1a.k180": { av1: 90_507, h264: 117_129 },
+  "t6.k0": { av1: 92_261, h264: 124_967 },
+  "t6.k36": { av1: 92_241, h264: 126_461 },
+  "t6.k72": { av1: 93_644, h264: 125_979 },
+  "t6.k108": { av1: 92_401, h264: 126_160 },
+  "t6.k144": { av1: 92_761, h264: 125_867 },
+  "t6.k180": { av1: 93_327, h264: 125_541 },
 };
 
 /* AV1 first (about 25% smaller at the same quality; Chrome, Edge, Firefox,
@@ -150,8 +159,9 @@ export const BASE_LOOP: BaseLoopDef = {
   clip: { sources: sources("typing"), firstFrame: 0, frames: 216 },
 };
 
-/* Lock records the installed clips come from (Ari, cards t1003s5480 and
-   t1014s5523; verified against portfolio-brain tools/locks_now29.sha by
+/* Lock records the installed clips come from (Ari, cards t1003s5480,
+   t1014s5523 and t1029s5606; verified against portfolio-brain
+   tools/locks_now29.sha and tools/locks_now30.sha by
    scripts/hero/verify_locks.py, see docs/hero-player.md).
    THE single source of truth for these ids and shas: join-config.ts derives
    V5_2_LOCK_RECORD / V5_2_LOCK_SHA256 from LOCK_RECORDS.typing, and
@@ -169,25 +179,32 @@ export const LOCK_RECORDS = {
     record: "LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2",
     sha256: "6de9b1acea9264c7f62a4c5d46f72c00bd2af177b9b646b0a9a151b185538027",
   },
+  t6: {
+    record: "LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3",
+    sha256: "129bda2dd2c58afb35151b6a04dba9ac96ed56ed6d280afc0456dbf1673fa709",
+  },
 } as const;
 
 const lockString = (l: { record: string; sha256: string }) =>
   `${l.record} (sha256 ${l.sha256})`;
 
 /**
- * A t995 per-entry variant: 36 frames, clip frame i over base frame k + i,
+ * A per-entry variant: 36 frames, clip frame i over base frame k + i,
  * returning on the join k + 36. Windows measured against the v5_2 loop with
- * the splice-proof rule (p99.9 <= 4, 0 px > 8): only frame 0 equals the loop
- * at the start (so the ONLY cut-in point is the entry join k itself), and
- * the last `exitFrames` frames at the end
- * ($HERO_REPORT/pipeline/m9b-dryrun-v5_2/identity_windows.json).
+ * the splice-proof rule (p99.9 <= 4, 0 px > 8): the first `enterFrames`
+ * frames equal the loop at the start (all of them on the entry join k or
+ * the frames right after it, so the ONLY join it cuts in on is k itself),
+ * and the last `exitFrames` frames at the end. S1a: 1 / 4
+ * ($HERO_REPORT/pipeline/m9b-dryrun-v5_2/identity_windows.json); T6: 2 / 3
+ * (docs/hero-player.md, measured on the locked v3 frames).
  */
 const variant = (
-  family: "s1a",
+  family: "s1a" | "t6",
   k: EntryJoin,
   label: string,
   exitFrames: number,
   lock: string,
+  enterFrames: number,
 ): ActionDef => {
   const id = `${family}.k${k}` as ActionId;
   return {
@@ -198,7 +215,7 @@ const variant = (
     frames: 36,
     fps: 12,
     spliceOffset: k,
-    enterWindow: [0, 0],
+    enterWindow: [0, enterFrames - 1],
     exitWindow: [36 - exitFrames, 35],
     clip: { sources: sources(id), firstFrame: 0, frames: 36 },
     lock,
@@ -206,14 +223,15 @@ const variant = (
 };
 
 const entries = (
-  family: "s1a",
+  family: "s1a" | "t6",
   label: string,
   exitFrames: number,
   lock: string,
+  enterFrames = 1,
 ): Record<string, ActionDef> =>
   Object.fromEntries(
     ENTRY_JOINS.map((k) => {
-      const a = variant(family, k, label, exitFrames, lock);
+      const a = variant(family, k, label, exitFrames, lock, enterFrames);
       return [a.id, a];
     }),
   );
@@ -244,6 +262,13 @@ export const ACTIONS = {
      cut in only at f`entry` (validateAction, joinableKs, step, and the
      occurrenceState / decide guards in schedule.ts). */
   ...entries("s1a", "Glance up (S1a v2)", 4, lockString(LOCK_RECORDS.s1a)),
+  /* T6 speaker groove v3 (speakers hover/focus, reactions.ts "speaker"):
+     one baked opaque crop per join, screen included (H000 also carries the
+     Harvey-to-code screen fade). Clean ONLY at its own entry (lock review
+     locks_now30 §3: 69-15,688 px > 8 at a foreign entry), returning to the
+     loop at f(k+36). i0-i1 equal the loop at fk/fk+1 and i33-i35 equal it
+     at f(k+33)-f(k+35), so enter [0,1], exit [33,35]. */
+  ...entries("t6", "Speaker groove (T6 v3)", 3, lockString(LOCK_RECORDS.t6), 2),
 } as Record<ActionId, ActionDef>;
 
 /** The nod (E2 egg, optional rotation slot). */

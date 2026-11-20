@@ -24,7 +24,8 @@ import { mod } from "./clock";
  *   cycle 0: typing only
  *   cycle 1: typing, music nod cutting in at f180 (clip i60-131) into cycle 2
  *   cycle 2: typing (nod returns at the f36 join); no bounce until S1b locks
- * S1a (glance-up) is a visitor reaction only (queen-poster), never rotated.
+ * S1a (glance-up) and T6 (speaker groove) are visitor reactions only
+ * (queen-poster, speakers), never rotated.
  *   cycle 3: typing only
  */
 export type Rotation = (ActionId | null)[];
@@ -213,7 +214,7 @@ export interface Decision {
  * frame the occurrence's encoded clip comes up on, computed two ways (from
  * its scheduled start, and from the clock frame and action frame actually
  * being shown), must both be the variant's own `entry`. A per-entry clip
- * (S1a, the nod) is opaque with the screen baked in, so anywhere else it
+ * (S1a, T6, the nod) is opaque with the screen baked in, so anywhere else it
  * would pop. occurrenceState already refuses such occurrences; this holds
  * even for a hand-built or corrupted ScheduleState.
  */

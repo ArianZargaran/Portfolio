@@ -83,13 +83,13 @@ describe("HeroPlayer markup", () => {
     expect(root).toHaveAttribute("aria-hidden", "true");
     const videos = [...container.querySelectorAll("video")];
     // Design A: one element per baked clip (the locked install has
-    // nod.k180 and s1a.k0..k180), none fetched up front (intent/trigger
-    // fetch, M3).
+    // nod.k180, s1a.k0..k180 and t6.k0..k180), none fetched up front
+    // (intent/trigger fetch, M3).
     expect(videos.map((v) => v.dataset.clip)).toEqual([
       "base",
       ...Object.keys(ACTIONS),
     ]);
-    expect(videos).toHaveLength(8);
+    expect(videos).toHaveLength(14);
     for (const v of videos.slice(1)) expect(v.preload).toBe("none");
     for (const v of videos) {
       expect(v.muted).toBe(true);

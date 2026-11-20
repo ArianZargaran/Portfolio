@@ -18,13 +18,17 @@
  * - Hover/focus on queen-poster: glance-up (S1a, locked t1014s5523),
  *   fetched on intent (only the variant for the next reachable join). The
  *   poster visit also arms the E2 egg, as before.
+ * - Hover/focus on speakers: speaker groove (T6 v3, locked t1029s5606),
+ *   fetched on intent the same way (one t6.k<join> variant). A speakers
+ *   visit within 10 s of a poster visit completes the E2 egg (egg.ts): T6
+ *   plays through the queue and the nod is armed for the f180 after it.
  * - No idle/return reaction or 45 s doze timer on this install: S1b / T2
  *   are unlocked, preserved on the local branch hero-reactions-s1a-s1b-t2.
  * - Pointer and focus both out of the scene: "leave" (disarms the E2 egg).
  *
  * Sip stays off until S4 exists (planned timer-only at 90 s, not 45 s).
  *
- * Requests without a clip (speaker, phone today) are refused by the queue
+ * Requests without a clip (phone today) are refused by the queue
  * as "unknown"; they start working when their clips are registered. Every
  * request still goes through the queue: cooldowns, freeze, one slot.
  */
