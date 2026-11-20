@@ -97,6 +97,51 @@ describe("HeroPlayer intent fetch (M3)", () => {
   });
 });
 
+describe("HeroPlayer speaker groove (T6 v3)", () => {
+  let load: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    HTMLMediaElement.prototype.pause = vi.fn();
+    load = vi.fn();
+    HTMLMediaElement.prototype.load = load as () => void;
+  });
+
+  it("a speakers intent fetches ONLY the T6 variant for the next reachable join (clock ~f0 -> t6.k36)", () => {
+    const { container } = render(<HeroPlayer />);
+    act(() => intentHeroReaction("speaker"));
+    expect(fetched(container)).toEqual(["typing", "t6.k36"]);
+    expect(load).toHaveBeenCalledTimes(1);
+    const root = container.querySelector(".hero")!;
+    expect(root).toHaveAttribute("data-reaction", "speaker:t6.k36");
+    // typing + t6.k36 at H.264 sizes until the codec is known
+    expect(root).toHaveAttribute("data-bytes", String(442_525 + 126_461));
+    act(() => requestHeroReaction("speaker")); // already buffered: no refetch
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(fetched(container)).toEqual(["typing", "t6.k36"]);
+  });
+
+  it("poster then speakers (the E2 sequence): the speakers fetch the nod and one T6 variant, nothing else", () => {
+    const { container } = render(<HeroPlayer />);
+    act(() => heroHotspot("queen-poster", "visit"));
+    act(() => heroHotspot("speakers", "intent"));
+    act(() => intentHeroReaction("speaker"));
+    act(() => heroHotspot("speakers", "visit"));
+    act(() => requestHeroReaction("speaker"));
+    expect(fetched(container)).toEqual(["typing", "nod.k180", "t6.k36"]);
+    expect(
+      Number(container.querySelector(".hero")!.getAttribute("data-bytes")),
+    ).toBe(442_525 + 147_578 + 126_461);
+  });
+
+  it("while frozen a speakers intent or request fetches nothing", () => {
+    const { container } = render(<HeroPlayer frozen />);
+    act(() => intentHeroReaction("speaker"));
+    act(() => requestHeroReaction("speaker"));
+    expect(fetched(container)).toEqual(["typing"]);
+    expect(load).not.toHaveBeenCalled();
+  });
+});
+
 describe("HeroPlayer requests without clips", () => {
   beforeEach(() => {
     HTMLMediaElement.prototype.play = () => Promise.resolve();

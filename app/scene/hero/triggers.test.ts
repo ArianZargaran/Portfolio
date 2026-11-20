@@ -101,6 +101,53 @@ describe("hero triggers (M5)", () => {
     }
   });
 
+  it("speakers hover/focus: speaker groove (T6 v3, t1029s5606) after the dwell, plus the visit for the E2 egg", () => {
+    expect(HOTSPOT_REACTIONS.speakers).toBe("speaker");
+    expect(
+      Object.entries(HOTSPOT_REACTIONS).filter(([, r]) => r === "speaker"),
+    ).toEqual([["speakers", "speaker"]]);
+    for (const how of ["hover", "focus"] as const) {
+      const s = sink();
+      const off = wireTriggers(scene(), s, { hoverOK: true });
+      if (how === "hover") over(hit("speakers"));
+      else hit("speakers").focus();
+      vi.advanceTimersByTime(TRIGGERS.dwellMs - 1);
+      expect(s.intent).not.toHaveBeenCalled(); // nothing before the dwell
+      expect(s.hotspot).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      // intent (fetch) -> visit (egg) -> request (queue), in that order
+      expect(s.hotspot.mock.calls).toEqual([
+        ["speakers", "intent"],
+        ["speakers", "visit"],
+      ]);
+      expect(s.intent.mock.calls).toEqual([["speaker"]]);
+      expect(s.request.mock.calls).toEqual([["speaker"]]);
+      expect(s.hotspot.mock.invocationCallOrder[1]).toBeLessThan(
+        s.request.mock.invocationCallOrder[0],
+      );
+      off();
+      document.body.innerHTML = "";
+    }
+  });
+
+  it("poster then speakers (keyboard): two visits in order, glance-up then speaker, nothing extra", () => {
+    const s = sink();
+    const off = wireTriggers(scene(), s, { hoverOK: false });
+    hit("queen-poster").focus();
+    vi.advanceTimersByTime(TRIGGERS.dwellMs);
+    hit("speakers").focus(); // focus moves inside the scene: no leave
+    vi.advanceTimersByTime(TRIGGERS.dwellMs);
+    expect(s.hotspot.mock.calls.filter(([, kind]) => kind === "visit")).toEqual(
+      [
+        ["queen-poster", "visit"],
+        ["speakers", "visit"],
+      ],
+    );
+    expect(s.hotspot).not.toHaveBeenCalledWith("", "leave");
+    expect(s.request.mock.calls).toEqual([["glance-up"], ["speaker"]]);
+    off();
+  });
+
   it("queen-poster: a quick swipe (left before the dwell) requests nothing", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: true });
