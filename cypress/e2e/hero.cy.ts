@@ -5,7 +5,8 @@
 type Conn = { effectiveType?: string; saveData?: boolean } | null;
 
 // Registry ids: the base "typing" and the per-entry actions (<family>.k<join>;
-// installed today: nod.k180, s1a.k0..k180); built names are <id>.<codec>-<hash>.mp4.
+// installed today: nod.k180, s1a.k0..k180, t6.k0..k180); built names are
+// <id>.<codec>-<hash>.mp4.
 const clipOf = (url: string) =>
   (url.match(/\/(typing|[a-z0-9]+\.k\d+)\.[^/]*\.mp4/) ?? [])[1] ?? url;
 
@@ -101,9 +102,21 @@ const waitDecodable = (id: string) =>
     .should("have.length", 1)
     .should((v) => expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2));
 
+/* triggers.ts HOVER_MQ. Headless Electron reports no hover-capable pointer,
+   so `hover: true` makes the page's matchMedia answer this one query as a
+   mouse would (every other query is the browser's own). */
+const HOVER_MQ = "(any-hover: hover) and (any-pointer: fine)";
+const hoverOver = (sel: string) =>
+  cy.get(sel).first().trigger("pointerover", {
+    eventConstructor: "PointerEvent",
+    pointerType: "mouse",
+  });
+const SPEAKERS = '.scene_hits--laptop [data-object="speakers"]';
+const POSTER = '.scene_hits--laptop [data-object="queen-poster"]';
+
 function visitHome(
   conn: Conn,
-  opts: { noTiming?: boolean; pinnedClock?: boolean } = {},
+  opts: { noTiming?: boolean; pinnedClock?: boolean; hover?: boolean } = {},
 ) {
   const requested: string[] = [];
   cy.intercept({ method: "GET", url: /\.mp4($|\?)/ }, (req) => {
@@ -122,6 +135,13 @@ function visitHome(
         get: () => (conn === null ? undefined : conn),
       });
       if (opts.noTiming) win.performance.getEntries = () => [];
+      if (opts.hover) {
+        const mm = win.matchMedia.bind(win);
+        win.matchMedia = (q: string) =>
+          q === HOVER_MQ
+            ? ({ ...mm(q), matches: true, media: q } as MediaQueryList)
+            : mm(q);
+      }
       if (opts.pinnedClock) {
         const w = win as PinnedWin;
         w.__heroMs = 0;
@@ -163,7 +183,7 @@ describe("hero motion (stub clips)", () => {
       .should("be.gt", 0);
   });
 
-  it("E2 intent (poster visit, then focus on the speakers) fetches only the nod, within the budget", () => {
+  it("E2 intent (poster visit, then focus on the speakers) fetches only the nod and one T6 variant, within the budget", () => {
     const requested = visitHome({ effectiveType: "4g" });
     cy.get(".hero[data-state=live]", { timeout: 15000 });
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
@@ -180,10 +200,16 @@ describe("hero motion (stub clips)", () => {
     });
     cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
     cy.wrap(requested).should("include", "nod.k180");
+    // The speakers' dwell is also the speaker-groove intent (T6 v3, locked
+    // t1029s5606): exactly ONE T6 variant, the next join's.
     cy.wrap(requested).should((r) => {
       const ids = [...new Set(r.filter((id) => id !== "typing"))];
-      expect(ids).to.have.length(2);
+      expect(ids).to.have.length(3);
       expect(ids.filter((id) => id.startsWith("s1a."))).to.have.length(1);
+      expect(ids.filter((id) => id.startsWith("t6."))).to.have.length(1);
+      expect(ids.find((id) => id.startsWith("t6."))).to.match(
+        /^t6\.k(0|36|72|108|144|180)$/,
+      );
       expect(ids).to.include("nod.k180");
       expect(ids.some((id) => /^(s1b|t2)\./.test(id))).to.eq(false);
     });
@@ -193,7 +219,7 @@ describe("hero motion (stub clips)", () => {
       .should("be.lte", 970 * 1024);
   });
 
-  it("M10b: the egg nod actually comes up at f180 (controlled clock)", () => {
+  it("M10b + T6: poster then speakers at f0 -> t6.k36 at f36 (replacing the queued glance), then the egg nod at f180 (controlled clock)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
     cy.get(".hero[data-state=live]", { timeout: 15000 });
     setHeroMs(msAtFrame(0)); // arm at f0, before all the foreign joins
@@ -204,6 +230,11 @@ describe("hero motion (stub clips)", () => {
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
     cy.wrap(requested).should("include", "nod.k180");
+    // The speakers request (equal priority, newer) replaced the queued
+    // glance: t6.k36 is fetched; s1a.k36 was fetched by the poster intent.
+    cy.wrap(requested).should("include", "t6.k36");
+    cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k36");
+    waitDecodable("t6.k36");
     // Wait (real time, hero clock still at f12) until the nod clip can decode.
     cy.get("video")
       .filter((_, v) =>
@@ -215,15 +246,17 @@ describe("hero motion (stub clips)", () => {
       );
     // Hold each foreign join long enough for a wrong cut-in to become
     // visible (holdAt: >= HOLD_MS real time and >= MIN_TICKS player ticks,
-    // longer if the nod fires `playing`). The nod must never be on. The
-    // poster focus at f0 also queued a glance-up, which may legitimately
-    // come up at f36, but only as s1a.k36 at f36 (its own entry).
-    for (const f of [0, 36, 72, 108, 144, 176, 179])
-      holdAt(
-        f,
-        /\/(nod\.k180|s1a\.k\d+)\./,
-        f === 36 ? ["base", "s1a.k36"] : ["base"],
-      );
+    // longer if the nod fires `playing`). The nod must never be on before
+    // f180, the glance never (it was replaced), T6 only at f36.
+    holdAt(0, /\/(nod\.k180|s1a\.k\d+|t6\.k\d+)\./, ["base"]);
+    setHeroMs(msAtFrame(36)); // T6's own entry: it comes up
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "t6.k36",
+    );
+    for (const f of [72, 108, 144, 176, 179])
+      holdAt(f, /\/(nod\.k180|s1a\.k\d+|t6\.k\d+)\./, ["base"]);
     // Hold the clock on f180 (nod i60, its own entry): the nod must come up.
     setHeroMs(msAtFrame(180));
     cy.get(".hero", { timeout: 5000 }).should(
@@ -367,9 +400,148 @@ describe("hero motion (stub clips)", () => {
       .invoke("attr", "data-bytes")
       .then(Number)
       .should("be.lte", 970 * 1024);
+    // ... plus the speaker groove for the next join (f175 + lead -> f180).
     cy.wrap(requested).should((r) => {
       const ids = [...new Set(r.filter((id) => id !== "typing"))].sort();
-      expect(ids).to.deep.equal(["nod.k180", "s1a.k72"]);
+      expect(ids).to.deep.equal(["nod.k180", "s1a.k72", "t6.k180"]);
+    });
+  });
+
+  it("T6: speakers HOVER at f40 fetches only t6.k72 and it comes up exactly at f72, then the loop (controlled clock)", () => {
+    const requested = visitHome(
+      { effectiveType: "4g" },
+      { pinnedClock: true, hover: true },
+    );
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    setHeroMs(msAtFrame(40));
+    hoverOver(SPEAKERS);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
+        "t6.k72",
+      ]),
+    );
+    cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k72");
+    waitDecodable("t6.k72");
+    // Before its join only the base shows (f68 is inside the lead).
+    for (const f of [41, 60, 68, 71]) holdAt(f, /\/t6\.k\d+\./, ["base"]);
+    setHeroMs(msAtFrame(72)); // own entry
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "t6.k72",
+    );
+    setHeroMs(msAtFrame(73)); // i1, still the enter window
+    cy.get(".hero").should("have.attr", "data-shown", "t6.k72");
+    setHeroMs(msAtFrame(90)); // core (i18): stays on
+    cy.get(".hero").should("have.attr", "data-shown", "t6.k72");
+    setHeroMs(msAtFrame(106)); // exit window (i34): back to the base
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "base",
+    );
+    // The next join belongs to t6.k108, which was never requested.
+    holdAt(108, /\/t6\.k\d+\./, ["base"]);
+    cy.wrap(requested).should((r) =>
+      expect([
+        ...new Set(r.filter((id) => id.startsWith("t6."))),
+      ]).to.deep.equal(["t6.k72"]),
+    );
+  });
+
+  it("T6: a speakers hover that leaves before the 250 ms dwell fetches nothing and queues nothing", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { hover: true });
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    hoverOver(SPEAKERS);
+    hoverOver(".scene_frame"); // straight off, onto the background
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
+    cy.wait(800);
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r)]).to.deep.equal(["typing"]),
+    );
+    cy.get(".hero").should("not.have.attr", "data-reaction");
+  });
+
+  it("T6: a groove planned for f144 never shows at a foreign join when the clock skips its entry (keyboard focus)", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    setHeroMs(msAtFrame(110));
+    cy.get(SPEAKERS).first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should((r) =>
+      expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
+        "t6.k144",
+      ]),
+    );
+    waitDecodable("t6.k144");
+    // Jump straight past f144: t6.k144 must not appear at f180, the next
+    // cycle's joins, and no other variant was fetched to show.
+    holdAt(180, /\/t6\.k\d+\./, ["base"]);
+    for (const f of [0, 36, 72, 108]) holdAt(f, /\/t6\.k\d+\./, ["base"], 1);
+    cy.wrap(requested).should((r) =>
+      expect([
+        ...new Set(r.filter((id) => id.startsWith("t6."))),
+      ]).to.deep.equal(["t6.k144"]),
+    );
+  });
+
+  it("T6 + E2 by hover: poster at f60, speakers at f150 -> glance s1a.k72 at f72, t6.k180 at f180, the nod at the NEXT cycle's f180 (controlled clock)", () => {
+    const requested = visitHome(
+      { effectiveType: "4g" },
+      { pinnedClock: true, hover: true },
+    );
+    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    setHeroMs(msAtFrame(60));
+    hoverOver(POSTER);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.wrap(requested).should("include", "s1a.k72");
+    waitDecodable("s1a.k72");
+    setHeroMs(msAtFrame(72));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "s1a.k72",
+    );
+    // 7.5 s after the poster (inside the 10 s window). The 6 s gap after the
+    // glance (f72) allows f144 at the earliest; f150 + lead -> f180.
+    setHeroMs(msAtFrame(150));
+    hoverOver(SPEAKERS);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k180");
+    cy.wrap(requested).should("include", "nod.k180");
+    waitDecodable("t6.k180");
+    waitDecodable("nod.k180");
+    // f180 belongs to T6 (the egg nod is armed for the f180 AFTER T6 ends).
+    setHeroMs(msAtFrame(180));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "t6.k180",
+    );
+    setHeroMs(msAtFrame(200));
+    cy.get(".hero").should("have.attr", "data-shown", "t6.k180");
+    // T6 returns to the loop; the nod must not cut in at any join before
+    // the next cycle's f180, nor T6 again.
+    for (const f of [0, 36, 72, 108, 144, 176])
+      holdAt(f, /\/(nod\.k180|t6\.k\d+)\./, ["base"], 1);
+    setHeroMs(msAtFrame(180, 1));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "nod.k180",
+    );
+    cy.get(".hero")
+      .invoke("attr", "data-bytes")
+      .then(Number)
+      .should("be.lte", 970 * 1024);
+    cy.wrap(requested).should((r) => {
+      const ids = [...new Set(r.filter((id) => id !== "typing"))].sort();
+      expect(ids).to.deep.equal(["nod.k180", "s1a.k72", "t6.k180"]);
     });
   });
 
