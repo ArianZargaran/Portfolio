@@ -43,6 +43,7 @@ A `HOTSPOT_MAP` entry can use `source: { kind: "local", rect, name, why }` for a
 - Tablet `[168, 632, 224, 750]` and mobile `[88, 540, 132, 604]` are by eye on the v3.2 placeholder stills (flagged `estimated`).
 - Accessible name "Podcast (headphones)"; it stays the last tab stop (where `speakers` was).
 - Checks: `import.test.ts` and `hit-areas.test.ts` (no overlap at any breakpoint), and `cypress/e2e/hotspots-geometry.cy.ts` (bounding rects inside the viewport and clear of the poster and every other hotspot at 1440x900, 1025/1280/1920x900, 1280x800 and 1920x1080).
+
 3. Phone above notebook.
 4. Bookshelf = 3 cabinet boxes (lower tier and base first: focusable and the zoom origin; middle tier; hutch) plus the photo frames on top (pointer-only). The jersey frame opens nothing. `/resume` stays on the bookshelf.
 

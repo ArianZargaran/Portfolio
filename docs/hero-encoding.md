@@ -118,7 +118,7 @@ and 10–20x larger.
 
 - Added media: 6 clips, 1.37 MB, plus 2 laptop stills, about 185 KB.
 - Nothing large enters git. Git LFS or external hosting is **not needed** at this size. Revisit if per-time-of-day plates or many more actions push the media past about 20 MB; then use Vercel Blob or R2 and add the host to `media-src`.
-- The CSP needs no change: `media-src 'self'` already covers the clips, and `npm run check:csp` passes on all 11 routes with the hero live.
+- CSP: `media-src 'self' blob:`. The clips are fetched same-origin (`connect-src 'self'`) and played from `blob:` object URLs since the fetch-once clip store (Nov 21 2026, change 2); `npm run check:csp` covers it on every route with the hero live.
 
 ## Timing (flag for Atlas and Ari)
 
