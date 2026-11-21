@@ -160,6 +160,38 @@ export const COOLDOWNS = { sameS: 30, gapS: 6, perMinute: 6 } as const;
 /** Frames between locking a join and cutting in (seek + first decoded frame). */
 export const LEAD_FRAMES = 4;
 
+/**
+ * Change 3 (poster-then-headphones waste): a queued reaction's clip is NOT
+ * fetched when the request is accepted, only once its clip is at most
+ * FETCH_LEAD_FRAMES (1.5 s) from cutting in. Until then the slot can still
+ * be replaced (newest wins until LEAD_FRAMES before the join) and the
+ * replaced variant has cost nothing. 1.5 s covers the largest reaction clip
+ * (126,461 B H.264) at the network gate's 1.5 Mbps floor (0.67 s) plus a
+ * round trip and decode. A request whose join is already that close
+ * fetches at once, as before.
+ */
+export const FETCH_LEAD_FRAMES = 18;
+
+/** True once a queued occurrence's clip should start downloading. */
+export const fetchDue = (
+  occ: Occurrence,
+  abs: number,
+  lead = FETCH_LEAD_FRAMES,
+): boolean => occ.start + occ.action.clip.firstFrame - abs <= lead;
+
+/**
+ * Reaction clips whose fetch the queue started (`inFlight`) that neither
+ * the slot nor the playing reaction needs any more (replaced, refused or
+ * frozen away). The player aborts them (change 3).
+ */
+export function abandonedFetches(
+  q: QueueState,
+  inFlight: Iterable<ActionDef["id"]>,
+): ActionDef["id"][] {
+  const keep = new Set([q.slot?.occ?.action.id, q.playing?.occ.action.id]);
+  return [...inFlight].filter((id) => !keep.has(id));
+}
+
 export interface Slot {
   id: ReactionId;
   priority: number;
