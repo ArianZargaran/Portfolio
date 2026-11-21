@@ -110,11 +110,30 @@ const staticImports = (f) => {
     out.add(m[1]);
   return [...out];
 };
-const critical = new Set([...scene, ...hero].map((x) => x.f));
-for (const f of [...critical])
-  for (const dep of staticImports(f))
-    if (!initialFiles.includes(dep)) critical.add(dep);
+// Transitive (review N5): a shared chunk that itself imports another
+// non-initial chunk can't hide it from the cap either.
+const closure = (roots, skip = new Set()) => {
+  const seen = new Set(roots);
+  const todo = [...roots];
+  while (todo.length) {
+    const f = todo.pop();
+    for (const dep of staticImports(f))
+      if (!initialFiles.includes(dep) && !skip.has(dep) && !seen.has(dep)) {
+        seen.add(dep);
+        todo.push(dep);
+      }
+  }
+  return seen;
+};
+const critical = closure([...scene, ...hero].map((x) => x.f));
 const criticalJs = js.filter((x) => critical.has(x.f));
+// The reactions budget covers the chunk plus its own static imports that
+// are neither initial nor already on the critical path (none today).
+const reactionsSet = closure(
+  reactions.map((x) => x.f),
+  critical,
+);
+const reactionsJs = js.filter((x) => reactionsSet.has(x.f));
 const leaked = [...critical].filter((f) => REACTIONS_CHUNK.test(f));
 if (leaked.length) {
   console.error(
@@ -137,7 +156,7 @@ const checks = [
   ],
   [
     "hero reactions chunk (lazy, after the loop's first frame)",
-    sum(reactions),
+    sum(reactionsJs),
     budgets.heroReactionsChunkKb,
   ],
 ];
