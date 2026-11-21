@@ -249,19 +249,6 @@
 .scene_pause[aria-pressed="true"] .scene_pause-state {
   display: inline;
 }
-/* F4 (flag, off by default): brief first-hover caption. */
-.scene_freeze-hint {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  z-index: 2;
-  transform: translateX(-50%);
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: rgb(27 22 34 / 85%);
-  color: #fff;
-  pointer-events: none;
-}
 /* F5 (flag, off by default): text-style control below the scene. */
 .scene_pause-link {
   display: block;

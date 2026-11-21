@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-import { heroFreeze } from "~/scene/hero/freeze";
+import { heroFreeze, type FreezeSource } from "~/scene/hero/freeze";
 
 const subscribe = (l: () => void) => heroFreeze().subscribe(l);
 const getSnapshot = () => heroFreeze().get();
@@ -15,7 +15,13 @@ export function useHeroFreeze() {
     getSnapshot,
     getServerSnapshot,
   );
-  const setFrozen = useCallback((v: boolean) => heroFreeze().set(v), []);
-  const toggle = useCallback(() => heroFreeze().toggle(), []);
+  const setFrozen = useCallback(
+    (v: boolean, source?: FreezeSource) => heroFreeze().set(v, source),
+    [],
+  );
+  const toggle = useCallback(
+    (source?: FreezeSource) => heroFreeze().toggle(source),
+    [],
+  );
   return { frozen, setFrozen, toggle };
 }

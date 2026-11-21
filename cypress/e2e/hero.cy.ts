@@ -132,7 +132,13 @@ let chunks: string[] = [];
 
 function visitHome(
   conn: Conn,
-  opts: { noTiming?: boolean; pinnedClock?: boolean; hover?: boolean } = {},
+  opts: {
+    noTiming?: boolean;
+    pinnedClock?: boolean;
+    hover?: boolean;
+    /** A `hero:frozen` value already in storage before the page loads. */
+    storedFreeze?: string;
+  } = {},
 ) {
   const requested: string[] = [];
   chunks = [];
@@ -153,6 +159,8 @@ function visitHome(
   cy.visit("/", {
     onBeforeLoad(win) {
       win.localStorage.clear();
+      if (opts.storedFreeze !== undefined)
+        win.localStorage.setItem("hero:frozen", opts.storedFreeze);
       Object.defineProperty(win.navigator, "connection", {
         configurable: true,
         get: () => (conn === null ? undefined : conn),
@@ -797,13 +805,76 @@ describe("hero motion (stub clips)", () => {
     });
   });
 
-  it("Esc freezes instantly and the freeze persists", () => {
+  it("Esc freezes instantly and the keyboard freeze persists (tagged v2:keyboard) across a reload", () => {
     visitHome({ effectiveType: "4g" });
     cy.get(LIVE, { timeout: 15000 });
     cy.get("body").type("{esc}");
     cy.get(".hero[data-frozen]");
     cy.window().then((w) =>
-      expect(w.localStorage.getItem("hero:frozen")).to.eq("1"),
+      expect(w.localStorage.getItem("hero:frozen")).to.eq("v2:keyboard"),
     );
+    cy.reload();
+    cy.get(".scene_frame[role=group]").should(
+      "have.attr",
+      "aria-label",
+      "Animated scene, paused. Press Enter or Space to play",
+    );
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+    cy.get(".hero").should("not.exist");
+    // Enter on the focused scene plays again and clears the stored freeze.
+    cy.get(".scene_frame[role=group]").focus();
+    cy.focused().type("{enter}");
+    cy.get(".hero", { timeout: 15000 }).should("exist");
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null),
+    );
+  });
+
+  it("change 5: clicks anywhere on the live scene (background, character, video, frame) never pause", () => {
+    visitHome({ effectiveType: "4g" });
+    cy.get(LIVE, { timeout: 15000 });
+    // Off-hotspot points of the 1440x900 composition: window, character
+    // body (over the hero video), floor, wall, plus the frame's centre.
+    for (const [x, y] of [
+      [100, 100],
+      [300, 650],
+      [700, 850],
+      [850, 150],
+    ] as const)
+      cy.get(".scene_frame").click(x, y, { force: true });
+    cy.get(".scene_frame").click({ force: true });
+    cy.get(".scene_frame").dblclick(120, 120, { force: true });
+    cy.get(".hero").should("not.have.attr", "data-frozen");
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "false");
+    cy.get(".scene_freeze-hint").should("not.exist");
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null),
+    );
+  });
+
+  it('change 5 migration: a legacy untagged click freeze ("1") is cleared and the scene plays', () => {
+    const requested = visitHome({ effectiveType: "4g" }, { storedFreeze: "1" });
+    cy.get(LIVE, { timeout: 15000 });
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "false");
+    cy.wrap(requested).should("include", "typing");
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null),
+    );
+  });
+
+  it("change 5 migration: a stored keyboard freeze (v2:keyboard) is honoured: still, no chunks, no media", () => {
+    const requested = visitHome(
+      { effectiveType: "4g" },
+      { storedFreeze: "v2:keyboard" },
+    );
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(2000);
+    cy.get(".hero").should("not.exist");
+    cy.wrap(requested).should("have.length", 0);
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(w.localStorage.getItem("hero:frozen")).to.eq("v2:keyboard");
+    });
   });
 });

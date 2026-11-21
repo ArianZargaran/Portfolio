@@ -86,9 +86,7 @@ export function SceneShell({
           <SceneFreezeControls
             frozen={frozen}
             announcement={announcement}
-            frameRef={frameRef}
-            hint={features.heroFreezeHint}
-            onToggle={() => announce(heroFreeze().toggle())}
+            onToggle={() => announce(heroFreeze().toggle("keyboard"))}
           />
         ) : null}
         <div

@@ -4,7 +4,6 @@ describe("readFeatures", () => {
   it("defaults every flag to off", () => {
     expect(readFeatures({})).toEqual({
       skillsChat: false,
-      heroFreezeHint: false,
       heroPauseLink: false,
       heroRotationPrefetch: false,
       heroRotationNod: false,
@@ -19,16 +18,15 @@ describe("readFeatures", () => {
   });
 });
 
-describe("hero freeze hooks (F4/F5, pending Ari)", () => {
-  it("are off by default and switch on independently", () => {
-    expect(readFeatures({ FEATURE_HERO_FREEZE_HINT: "1" })).toMatchObject({
-      heroFreezeHint: true,
-      heroPauseLink: false,
-    });
-    expect(readFeatures({ FEATURE_HERO_PAUSE_LINK: "on" })).toMatchObject({
-      heroFreezeHint: false,
-      heroPauseLink: true,
-    });
+describe("hero pause link (F5, pending Ari)", () => {
+  it("is off by default; the F4 click-to-pause hint flag is gone", () => {
+    expect(readFeatures({}).heroPauseLink).toBe(false);
+    expect(readFeatures({ FEATURE_HERO_PAUSE_LINK: "on" }).heroPauseLink).toBe(
+      true,
+    );
+    expect(
+      Object.keys(readFeatures({ FEATURE_HERO_FREEZE_HINT: "1" })),
+    ).not.toContain("heroFreezeHint");
   });
 });
 

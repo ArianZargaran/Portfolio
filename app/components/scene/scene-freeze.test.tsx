@@ -64,7 +64,9 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
       name: /press Enter or Space to pause/i,
     });
     expect(group).toHaveAttribute("tabindex", "0");
-    expect(group).toHaveAccessibleDescription(/press Esc to pause/i);
+    expect(group).toHaveAccessibleDescription(
+      /press Esc, or Enter or Space on the scene, to pause/i,
+    );
     expect(
       screen.queryByRole("button", { name: /scene/i }),
     ).not.toBeInTheDocument();
@@ -87,21 +89,51 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
     );
   });
 
-  it("toggles on a background click, never on a hotspot click", async () => {
+  it("change 5: a click or tap anywhere on the scene never pauses (still, frame, video, hotspot)", async () => {
     mockMatchMedia(LAPTOP);
     const { container } = await mountHome();
     const group = await screen.findByRole("group");
-    fireEvent.click(container.querySelector(".scene-still_img")!);
-    expect(heroFreeze().get()).toBe(true);
-    expect(group).toHaveAccessibleName(/paused\. Press Enter or Space to play/);
-    fireEvent.click(container.querySelector(".scene-still_img")!);
+    const targets = [
+      container.querySelector(".scene-still_img")!,
+      group,
+      ...container.querySelectorAll(".scene_frame video"),
+    ];
+    for (const el of targets) {
+      fireEvent.pointerDown(el);
+      fireEvent.click(el);
+      fireEvent.click(el, { detail: 2 });
+    }
     expect(heroFreeze().get()).toBe(false);
+    expect(group).toHaveAccessibleName(/Press Enter or Space to pause/);
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBeNull();
 
     fireEvent.click(
       within(group).getAllByRole("link", { name: "About me" })[0],
     );
     expect(heroFreeze().get()).toBe(false);
     expect(await screen.findByText("About page")).toBeInTheDocument();
+  });
+
+  it("change 5: a frozen scene stays frozen on click (only the keyboard plays it)", async () => {
+    mockMatchMedia(LAPTOP);
+    const { container } = await mountHome();
+    const group = await screen.findByRole("group");
+    fireEvent.keyDown(group, { key: "Enter" });
+    expect(heroFreeze().get()).toBe(true);
+    fireEvent.click(container.querySelector(".scene-still_img")!);
+    expect(heroFreeze().get()).toBe(true);
+    fireEvent.keyDown(group, { key: " " });
+    expect(heroFreeze().get()).toBe(false);
+  });
+
+  it("no visible pause UI or hover hint for pointer users (F4 caption removed)", async () => {
+    mockMatchMedia(LAPTOP);
+    const { container } = await mountHome();
+    const group = await screen.findByRole("group");
+    fireEvent.pointerEnter(group);
+    expect(container.querySelector(".scene_freeze-hint")).toBeNull();
+    expect(screen.queryByText(/click to pause/i)).not.toBeInTheDocument();
+    expect(group).not.toHaveAccessibleDescription(/click/i);
   });
 
   it("Enter/Space on the focused frame toggle; Enter on a link does not", async () => {
@@ -189,11 +221,11 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
     expect(heroFreeze().get()).toBe(true);
   });
 
-  it("F3: persists across reloads", async () => {
+  it("F3: a keyboard pause persists across reloads, tagged v2:keyboard", async () => {
     mockMatchMedia(LAPTOP);
     const first = await mountHome();
-    fireEvent.click(await screen.findByRole("button", { name: /Pause/ }));
-    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("1");
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
     first.unmount();
     resetHeroFreezeForTests(); // a reload re-reads storage
     await mountHome();
@@ -202,14 +234,30 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
     ).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("F3: a stored freeze loads no player or media", async () => {
+  it("F3: a stored keyboard freeze is honoured: no player or media", async () => {
     mockMatchMedia(LAPTOP);
-    window.localStorage.setItem(FREEZE_STORAGE_KEY, "1");
+    window.localStorage.setItem(FREEZE_STORAGE_KEY, "v2:keyboard");
     const { container } = await mountHome();
     await act(async () => {
       await new Promise((r) => setTimeout(r, 800));
     });
     expect(container.querySelector("video")).toBeNull();
+    expect(screen.getByRole("button", { name: /Pause/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
+  });
+
+  it('change 5 migration: a legacy untagged click freeze ("1") is cleared and motion runs', async () => {
+    mockMatchMedia(LAPTOP);
+    window.localStorage.setItem(FREEZE_STORAGE_KEY, "1");
+    await mountHome();
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBeNull();
+    expect(heroFreeze().get()).toBe(false);
+    expect(
+      await screen.findByRole("button", { name: /Pause/ }),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 
   it("reduced motion: still only, no pause mechanism or group", async () => {
@@ -221,12 +269,13 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("F5 hook toggles the same shared state", () => {
+  it("F5 hook toggles the same shared state (stored v2:control)", () => {
     render(<PauseAnimationsControl />);
     const btn = screen.getByRole("button", { name: "Pause animations" });
     fireEvent.click(btn);
     expect(heroFreeze().get()).toBe(true);
     expect(btn).toHaveAttribute("aria-pressed", "true");
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:control");
   });
 });
 

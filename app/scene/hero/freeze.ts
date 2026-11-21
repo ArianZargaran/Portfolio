@@ -1,32 +1,60 @@
 /**
  * Shared freeze state for the hero motion (WCAG 2.2.2 Pause, Stop, Hide).
  *
- * One store per page. Every pause mechanism (the scene background, the
- * focus-revealed pause button, Esc, and later the F5 footer link) toggles
- * this one state, and the player and the reaction queue read it. Freeze
- * is an instant stop: the player holds the current frame, with no easing.
+ * One store per page. Every pause mechanism (Enter/Space on the focused
+ * scene group, the focus-revealed pause button, Esc, and later the F5
+ * footer link) toggles this one state, and the player and the reaction
+ * queue read it. Freeze is an instant stop: the player holds the current
+ * frame, with no easing. A click or tap on the scene never pauses (Ari,
+ * Nov 21 2026, t1034u): the pause is keyboard-first (WCAG 2.2.2).
  *
  * F3: the state is persisted in localStorage under FREEZE_STORAGE_KEY, so it
  * survives reloads and route changes. If storage is unavailable (private
  * mode, quota, SSR), the state lives in memory for this page only.
+ *
+ * Storage v2 (tagged values). The key is unchanged; the value says how the
+ * freeze was made: `v2:keyboard` (scene group, Esc, the F1 button) or
+ * `v2:control` (the F5 control outside the scene). Only tagged v2 values
+ * are honoured. The v1 value `"1"` is untagged: the old build wrote it for
+ * a background click as well as for the keyboard and can't tell them apart,
+ * so on first read it is treated as a legacy click freeze and removed (the
+ * visitor gets motion back; a keyboard user re-pauses once with Esc, which
+ * is then stored tagged). Any other unknown value is removed the same way.
  */
 
 export const FREEZE_STORAGE_KEY = "hero:frozen";
+/** How a persisted freeze was made (storage v2 tag). */
+export type FreezeSource = "keyboard" | "control";
+export const FREEZE_SOURCES: readonly FreezeSource[] = ["keyboard", "control"];
+/** v2 stored value for a freeze made by `source`. */
+export const freezeValue = (source: FreezeSource) => `v2:${source}`;
+/** The untagged v1 value (click or keyboard; cleared on read). */
+export const LEGACY_FREEZE_VALUE = "1";
+
+/** Reads (and migrates) the stored freeze: true only for a tagged v2 value. */
+export function readStoredFreeze(storage: StorageLike | undefined): boolean {
+  const v = storage?.getItem(FREEZE_STORAGE_KEY);
+  if (v === null || v === undefined) return false;
+  if (FREEZE_SOURCES.some((s) => v === freezeValue(s))) return true;
+  storage?.removeItem(FREEZE_STORAGE_KEY); // v1 "1" (a click freeze) or junk
+  return false;
+}
 
 export interface FreezeStore {
   get(): boolean;
-  set(frozen: boolean): void;
+  /** `source` tags a persisted freeze (storage v2); default keyboard. */
+  set(frozen: boolean, source?: FreezeSource): void;
   /**
    * Freeze for this page only, without writing storage (the network gate's
    * "inconclusive -> start frozen", M7). Playing afterwards clears it.
    */
   freezeForPage(): void;
-  toggle(): boolean;
+  toggle(source?: FreezeSource): boolean;
   /** Returns an unsubscribe function. */
   subscribe(listener: () => void): () => void;
 }
 
-type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 function safeStorage(): StorageLike | undefined {
   try {
@@ -41,18 +69,18 @@ export function createFreezeStore(
 ): FreezeStore {
   let frozen = false;
   try {
-    frozen = storage?.getItem(FREEZE_STORAGE_KEY) === "1";
+    frozen = readStoredFreeze(storage);
   } catch {
     frozen = false;
   }
   const listeners = new Set<() => void>();
   const store: FreezeStore = {
     get: () => frozen,
-    set(next) {
+    set(next, source = "keyboard") {
       if (next === frozen) return;
       frozen = next;
       try {
-        if (next) storage?.setItem(FREEZE_STORAGE_KEY, "1");
+        if (next) storage?.setItem(FREEZE_STORAGE_KEY, freezeValue(source));
         else storage?.removeItem(FREEZE_STORAGE_KEY);
       } catch {
         /* in-memory only */
@@ -64,8 +92,8 @@ export function createFreezeStore(
       frozen = true;
       listeners.forEach((l) => l());
     },
-    toggle() {
-      store.set(!frozen);
+    toggle(source) {
+      store.set(!frozen, source);
       return frozen;
     },
     subscribe(listener) {
@@ -85,24 +113,6 @@ export function heroFreeze(): FreezeStore {
 /** Tests only: drop the page store so the next call re-reads storage. */
 export function resetHeroFreezeForTests(): void {
   pageStore = undefined;
-}
-
-/**
- * Elements inside the scene that keep their own click/keyboard behaviour.
- * A click whose target is (inside) one of these never toggles freeze, so
- * the hotspot links navigate exactly as before.
- */
-export const INTERACTIVE_SELECTOR =
-  "a[href], button, input, select, textarea, summary, [role='button'], [role='link'], [data-scene-own-click]";
-
-/** True when a click/tap on `target` is a click on the scene background. */
-export function isBackgroundActivation(
-  target: EventTarget | null,
-  scene: Element,
-): boolean {
-  if (!(target instanceof Element) || !scene.contains(target)) return false;
-  const own = target.closest(INTERACTIVE_SELECTOR);
-  return !own || !scene.contains(own);
 }
 
 /** Esc must not steal the key from an open dialog, menu or popup. */

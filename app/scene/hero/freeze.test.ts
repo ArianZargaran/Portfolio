@@ -1,7 +1,9 @@
 import {
   createFreezeStore,
   FREEZE_STORAGE_KEY,
-  isBackgroundActivation,
+  freezeValue,
+  LEGACY_FREEZE_VALUE,
+  readStoredFreeze,
   escAppliesToScene,
   overlayOpen,
 } from "./freeze";
@@ -21,18 +23,54 @@ describe("freeze store (F3 persistence)", () => {
     expect(createFreezeStore(memoryStorage()).get()).toBe(false);
   });
 
-  it("restores a stored freeze (reload / route change)", () => {
-    const s = memoryStorage({ [FREEZE_STORAGE_KEY]: "1" });
+  it("restores a stored keyboard freeze (reload / route change)", () => {
+    const s = memoryStorage({ [FREEZE_STORAGE_KEY]: "v2:keyboard" });
     expect(createFreezeStore(s).get()).toBe(true);
+    expect(s.data.get(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
   });
 
-  it("persists set and toggle, and clears the key when resumed", () => {
+  it("v2 migration: clears the untagged v1 value (a legacy click freeze) and plays", () => {
+    const s = memoryStorage({ [FREEZE_STORAGE_KEY]: LEGACY_FREEZE_VALUE });
+    expect(LEGACY_FREEZE_VALUE).toBe("1");
+    expect(createFreezeStore(s).get()).toBe(false);
+    expect(s.data.has(FREEZE_STORAGE_KEY)).toBe(false);
+  });
+
+  it("v2: honours both tags, clears anything else", () => {
+    for (const [v, frozen] of [
+      ["v2:keyboard", true],
+      ["v2:control", true],
+      ["1", false],
+      ["true", false],
+      ["v2:click", false],
+      ["v3:keyboard", false],
+      ["", false],
+    ] as const) {
+      const s = memoryStorage({ [FREEZE_STORAGE_KEY]: v });
+      expect([v, readStoredFreeze(s)]).toEqual([v, frozen]);
+      expect([v, s.data.has(FREEZE_STORAGE_KEY)]).toEqual([v, frozen]);
+    }
+    expect(freezeValue("keyboard")).toBe("v2:keyboard");
+    expect(freezeValue("control")).toBe("v2:control");
+  });
+
+  it("persists set and toggle tagged (default keyboard), and clears the key when resumed", () => {
     const s = memoryStorage();
     const store = createFreezeStore(s);
     store.set(true);
-    expect(s.data.get(FREEZE_STORAGE_KEY)).toBe("1");
+    expect(s.data.get(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
     expect(createFreezeStore(s).get()).toBe(true); // a "reload"
     expect(store.toggle()).toBe(false);
+    expect(s.data.has(FREEZE_STORAGE_KEY)).toBe(false);
+    expect(store.toggle("control")).toBe(true);
+    expect(s.data.get(FREEZE_STORAGE_KEY)).toBe("v2:control");
+  });
+
+  it("freezeForPage (net gate) never writes storage", () => {
+    const s = memoryStorage();
+    const store = createFreezeStore(s);
+    store.freezeForPage();
+    expect(store.get()).toBe(true);
     expect(s.data.has(FREEZE_STORAGE_KEY)).toBe(false);
   });
 
@@ -71,35 +109,6 @@ describe("freeze store (F3 persistence)", () => {
     const store = createFreezeStore(undefined);
     store.set(true);
     expect(store.get()).toBe(true);
-  });
-});
-
-describe("isBackgroundActivation (click/hotspot boundary)", () => {
-  const scene = document.createElement("div");
-  scene.innerHTML = `
-    <img id="still" alt="">
-    <nav><a id="hit" href="/about"><span id="label">About</span></a></nav>
-    <button id="btn">Pause</button>`;
-  document.body.append(scene);
-  const el = (id: string) => scene.querySelector(`#${id}`)!;
-
-  it("treats the still / background as a freeze toggle", () => {
-    expect(isBackgroundActivation(el("still"), scene)).toBe(true);
-    expect(isBackgroundActivation(scene, scene)).toBe(true);
-  });
-
-  it("leaves hotspot links (and their labels) to navigate", () => {
-    expect(isBackgroundActivation(el("hit"), scene)).toBe(false);
-    expect(isBackgroundActivation(el("label"), scene)).toBe(false);
-  });
-
-  it("leaves buttons to their own handlers", () => {
-    expect(isBackgroundActivation(el("btn"), scene)).toBe(false);
-  });
-
-  it("ignores targets outside the scene", () => {
-    expect(isBackgroundActivation(document.body, scene)).toBe(false);
-    expect(isBackgroundActivation(null, scene)).toBe(false);
   });
 });
 

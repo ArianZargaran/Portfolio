@@ -4,8 +4,8 @@
  *
  *   FEATURE_SKILLS_CHAT=1   /skills page, its nav entry and POST /api/chat.
  *                           Paused for the launch (Arian, 2026-10-13); code kept.
- *   FEATURE_HERO_FREEZE_HINT=1  F4: a brief "Click to pause" hint the first time
- *                           the pointer enters the animated scene (pending Ari).
+ *   (F4, the "Click to pause" hint flag, is gone with click-to-pause:
+ *   Ari, Nov 21 2026.)
  *   FEATURE_HERO_PAUSE_LINK=1   F5: a "Pause animations" control below the scene
  *                           that toggles the same freeze state (pending Ari).
  *   FEATURE_HERO_ROTATION_PREFETCH=1  Let the draft auto-rotation fetch its
@@ -16,7 +16,6 @@
  */
 export interface Features {
   skillsChat: boolean;
-  heroFreezeHint: boolean;
   heroPauseLink: boolean;
   heroRotationPrefetch: boolean;
   heroRotationNod: boolean;
@@ -30,7 +29,6 @@ export function readFeatures(
 ): Features {
   return {
     skillsChat: truthy(env.FEATURE_SKILLS_CHAT),
-    heroFreezeHint: truthy(env.FEATURE_HERO_FREEZE_HINT),
     heroPauseLink: truthy(env.FEATURE_HERO_PAUSE_LINK),
     heroRotationPrefetch: truthy(env.FEATURE_HERO_ROTATION_PREFETCH),
     heroRotationNod: truthy(env.FEATURE_HERO_ROTATION_NOD),
@@ -39,7 +37,6 @@ export function readFeatures(
 
 export const DEFAULT_FEATURES: Features = {
   skillsChat: false,
-  heroFreezeHint: false,
   heroPauseLink: false,
   heroRotationPrefetch: false,
   heroRotationNod: false,

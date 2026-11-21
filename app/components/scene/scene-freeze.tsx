@@ -1,16 +1,10 @@
 import type { RefObject } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { useHeroFreeze } from "~/components/scene/use-hero-freeze";
-import {
-  heroFreeze,
-  isBackgroundActivation,
-  escAppliesToScene,
-} from "~/scene/hero/freeze";
+import { heroFreeze, escAppliesToScene } from "~/scene/hero/freeze";
 
 export const FREEZE_HINT_ID = "scene-freeze-hint";
-const HINT_SEEN_KEY = "hero:freeze-hint-seen";
-const HINT_MS = 2000;
 
 /** Accessible name of the scene group: says what it is and how to pause. */
 export const sceneLabel = (frozen: boolean) =>
@@ -19,11 +13,12 @@ export const sceneLabel = (frozen: boolean) =>
     : "Animated scene. Press Enter or Space to pause, or Esc";
 
 /**
- * Wires the WCAG 2.2.2 pause mechanisms onto the scene frame:
- * - a click or tap on the background (not on a hotspot link or a button)
- *   toggles freeze; hotspots keep navigating as before;
+ * Wires the WCAG 2.2.2 pause mechanisms onto the scene frame, keyboard
+ * only (Ari, Nov 21 2026, t1034u: a click or tap anywhere on the scene
+ * never pauses or freezes; hotspots navigate, the background does nothing):
  * - Enter or Space while the scene frame itself has focus toggles it;
  * - Esc anywhere on the page pauses (unless a dialog or menu is open).
+ * Freezes made here are stored tagged `v2:keyboard` (freeze.ts).
  * Freeze is an instant stop (the player holds the current frame).
  */
 export function useSceneFreezeHandlers(
@@ -38,30 +33,21 @@ export function useSceneFreezeHandlers(
   useEffect(() => {
     const frame = frameRef.current;
     if (!enabled || !frame) return;
-    const onClick = (e: MouseEvent) => {
-      if (e.button !== 0 || e.defaultPrevented) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (!isBackgroundActivation(e.target, frame)) return;
-      if (window.getSelection?.()?.toString()) return; // selecting text
-      cb.current(toggle());
-    };
     const onKey = (e: KeyboardEvent) => {
       if (e.target !== frame) return; // keys on a hotspot link stay its own
       if (e.key !== "Enter" && e.key !== " ") return;
       e.preventDefault(); // Space would scroll the page
-      cb.current(toggle());
+      cb.current(toggle("keyboard"));
     };
     const onEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
       if (heroFreeze().get() || !escAppliesToScene(document, frame)) return;
-      setFrozen(true);
+      setFrozen(true, "keyboard");
       cb.current(true);
     };
-    frame.addEventListener("click", onClick);
     frame.addEventListener("keydown", onKey);
     document.addEventListener("keydown", onEsc);
     return () => {
-      frame.removeEventListener("click", onClick);
       frame.removeEventListener("keydown", onKey);
       document.removeEventListener("keydown", onEsc);
     };
@@ -71,29 +57,24 @@ export function useSceneFreezeHandlers(
 }
 
 /**
- * F1-F2 (and the F4 hook): rendered as the first children of the scene
- * frame when motion runs.
+ * F1-F2: rendered as the first children of the scene frame when motion
+ * runs. Nothing here is visible to pointer users (no pause UI, no hover
+ * hint; the old F4 "Click to pause" caption went with click-to-pause).
  * - F1: a native toggle button, visually hidden until it has keyboard focus
- *   (skip-link pattern); aria-pressed=true means "paused".
+ *   (skip-link pattern); aria-pressed=true means "paused". Its activation
+ *   is keyboard (Enter/Space) or assistive tech; stored as `v2:keyboard`.
  * - F2: the instructions the scene group points at with aria-describedby.
  * - A polite status message after each user toggle.
- * - F4 (flag, off by default): a brief "Click to pause" caption the first
- *   time the pointer enters the scene, once per visitor.
  */
 export function SceneFreezeControls({
   frozen,
   announcement,
   onToggle,
-  frameRef,
-  hint = false,
 }: {
   frozen: boolean;
   announcement: string;
   onToggle: () => void;
-  frameRef: RefObject<HTMLElement | null>;
-  hint?: boolean;
 }) {
-  const showHint = useFirstHoverHint(frameRef, hint && !frozen);
   return (
     <>
       <button
@@ -109,57 +90,15 @@ export function SceneFreezeControls({
         </span>
       </button>
       <span id={FREEZE_HINT_ID} className="visually-hidden">
-        Click the scene background or press Esc to pause the animation; click it
-        again, or press Enter or Space on the scene, to play. Choose an object
-        to open its page.
+        Press Esc, or Enter or Space on the scene, to pause the animation; press
+        Enter or Space on the scene again to play. Choose an object to open its
+        page.
       </span>
       <span role="status" aria-live="polite" className="visually-hidden">
         {announcement}
       </span>
-      {showHint ? (
-        <span className="scene_freeze-hint" aria-hidden="true">
-          Click to pause
-        </span>
-      ) : null}
     </>
   );
-}
-
-/** F4 hook: true for HINT_MS after the pointer first enters the frame. */
-function useFirstHoverHint(
-  frameRef: RefObject<HTMLElement | null>,
-  enabled: boolean,
-): boolean {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const frame = frameRef.current;
-    if (!enabled || !frame) return;
-    let timer: number | undefined;
-    const seen = () => {
-      try {
-        return window.localStorage.getItem(HINT_SEEN_KEY) === "1";
-      } catch {
-        return false;
-      }
-    };
-    const onEnter = () => {
-      if (seen()) return;
-      try {
-        window.localStorage.setItem(HINT_SEEN_KEY, "1");
-      } catch {
-        /* show once per page instead */
-      }
-      frame.removeEventListener("pointerenter", onEnter);
-      setShow(true);
-      timer = window.setTimeout(() => setShow(false), HINT_MS);
-    };
-    frame.addEventListener("pointerenter", onEnter);
-    return () => {
-      frame.removeEventListener("pointerenter", onEnter);
-      window.clearTimeout(timer);
-    };
-  }, [enabled, frameRef]);
-  return show;
 }
 
 /**
@@ -174,7 +113,7 @@ export function PauseAnimationsControl() {
       type="button"
       className="scene_pause-link"
       aria-pressed={frozen}
-      onClick={() => toggle()}
+      onClick={() => toggle("control")}
     >
       Pause animations
     </button>
