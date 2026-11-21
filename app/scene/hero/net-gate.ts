@@ -24,8 +24,7 @@
  *
  * Pure: the browser reads live in `readGateEnv` / `measureThroughput`.
  */
-import { BASE_LOOP } from "./actions";
-import { VISIT_BUDGET_BYTES } from "./budget";
+import { TYPING_BYTES, VISIT_BUDGET_BYTES } from "./caps";
 
 export type Verdict = "play" | "still" | "frozen";
 export type Composition = "laptop" | "tablet" | "phone";
@@ -50,8 +49,8 @@ export const COMPOSITION_BUDGET: Record<Composition, number> = {
  * they use the PLAN §7 estimates for their encodes.
  */
 export const PLANNED_BYTES: Record<Composition, number> = {
-  laptop: Math.max(...BASE_LOOP.clip.sources.map((s) => s.bytes)),
-  tablet: Math.max(...BASE_LOOP.clip.sources.map((s) => s.bytes)),
+  laptop: Math.max(TYPING_BYTES.av1, TYPING_BYTES.h264),
+  tablet: Math.max(TYPING_BYTES.av1, TYPING_BYTES.h264),
   phone: 254_000, // 352x432 mobile typing encode, H.264 (PLAN §7)
 };
 

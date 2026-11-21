@@ -15,7 +15,11 @@ import {
   type ActionId,
   type BaseLoopDef,
 } from "./actions";
-import { mod } from "./clock";
+import { absFrameAt, mod } from "./clock";
+
+// Frame helpers live in clock.ts so the loop player chunk can use them
+// without this module (which pulls in the action registry).
+export { absFrameAt, driftFrames, frameTime } from "./clock";
 
 /**
  * DRAFT rotation (for Ari): one entry per base cycle, repeating. With the
@@ -66,9 +70,6 @@ export interface ScheduleState {
     phase: Phase;
   };
 }
-
-export const absFrameAt = (t: number, fps: number): number =>
-  Math.floor(t * fps + 1e-9);
 
 /** Base frame shown under action frame i (the splice mapping). */
 export const actionFrameToBase = (
@@ -253,20 +254,4 @@ export function decide(
   if (a.phase === "core")
     return shown === id ? { show: id, prepare } : { show: "base" };
   return { show: "base" };
-}
-
-/** Wanted media time for a frame: the middle of the frame, so rounding never lands on a neighbour. */
-export const frameTime = (frame: number, fps: number): number =>
-  (frame + 0.5) / fps;
-
-/** Signed drift in frames between a video's time and the wanted frame (wrap-aware for loops). */
-export function driftFrames(
-  mediaTime: number,
-  wantedFrame: number,
-  fps: number,
-  loopFrames?: number,
-): number {
-  let d = mediaTime * fps - (wantedFrame + 0.5);
-  if (loopFrames) d = mod(d + loopFrames / 2, loopFrames) - loopFrames / 2;
-  return d;
 }

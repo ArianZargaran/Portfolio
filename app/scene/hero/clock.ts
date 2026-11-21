@@ -54,3 +54,22 @@ export function createClock(
     },
   };
 }
+
+export const absFrameAt = (t: number, fps: number): number =>
+  Math.floor(t * fps + 1e-9);
+
+/** Wanted media time for a frame: the middle of the frame, so rounding never lands on a neighbour. */
+export const frameTime = (frame: number, fps: number): number =>
+  (frame + 0.5) / fps;
+
+/** Signed drift in frames between a video's time and the wanted frame (wrap-aware for loops). */
+export function driftFrames(
+  mediaTime: number,
+  wantedFrame: number,
+  fps: number,
+  loopFrames?: number,
+): number {
+  let d = mediaTime * fps - (wantedFrame + 0.5);
+  if (loopFrames) d = mod(d + loopFrames / 2, loopFrames) - loopFrames / 2;
+  return d;
+}

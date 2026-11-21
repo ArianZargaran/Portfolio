@@ -34,34 +34,17 @@
  * CLIP_BYTES, and add its entries below.
  */
 
-export type MediaType = "video/mp4" | "video/webm";
+import {
+  BASE_LOOP,
+  clipSources,
+  type BaseLoopDef,
+  type Clip,
+  type ClipSource,
+} from "./base-loop";
+import { TYPING_BYTES } from "./caps";
 
-export interface ClipSource {
-  src: string;
-  type: MediaType;
-  /** `codecs` parameter for canPlayType/<source type>, e.g. avc1.640020. */
-  codecs: string;
-  /** Codec family, for the per-visit byte budget (budget.ts). */
-  codec: "av1" | "h264";
-  /** File size in bytes (checked against hero-media.build.json in tests). */
-  bytes: number;
-}
-
-export interface Clip {
-  /** Ordered best-first; the browser plays the first it supports. */
-  sources: ClipSource[];
-  /** First action frame the encoded clip contains (clips can be trimmed). */
-  firstFrame: number;
-  /** Number of frames in the encoded clip. */
-  frames: number;
-}
-
-export interface BaseLoopDef {
-  id: "typing";
-  frames: number;
-  fps: number;
-  clip: Clip;
-}
+export type { BaseLoopDef, Clip, ClipSource, MediaType } from "./base-loop";
+export { BASE_LOOP } from "./base-loop";
 
 /** The join points the per-entry variants exist for (join-config.ts). */
 export const ENTRY_JOINS = [0, 36, 72, 108, 144, 180] as const;
@@ -100,7 +83,7 @@ export interface ActionDef {
    by react-router-serve and by the /assets/* header in vercel.json. Build
    metadata (sources, encoder settings, hashes) lives in
    scripts/hero/hero-media.build.json, which is never served. */
-const MEDIA = import.meta.glob<string>("./media/*.mp4", {
+const MEDIA = import.meta.glob<string>(["./media/*.mp4", "!./media/typing.*"], {
   eager: true,
   import: "default",
 });
@@ -116,7 +99,7 @@ export const CLIP_BYTES: Record<
   "typing" | ActionId,
   { av1: number; h264: number }
 > = {
-  typing: { av1: 332_028, h264: 442_525 },
+  typing: TYPING_BYTES,
   "nod.k180": { av1: 115_975, h264: 147_578 },
   "s1a.k0": { av1: 88_436, h264: 117_692 },
   "s1a.k36": { av1: 89_515, h264: 119_543 },
@@ -132,32 +115,14 @@ export const CLIP_BYTES: Record<
   "t6.k180": { av1: 93_327, h264: 125_541 },
 };
 
-/* AV1 first (about 25% smaller at the same quality; Chrome, Edge, Firefox,
-   Safari on AV1 hardware), H.264 High as the universal fallback. Both are
-   opaque crops of the full composite (see docs/hero-encoding.md). */
-const sources = (name: keyof typeof CLIP_BYTES): ClipSource[] => [
-  {
-    src: urlOf(`${name}.av1.mp4`),
-    type: "video/mp4",
-    codecs: "av01.0.01M.08",
-    codec: "av1",
-    bytes: CLIP_BYTES[name].av1,
-  },
-  {
-    src: urlOf(`${name}.h264.mp4`),
-    type: "video/mp4",
-    codecs: "avc1.640020",
-    codec: "h264",
-    bytes: CLIP_BYTES[name].h264,
-  },
-];
-
-export const BASE_LOOP: BaseLoopDef = {
-  id: "typing",
-  frames: 216,
-  fps: 12,
-  clip: { sources: sources("typing"), firstFrame: 0, frames: 216 },
-};
+const sources = (
+  name: Exclude<keyof typeof CLIP_BYTES, "typing">,
+): ClipSource[] =>
+  clipSources(
+    urlOf(`${name}.av1.mp4`),
+    urlOf(`${name}.h264.mp4`),
+    CLIP_BYTES[name],
+  );
 
 /* Lock records the installed clips come from (Ari, cards t1003s5480,
    t1014s5523 and t1029s5606; verified against portfolio-brain
@@ -303,7 +268,10 @@ export function cutWindows(a: ActionDef): {
 }
 
 /** Static checks every registry entry must pass (run in tests). */
-export function validateAction(a: ActionDef, base = BASE_LOOP): string[] {
+export function validateAction(
+  a: ActionDef,
+  base: BaseLoopDef = BASE_LOOP,
+): string[] {
   const errs: string[] = [];
   const { enter, exit } = cutWindows(a);
   if (a.fps !== base.fps)
