@@ -171,6 +171,86 @@ describe("HeroPlayer per-clip bytes (change 2)", () => {
     expect(root.dataset.state).not.toBe("failed");
   });
 
+  /* Review B1: a browser that says it can play AV1 but can't decode the
+     file rejects play() with NotSupportedError AND fires `error` on the
+     element, in either order. The fallback must win, not the failure. */
+  const undecodable = (urls: () => string[]) => {
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      const src = this.getAttribute("src") ?? "";
+      if (!urls().includes(src)) return Promise.resolve();
+      // The rejection is handled first; the element's `error` comes a
+      // task later (the order a real browser may use). As in a browser,
+      // load() / a new src drops that pending event of the old resource.
+      setImmediate(() => {
+        if (this.getAttribute("src") === src)
+          this.dispatchEvent(new Event("error"));
+      });
+      return Promise.reject(
+        new DOMException(
+          "The element has no supported sources.",
+          "NotSupportedError",
+        ),
+      );
+    };
+  };
+  const firstUrl = () =>
+    (
+      URL.createObjectURL as unknown as {
+        mock: { results: { value: string }[] };
+      }
+    ).mock.results.map((r) => r.value);
+
+  it("B1: AV1 that won't decode (play() rejects NotSupportedError first, error a task later) ends live on H.264; AV1 bytes wasted, blob revoked", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    undecodable(() => firstUrl().slice(0, 1)); // the AV1 typing blob
+    const { root, base } = await mountHero(<HeroPlayer />);
+    await settle(3);
+    expect(net.calls.map((c) => [c.id, c.codec])).toEqual([
+      ["typing", "av1"],
+      ["typing", "h264"],
+    ]);
+    expect(root.dataset.state).toBe("live");
+    expect(root.dataset.reactions).toBe("ready");
+    expect(base).toHaveAttribute("src", firstUrl()[1]);
+    expect(bytes(root)).toBe(332_028 + H264.typing);
+    expect(root.dataset.wasted).toBe("332028");
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(firstUrl()[0]);
+  });
+
+  it("B1: the same with `error` before the play() rejection: one fallback, live on H.264", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      const src = this.getAttribute("src") ?? "";
+      if (src !== firstUrl()[0]) return Promise.resolve();
+      this.dispatchEvent(new Event("error"));
+      return Promise.reject(new DOMException("no", "NotSupportedError"));
+    };
+    const { root } = await mountHero(<HeroPlayer />);
+    await settle(3);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    expect(root.dataset.state).toBe("live");
+    expect(bytes(root)).toBe(332_028 + H264.typing);
+  });
+
+  it("B1: when H.264 won't decode either, the player fails to the still (no third fetch)", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    undecodable(() => firstUrl());
+    const { root } = await mountHero(<HeroPlayer />);
+    await settle(3);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    expect(root.dataset.state).toBe("failed");
+  });
+
+  it("B1: a play() blocked for another reason (NotAllowedError, no media error) still fails as before", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    HTMLMediaElement.prototype.play = () =>
+      Promise.reject(new DOMException("autoplay", "NotAllowedError"));
+    const { root } = await mountHero(<HeroPlayer />);
+    await settle(3);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1"]);
+    expect(root.dataset.state).toBe("failed");
+  });
+
   it("a re-used variant replays from its blob: one fetch per clip per visit, charged once", async () => {
     const { root } = await mountHero(<HeroPlayer />);
     glance(); // ~f0 -> s1a.k36

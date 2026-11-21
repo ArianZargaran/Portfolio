@@ -41,6 +41,12 @@ export interface ClipStore {
    * fetch was not in flight). A later load() starts a new fetch.
    */
   abort(src: string): number;
+  /**
+   * Frees a finished clip that turned out to be unusable (the AV1 loop that
+   * won't decode, review N6): revokes its object URL. Its bytes stay
+   * counted by the caller's budget.
+   */
+  release(src: string): void;
   /** Number of fetch() calls made (tests / data-fetches). */
   readonly fetches: number;
   /** Aborts everything and revokes every object URL. */
@@ -114,6 +120,11 @@ export function createClipStore(
       e.state = "aborted";
       e.ctrl.abort();
       return e.received;
+    },
+    release(src) {
+      const e = entries.get(src);
+      if (e?.url) URL.revokeObjectURL(e.url);
+      if (e) e.url = undefined;
     },
     get fetches() {
       return fetches;

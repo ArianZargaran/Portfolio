@@ -73,3 +73,25 @@ describe("clip store (change 2: one fetch per clip per visit)", () => {
     expect(pickSource(src, () => "")).toBeUndefined();
   });
 });
+
+describe("clip store release (review N6)", () => {
+  beforeEach(() => {
+    let i = 0;
+    URL.createObjectURL = vi.fn(() => `blob:y/${++i}`);
+    URL.revokeObjectURL = vi.fn();
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("release(): revokes the object URL of an unusable clip once; bytes stay counted", async () => {
+    const s = createClipStore(ok(99) as unknown as typeof fetch);
+    const url = await s.load("/a.mp4", "video/mp4");
+    s.release("/a.mp4");
+    s.release("/a.mp4");
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(url);
+    expect(s.url("/a.mp4")).toBeUndefined();
+    expect(s.received("/a.mp4")).toBe(99);
+    s.dispose();
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1);
+  });
+});

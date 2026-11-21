@@ -102,10 +102,17 @@ export default function HeroPlayer({
       root.dataset.state = "failed"; // the still underneath stays
     };
     // A play() interrupted by pause() (freeze, tab hidden) rejects with
-    // AbortError; that is not a media failure.
-    const playFailed = (e: unknown) => {
+    // AbortError; that is not a media failure. A play() of a source that
+    // won't decode rejects with NotSupportedError (as the element's `error`
+    // fires): while a later source is left, that is the codec fallback's
+    // job, not a failure (review B1). A rejection for a source that has
+    // already been replaced is stale and ignored.
+    const playFailed = (from: ClipSource) => (e: unknown) => {
       if (frozenRef.current || (e as Error | undefined)?.name === "AbortError")
         return;
+      if (from !== source) return; // the fallback already moved on
+      if ((e as Error | undefined)?.name === "NotSupportedError" || base.error)
+        return fallbackFrom(from);
       fail();
     };
     const host: ReactionHost = {
@@ -138,7 +145,10 @@ export default function HeroPlayer({
         );
       });
     const play = () => {
-      base.play().then(goLive, playFailed);
+      // Bind the source BEFORE play(): a synchronous `error` inside play()
+      // may already move `source` on to the fallback.
+      const onFail = playFailed(source);
+      base.play().then(goLive, onFail);
     };
     const attach = (url: string) => {
       if (unmounted) return;
@@ -150,22 +160,37 @@ export default function HeroPlayer({
       if (!frozenRef.current && !document.hidden) play();
     };
     const fetchBase = () => {
-      syncBytes();
       store.load(source.src, source.type).then(attach, (e: unknown) => {
         if (!unmounted && (e as Error | undefined)?.name !== "AbortError")
           fail();
       });
+      syncBytes(); // after load(): data-fetches counts this request
     };
     // A source that won't decode is not fatal while another is left: what
-    // it downloaded stays charged, and the next source is fetched (AV1 ->
-    // H.264). Only the last source failing means no clip can play.
-    const onError = () => {
-      const i = sources.indexOf(source);
-      if (dead || i < 0 || i >= sources.length - 1) return fail();
-      budget.waste(store.received(source.src));
+    // it downloaded stays charged (budget.waste), its blob is freed (review
+    // N6), and the next source is fetched (AV1 -> H.264). Only the last
+    // source failing means no clip can play. Both the element's `error`
+    // event and play()'s NotSupportedError land here; whichever comes
+    // second finds `source` already moved on and does nothing.
+    const fallbackFrom = (from: ClipSource) => {
+      if (dead || unmounted || from !== source) return;
+      const i = sources.indexOf(from);
+      if (i < 0 || i >= sources.length - 1) return fail();
+      budget.waste(store.received(from.src));
       source = sources[i + 1];
       budget.setCodec(source.codec);
+      root.dataset.wasted = String(budget.wasted);
+      base.pause();
+      base.removeAttribute("src");
+      base.load();
+      store.release(from.src);
       fetchBase();
+    };
+    // Only an error of the source actually attached counts (removing the
+    // src above, or a stale blob, must not trigger a second fallback).
+    const onError = () => {
+      if (!base.getAttribute("src")) return;
+      fallbackFrom(source);
     };
 
     const tick = () => {
