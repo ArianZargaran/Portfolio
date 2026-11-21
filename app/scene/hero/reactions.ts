@@ -41,7 +41,7 @@
  * only at the join that variant is baked for:
  * - the S1a glance-up (queen-poster hover/focus), locked by Ari
  *   (t1014s5523, LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2);
- * - the T6 speaker groove v3 (speakers hover/focus), locked by Ari
+ * - the T6 speaker groove v3 (headphones hover/focus), locked by Ari
  *   (t1029s5606, LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3).
  * The S1b strong bounce (idle / return) and T2 doze (45 s) are not locked,
  * so their clips, triggers and tests are kept on the local branch

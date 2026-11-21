@@ -19,22 +19,22 @@ const nod = ACTIONS["nod.k180"];
 const clipFrom = (o: Occurrence) => o.start + o.action.clip.firstFrame;
 
 describe("E2 egg: sequence", () => {
-  it("completes on queen poster then speakers within 10 s", () => {
+  it("completes on queen poster then headphones within 10 s", () => {
     let e = eggVisit(initialEgg(), "queen-poster", 100).state;
-    expect(eggWouldComplete(e, "speakers", 105)).toBe(true);
-    const r = eggVisit(e, "speakers", 110);
+    expect(eggWouldComplete(e, "headphones", 105)).toBe(true);
+    const r = eggVisit(e, "headphones", 110);
     expect(r.completed).toBe(true);
     e = r.state;
     expect(e.first).toBeUndefined(); // one completion per poster visit
-    expect(eggVisit(e, "speakers", 111).completed).toBe(false);
+    expect(eggVisit(e, "headphones", 111).completed).toBe(false);
   });
 
   it("does not complete late, out of order, or via other hotspots", () => {
     const e = eggVisit(initialEgg(), "queen-poster", 0).state;
-    expect(eggVisit(e, "speakers", 10.5).completed).toBe(false);
-    expect(eggVisit(initialEgg(), "speakers", 1).completed).toBe(false);
+    expect(eggVisit(e, "headphones", 10.5).completed).toBe(false);
+    expect(eggVisit(initialEgg(), "headphones", 1).completed).toBe(false);
     expect(eggVisit(e, "laptop", 1).completed).toBe(false);
-    expect(EGG.sequence).toEqual(["queen-poster", "speakers"]);
+    expect(EGG.sequence).toEqual(["queen-poster", "headphones"]);
   });
 });
 

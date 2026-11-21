@@ -45,8 +45,8 @@ Run `npm run build && PORT=3150 node scripts/serve.mjs`, then open `http://local
 - [ ] With Develop → Network → throttling at 3G or "Edge" on a fresh profile (clear website data), it reads `still:throughput-slow`, and no `.mp4` request appears in the Network tab.
 - [ ] After clearing website data and with the cache served (Disable Caches off, second load), if nothing is measurable it reads `frozen:inconclusive`: the scene is paused, and Enter or a click plays it.
 - [ ] Esc freezes instantly; reloading stays frozen with no `.mp4` requests.
-- [ ] Hovering the poster requests exactly one `s1a.k<join>.*.mp4` (the next join's variant) after the 250 ms dwell, and the glance-up cuts in on that join; then hovering the speakers within 10 s requests `nod.*.mp4` and exactly one `t6.k<join>.*.mp4` (Network tab): the speaker groove cuts in on that join and the nod follows at the first f180 after it. Nothing is requested before the dwell, and no `s1b`/`t2` file ever.
-- [ ] Hovering the speakers alone (no poster first), and Tab-focusing them, each request exactly one `t6.k<join>.*.mp4` and no `nod.*.mp4`; the groove cuts in on that join with no hover hint or pause control appearing.
+- [ ] Hovering the poster requests exactly one `s1a.k<join>.*.mp4` (the next join's variant) after the 250 ms dwell, and the glance-up cuts in on that join; then hovering the headphones (on Ari's head) within 10 s requests `nod.*.mp4` and exactly one `t6.k<join>.*.mp4` (Network tab): the speaker groove cuts in on that join and the nod follows at the first f180 after it. Nothing is requested before the dwell, and no `s1b`/`t2` file ever.
+- [ ] Hovering the headphones alone (no poster first), and Tab-focusing them, each request exactly one `t6.k<join>.*.mp4` and no `nod.*.mp4`; the groove cuts in on that join with no hover hint or pause control appearing.
 - [ ] Hover the poster again (move away and back) several times during the next 30 s: no new `s1a.*.mp4` request appears (the glance is in its cooldown). After 30 s the next hover requests one variant again.
 - [ ] Leave the tab for 60 s and come back: no black frame on the next cut.
 

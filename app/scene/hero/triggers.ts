@@ -18,8 +18,8 @@
  * - Hover/focus on queen-poster: glance-up (S1a, locked t1014s5523),
  *   fetched on intent (only the variant for the next reachable join). The
  *   poster visit also arms the E2 egg, as before.
- * - Hover/focus on speakers: speaker groove (T6 v3, locked t1029s5606),
- *   fetched on intent the same way (one t6.k<join> variant). A speakers
+ * - Hover/focus on headphones: speaker groove (T6 v3, locked t1029s5606),
+ *   fetched on intent the same way (one t6.k<join> variant). A headphones
  *   visit within 10 s of a poster visit completes the E2 egg (egg.ts): T6
  *   plays through the queue and the nod is armed for the f180 after it.
  * - No idle/return reaction or 45 s doze timer on this install: S1b / T2
@@ -43,7 +43,7 @@ import type { ReactionId } from "./reactions";
 /** Hotspot id -> reaction it triggers (hit-areas.ts ids). Data, not code. */
 export const HOTSPOT_REACTIONS: Readonly<Record<string, ReactionId>> = {
   "queen-poster": "glance-up",
-  speakers: "speaker",
+  headphones: "speaker",
   phone: "phone",
 };
 

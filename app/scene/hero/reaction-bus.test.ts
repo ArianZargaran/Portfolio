@@ -31,7 +31,7 @@ describe("hotspot bus", () => {
       ["", "leave"],
     ]);
     off();
-    heroHotspot("speakers", "intent");
+    heroHotspot("headphones", "intent");
     expect(l).toHaveBeenCalledTimes(2);
   });
 });

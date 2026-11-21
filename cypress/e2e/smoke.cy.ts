@@ -26,7 +26,7 @@ describe("smoke tests", () => {
         ["Contact", "/contact"],
         ["About me", "/about"],
         ["Case studies", "/case-studies"],
-        ["Podcast", "/podcast"],
+        ["Podcast (headphones)", "/podcast"],
         ["Notebook", "/articles"],
       ].forEach(([name, href]) =>
         cy.findByRole("link", { name }).should("have.attr", "href", href),

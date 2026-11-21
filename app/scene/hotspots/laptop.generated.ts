@@ -19,7 +19,7 @@ export const LAPTOP_HIT_ORDER = [
   "laptop",
   "notebook",
   "phone",
-  "speakers",
+  "headphones",
 ] as const;
 
 /** Laptop rects per hotspot id; first = focusable, rest pointer-only. */
@@ -36,7 +36,7 @@ export const LAPTOP_RECTS: Record<string, Rect[]> = {
   laptop: [[442, 420, 639, 573]],
   notebook: [[571, 584, 711, 629]],
   phone: [[630, 469, 723, 584]],
-  speakers: [[402, 429, 451, 571]],
+  headphones: [[246, 298, 356, 410]],
 };
 
 /** Box-file provenance of each rect above. */
@@ -53,5 +53,5 @@ export const LAPTOP_RECT_FROM: Record<string, string[]> = {
   laptop: ["laptop.screen_lid"],
   notebook: ["notebook"],
   phone: ["phone"],
-  speakers: ["speakers"],
+  headphones: ["headphones.on_head (local)"],
 };

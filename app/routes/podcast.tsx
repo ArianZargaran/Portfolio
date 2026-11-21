@@ -17,7 +17,7 @@ export const meta: MetaFunction = mergeMeta(() => [
 
 export const loader = () => ({ podcast: PODCAST });
 
-/** Minimal page so the speakers hit area resolves; episode embed is later. */
+/** Minimal page so the headphones hit area resolves; episode embed is later. */
 export default function PodcastPage() {
   const { podcast } = useLoaderData<typeof loader>();
   return (

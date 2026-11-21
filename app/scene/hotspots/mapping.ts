@@ -4,8 +4,10 @@
  * encoded here as data, so a new box file is a pure data drop:
  *
  *   1. The laptop hit area is `laptop.screen_lid`; the full body is reference only.
- *   2. T6 (podcast) and the mug sip both sit on the navy Stanley: V12 has no
- *      speaker. The S4 sip is timer-only, so `mug-sip` gets no hit box.
+ *   2. The mug sip sits on the navy Stanley and is timer-only, so `mug-sip`
+ *      gets no hit box. T6 (podcast) was on the Stanley too (`speakers`);
+ *      since Nov 21 2026 it is on Ari's on-head headphones (a local rect,
+ *      SUPERSEDED_BOXES).
  *   3. Phone stacks above notebook.
  *   4. The bookshelf is 3 cabinet boxes plus the photo frames on top; the
  *      jersey frame opens nothing (it must not touch any hit box).
@@ -36,7 +38,15 @@ export type BoxSource =
   | { kind: "sub"; box: string; sub: string }
   /** Several named parts of the hotspot's `rects[]`, in this order. The
       first is the focusable rect; the rest are pointer-only. */
-  | { kind: "parts"; box: string; parts: readonly string[] };
+  | { kind: "parts"; box: string; parts: readonly string[] }
+  /** Not in the box file: one rect measured locally (exclusive xyxy,
+      1440x900 composition px), with its provenance. Focusable. */
+  | {
+      kind: "local";
+      rect: readonly [number, number, number, number];
+      name: string;
+      why: string;
+    };
 
 export interface HotspotMapEntry {
   /** App hotspot id (hit-areas.ts, triggers, egg). */
@@ -91,13 +101,33 @@ export const HOTSPOT_MAP: readonly HotspotMapEntry[] = [
     source: { kind: "hit", box: "phone" },
   },
   {
-    id: "speakers",
+    /* Ari, Nov 21 2026 (via Atlas, t1034u): the T6 groove / podcast
+       hotspot moves from the navy Stanley (the box file's `speakers`) to
+       his on-head headphones. Not in HOTSPOT_BOXES_t995_v2, so the rect is
+       local: measured on the V12 dusk still (public/scene/…/laptop-1440.webp)
+       around the headband (from x 300, y 305) and both ear cups (near cup
+       x 313-348, y 363-406; far cup x 250-262, y 370-400), padded ~4 px so
+       the head bob stays inside: [246, 298, 356, 410] = 110 x 112 px (>= 44).
+       It sits on the character (reference geometry) and clears every other
+       hit box; it stacks on top. */
+    id: "headphones",
     route: "/podcast",
-    // Decision 2: the box file's `speakers` entry is drawn on the Stanley.
-    source: { kind: "hit", box: "speakers" },
-    graphObject: "navy Stanley tumbler (scene.object-d8-stanley)",
+    source: {
+      kind: "local",
+      rect: [246, 298, 356, 410],
+      name: "on_head",
+      why: "Ari moved the T6 / podcast hotspot to his headphones (t1034u)",
+    },
+    graphObject: "Ari's on-head headphones (character layer)",
   },
 ];
+
+/**
+ * Box-file hotspots replaced by a local one: `speakers` (drawn on the navy
+ * Stanley) gave way to the on-head headphones (Ari, Nov 21 2026). The
+ * importer ignores them (with a warning) in the hotspots and hit order.
+ */
+export const SUPERSEDED_BOXES = ["speakers"] as const;
 
 /**
  * Local rects added on top of a box file (not in Dusk's JSON). Appended after
@@ -147,7 +177,7 @@ export const STACKING_RULES: readonly (readonly [string, string])[] = [
   ["notebook", "phone"], // decision 3
   ["laptop", "notebook"],
   ["laptop", "phone"],
-  ["laptop", "speakers"],
+  ["laptop", "headphones"],
 ];
 
 /** Fallback hit order when a file has no `hit_order` (v1). */
@@ -163,11 +193,11 @@ export const GRAPH_PROPOSALS: readonly {
   proposal: string;
 }[] = [
   {
-    id: "speakers",
+    id: "headphones",
     issue:
-      'routes.map /podcast says "pair of speakers" (home-office), but V12 has no speaker; the hit box is on the navy Stanley (scene.object-d8-stanley).',
+      'routes.map /podcast says "pair of speakers" (home-office), but V12 has no speaker. The hotspot was on the navy Stanley; Ari moved it to his on-head headphones (Nov 21 2026, t1034u).',
     proposal:
-      'Change routes.map /podcast home-office to the navy Stanley tumbler. Decide whether the hotspot id becomes "stanley". The app keeps "speakers" until then; a rename touches this map, HOTSPOT_REACTIONS ("speakers" -> speaker) and the E2 egg sequence ["queen-poster", "speakers"].',
+      'Change routes.map /podcast home-office to "Ari\'s on-head headphones" (hotspot id "headphones"; the T6 groove trigger and the E2 egg sequence ["queen-poster", "headphones"]).',
   },
   {
     id: "lego",

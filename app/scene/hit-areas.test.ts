@@ -29,16 +29,35 @@ describe("scene hit areas", () => {
     );
   });
 
-  it("flags estimated boxes: laptop is measured (t995 v2); poster and shelf objects on tablet/mobile", () => {
+  it("flags estimated boxes: laptop is measured (t995 v2); poster, shelf objects and headphones on tablet/mobile", () => {
     const estimated = HIT_OBJECTS.filter((o) => o.estimated?.length);
     expect(estimated.map((o) => [o.id, o.estimated])).toEqual([
       ["queen-poster", ["tablet", "mobile"]],
       ["bookshelf", ["tablet", "mobile"]],
       ["lego", ["tablet", "mobile"]],
+      ["headphones", ["tablet", "mobile"]],
     ]);
     expect(HIT_OBJECTS.some((o) => o.estimated?.includes("laptop"))).toBe(
       false,
     );
+  });
+
+  it("headphones (/podcast, T6 groove): own accessible name, last in tab order, no overlap with any other hit rect at any breakpoint", () => {
+    const h = HIT_OBJECTS.find((o) => o.id === "headphones")!;
+    expect(h.label).toBe("Podcast (headphones)");
+    expect(h.href).toBe("/podcast");
+    expect(HIT_OBJECTS.at(-1)!.id).toBe("headphones");
+    expect(HIT_OBJECTS.some((o) => o.id === "speakers")).toBe(false);
+    const hit = (a: readonly number[], b: readonly number[]) =>
+      a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+    const clashes = (["laptop", "tablet", "mobile"] as const).flatMap((bp) =>
+      HIT_OBJECTS.filter((o) => o !== h).flatMap((o) =>
+        o.rects[bp]
+          .filter((r) => h.rects[bp].some((q) => hit(q, r)))
+          .map(() => `${bp}: headphones vs ${o.id}`),
+      ),
+    );
+    expect(clashes).toEqual([]);
   });
 
   it("maps /case-studies to the layer 6 Lego entity and /resume to the rest of the shelf", () => {
@@ -80,7 +99,7 @@ describe("scene hit areas", () => {
     },
   );
 
-  it("laptop: stacks the phone above the notebook, and both plus speakers above the laptop", () => {
+  it("laptop: stacks the phone above the notebook, and both plus headphones above the laptop", () => {
     expect(HIT_STACK.laptop).toEqual([
       "bookshelf",
       "lego",
@@ -88,7 +107,7 @@ describe("scene hit areas", () => {
       "laptop",
       "notebook",
       "phone",
-      "speakers",
+      "headphones",
     ]);
     expect(stackIndex("laptop", "phone")).toBeGreaterThan(
       stackIndex("laptop", "notebook"),
@@ -103,14 +122,14 @@ describe("scene hit areas", () => {
       "lego",
       "phone",
       "notebook",
-      "speakers",
+      "headphones",
     ];
     expect(HIT_OBJECTS.map((o) => o.id)).toEqual(legacy);
     expect(HIT_STACK.tablet).toEqual(legacy);
     expect(HIT_STACK.mobile).toEqual(legacy);
   });
 
-  it("keeps tablet and mobile on their current (pre-t995) data", () => {
+  it("keeps tablet and mobile on their current (pre-t995) data, headphones by eye on the v3.2 stills", () => {
     expect(
       Object.fromEntries(
         HIT_OBJECTS.map((o) => [o.id, [o.rects.tablet, o.rects.mobile]]),
@@ -138,6 +157,24 @@ describe("scene hit areas", () => {
               278,
               380,
               463,
+            ],
+          ],
+        ],
+        "headphones": [
+          [
+            [
+              168,
+              632,
+              224,
+              750,
+            ],
+          ],
+          [
+            [
+              88,
+              540,
+              132,
+              604,
             ],
           ],
         ],
@@ -228,24 +265,6 @@ describe("scene hit areas", () => {
               22,
               100,
               187,
-            ],
-          ],
-        ],
-        "speakers": [
-          [
-            [
-              593,
-              837,
-              662,
-              927,
-            ],
-          ],
-          [
-            [
-              327,
-              655,
-              366,
-              705,
             ],
           ],
         ],

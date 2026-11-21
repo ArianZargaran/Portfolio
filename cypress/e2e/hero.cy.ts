@@ -124,7 +124,7 @@ const hoverOver = (sel: string) =>
     eventConstructor: "PointerEvent",
     pointerType: "mouse",
   });
-const SPEAKERS = '.scene_hits--laptop [data-object="speakers"]';
+const HEADPHONES = '.scene_hits--laptop [data-object="headphones"]';
 const POSTER = '.scene_hits--laptop [data-object="queen-poster"]';
 
 /** Lazy hero chunks the page requested in the current visit (change 1). */
@@ -232,7 +232,7 @@ describe("hero motion (stub clips)", () => {
       .should("be.gt", 0);
   });
 
-  it("E2 intent (poster visit, then focus on the speakers) fetches only the nod and one T6 variant, within the budget", () => {
+  it("E2 intent (poster visit, then focus on the headphones) fetches only the nod and one T6 variant, within the budget", () => {
     const requested = visitHome({ effectiveType: "4g" });
     cy.get(LIVE, { timeout: 15000 });
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
@@ -240,11 +240,11 @@ describe("hero motion (stub clips)", () => {
     cy.wait(400);
     // The poster's dwell queues the glance-up (S1a, locked t1014s5523) for
     // the next join and counts as the egg's first visit. Its clip is fetched
-    // only 18 frames before that join, so if the speakers replace it first it
+    // only 18 frames before that join, so if the headphones replace it first it
     // is never fetched (change 3): at most ONE S1a variant.
-    cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
+    cy.get('.scene_hits--laptop [data-object="headphones"]').first().focus();
     cy.wrap(requested).should("include", "nod.k180");
-    // The speakers' dwell is also the speaker-groove intent (T6 v3, locked
+    // The headphones' dwell is also the speaker-groove intent (T6 v3, locked
     // t1029s5606): exactly ONE T6 variant, the next join's.
     cy.wrap(requested, { timeout: 6000 }).should((r) => {
       const ids = [...new Set(r.filter((id) => id !== "typing"))];
@@ -262,18 +262,18 @@ describe("hero motion (stub clips)", () => {
       .should("be.lte", 970 * 1024);
   });
 
-  it("M10b + T6: poster then speakers at f0 -> t6.k36 at f36 (replacing the queued glance), then the egg nod at f180 (controlled clock)", () => {
+  it("M10b + T6: poster then headphones at f0 -> t6.k36 at f36 (replacing the queued glance), then the egg nod at f180 (controlled clock)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
     cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(0)); // arm at f0, before all the foreign joins
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
-    cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
+    cy.get('.scene_hits--laptop [data-object="headphones"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
     cy.wrap(requested).should("include", "nod.k180");
-    // The speakers request (equal priority, newer) replaced the queued
+    // The headphones request (equal priority, newer) replaced the queued
     // glance before its clip was due: t6.k36 is fetched at f18, s1a.k36
     // never (change 3).
     cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k36");
@@ -439,10 +439,10 @@ describe("hero motion (stub clips)", () => {
         ...new Set(r.filter((id) => id.startsWith("s1a."))),
       ]).to.deep.equal(["s1a.k72"]),
     );
-    // The last poster visit counts for the egg: the speakers now fetch the
+    // The last poster visit counts for the egg: the headphones now fetch the
     // nod, and the visit stays inside the per-visit budget. (Focus moves
     // straight on: a blur first would leave the hero and disarm the egg.)
-    cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
+    cy.get('.scene_hits--laptop [data-object="headphones"]').first().focus();
     cy.wrap(requested).should("include", "nod.k180");
     cy.get(".hero").should("not.have.attr", "data-budget");
     cy.get(".hero")
@@ -456,14 +456,14 @@ describe("hero motion (stub clips)", () => {
     });
   });
 
-  it("T6: speakers HOVER at f40 fetches only t6.k72 and it comes up exactly at f72, then the loop (controlled clock)", () => {
+  it("T6: headphones HOVER at f40 fetches only t6.k72 and it comes up exactly at f72, then the loop (controlled clock)", () => {
     const requested = visitHome(
       { effectiveType: "4g" },
       { pinnedClock: true, hover: true },
     );
     cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(40));
-    hoverOver(SPEAKERS);
+    hoverOver(HEADPHONES);
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
     cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k72");
@@ -501,10 +501,10 @@ describe("hero motion (stub clips)", () => {
     );
   });
 
-  it("T6: a speakers hover that leaves before the 250 ms dwell fetches nothing and queues nothing", () => {
+  it("T6: a headphones hover that leaves before the 250 ms dwell fetches nothing and queues nothing", () => {
     const requested = visitHome({ effectiveType: "4g" }, { hover: true });
     cy.get(LIVE, { timeout: 15000 });
-    hoverOver(SPEAKERS);
+    hoverOver(HEADPHONES);
     hoverOver(".scene_frame"); // straight off, onto the background
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
     cy.wait(800);
@@ -518,7 +518,7 @@ describe("hero motion (stub clips)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
     cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(110));
-    cy.get(SPEAKERS).first().focus();
+    cy.get(HEADPHONES).first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
     due(144);
@@ -539,7 +539,7 @@ describe("hero motion (stub clips)", () => {
     );
   });
 
-  it("T6 + E2 by hover: poster at f60, speakers at f150 -> glance s1a.k72 at f72, t6.k180 at f180, the nod at the NEXT cycle's f180 (controlled clock)", () => {
+  it("T6 + E2 by hover: poster at f60, headphones at f150 -> glance s1a.k72 at f72, t6.k180 at f180, the nod at the NEXT cycle's f180 (controlled clock)", () => {
     const requested = visitHome(
       { effectiveType: "4g" },
       { pinnedClock: true, hover: true },
@@ -560,7 +560,7 @@ describe("hero motion (stub clips)", () => {
     // 7.5 s after the poster (inside the 10 s window). The 6 s gap after the
     // glance (f72) allows f144 at the earliest; f150 + lead -> f180.
     setHeroMs(msAtFrame(150));
-    hoverOver(SPEAKERS);
+    hoverOver(HEADPHONES);
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
     cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k180");
@@ -687,7 +687,7 @@ describe("hero motion (stub clips)", () => {
     );
   });
 
-  it("change 3: poster at f40 then speakers at f42: the replaced glance s1a.k72 is never fetched, nor counted", () => {
+  it("change 3: poster at f40 then headphones at f42: the replaced glance s1a.k72 is never fetched, nor counted", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
     cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(40));
@@ -696,7 +696,7 @@ describe("hero motion (stub clips)", () => {
     cy.wait(400);
     cy.get(".hero").should("have.attr", "data-reaction", "glance-up:s1a.k72");
     setHeroMs(msAtFrame(42));
-    cy.get(SPEAKERS).first().focus();
+    cy.get(HEADPHONES).first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
     cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k72");

@@ -59,7 +59,7 @@ export const STILL_SOURCES: StillSource[] = [
 
 /* One text alternative per composition: each describes the image that
    breakpoint actually shows. The laptop V12 room has no speaker (the
-   Podcast hotspot sits on the navy Stanley tumbler); tablet and mobile are
+   Podcast hotspot is his on-head headphones); tablet and mobile are
    still the v3.2 placeholder collages. */
 const ALT_V12_LAPTOP =
   "Painted scene at dusk: in his home office, Arian sits in a gaming chair at " +

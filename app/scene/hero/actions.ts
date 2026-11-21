@@ -23,7 +23,7 @@
  * glance-up for poster hover", LOCK_PAINTED_CHAR_ACTION_S1A_GLANCE_UP_V2),
  * and the T6 speaker groove v3, one baked clip per join `t6.k0` .. `t6.k180`
  * (Ari's lock t1029s5606, "Lock the speaker groove v3",
- * LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3, speakers hover/focus).
+ * LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3, headphones hover/focus).
  * The S1b / T2 per-entry clips are NOT locked and are not installed;
  * their clips, triggers and tests are kept on the local branch
  * `hero-reactions-s1a-s1b-t2` and come back when they lock. Bounce v2
@@ -227,7 +227,7 @@ export const ACTIONS = {
      cut in only at f`entry` (validateAction, joinableKs, step, and the
      occurrenceState / decide guards in schedule.ts). */
   ...entries("s1a", "Glance up (S1a v2)", 4, lockString(LOCK_RECORDS.s1a)),
-  /* T6 speaker groove v3 (speakers hover/focus, reactions.ts "speaker"):
+  /* T6 speaker groove v3 (headphones hover/focus, reactions.ts "speaker"):
      one baked opaque crop per join, screen included (H000 also carries the
      Harvey-to-code screen fade). Clean ONLY at its own entry (lock review
      locks_now30 §3: 69-15,688 px > 8 at a foreign entry), returning to the

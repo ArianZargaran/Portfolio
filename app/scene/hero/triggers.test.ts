@@ -6,7 +6,7 @@ function scene() {
   document.body.innerHTML = `
     <div class="scene_frame" tabindex="0">
       <nav class="scene_hits">
-        <a class="scene_hit" href="/podcast" data-object="speakers"><span>Podcast</span></a>
+        <a class="scene_hit" href="/podcast" data-object="headphones"><span>Podcast (headphones)</span></a>
         <a class="scene_hit" href="/about" data-object="queen-poster"><span>About me</span></a>
         <a class="scene_hit" href="/work" data-object="laptop"><span>Work</span></a>
       </nav>
@@ -37,7 +37,7 @@ describe("hero triggers (M5)", () => {
   it("hover: intent, visit and request only after the 250 ms dwell (review N3)", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: true });
-    over(hit("speakers").querySelector("span")!);
+    over(hit("headphones").querySelector("span")!);
     vi.advanceTimersByTime(TRIGGERS.dwellMs - 1);
     expect(s.intent).not.toHaveBeenCalled();
     expect(s.hotspot).not.toHaveBeenCalled();
@@ -46,8 +46,8 @@ describe("hero triggers (M5)", () => {
     expect(s.intent).toHaveBeenCalledWith("speaker");
     expect(s.request).toHaveBeenCalledWith("speaker");
     expect(s.hotspot.mock.calls).toEqual([
-      ["speakers", "intent"],
-      ["speakers", "visit"],
+      ["headphones", "intent"],
+      ["headphones", "visit"],
     ]);
     // Intent (the fetch) comes before the request that enqueues it.
     expect(s.intent.mock.invocationCallOrder[0]).toBeLessThan(
@@ -60,12 +60,12 @@ describe("hero triggers (M5)", () => {
     const s = sink();
     const frame = scene();
     const off = wireTriggers(frame, s, { hoverOK: true });
-    over(hit("speakers"));
+    over(hit("headphones"));
     vi.advanceTimersByTime(100);
     over(frame); // onto the background
     vi.advanceTimersByTime(500);
     expect(s.intent).not.toHaveBeenCalled();
-    expect(s.hotspot).not.toHaveBeenCalledWith("speakers", "intent");
+    expect(s.hotspot).not.toHaveBeenCalledWith("headphones", "intent");
     expect(s.request).not.toHaveBeenCalled();
     off();
   });
@@ -101,24 +101,24 @@ describe("hero triggers (M5)", () => {
     }
   });
 
-  it("speakers hover/focus: speaker groove (T6 v3, t1029s5606) after the dwell, plus the visit for the E2 egg", () => {
-    expect(HOTSPOT_REACTIONS.speakers).toBe("speaker");
+  it("headphones hover/focus: speaker groove (T6 v3, t1029s5606) after the dwell, plus the visit for the E2 egg", () => {
+    expect(HOTSPOT_REACTIONS.headphones).toBe("speaker");
     expect(
       Object.entries(HOTSPOT_REACTIONS).filter(([, r]) => r === "speaker"),
-    ).toEqual([["speakers", "speaker"]]);
+    ).toEqual([["headphones", "speaker"]]);
     for (const how of ["hover", "focus"] as const) {
       const s = sink();
       const off = wireTriggers(scene(), s, { hoverOK: true });
-      if (how === "hover") over(hit("speakers"));
-      else hit("speakers").focus();
+      if (how === "hover") over(hit("headphones"));
+      else hit("headphones").focus();
       vi.advanceTimersByTime(TRIGGERS.dwellMs - 1);
       expect(s.intent).not.toHaveBeenCalled(); // nothing before the dwell
       expect(s.hotspot).not.toHaveBeenCalled();
       vi.advanceTimersByTime(1);
       // intent (fetch) -> visit (egg) -> request (queue), in that order
       expect(s.hotspot.mock.calls).toEqual([
-        ["speakers", "intent"],
-        ["speakers", "visit"],
+        ["headphones", "intent"],
+        ["headphones", "visit"],
       ]);
       expect(s.intent.mock.calls).toEqual([["speaker"]]);
       expect(s.request.mock.calls).toEqual([["speaker"]]);
@@ -130,17 +130,17 @@ describe("hero triggers (M5)", () => {
     }
   });
 
-  it("poster then speakers (keyboard): two visits in order, glance-up then speaker, nothing extra", () => {
+  it("poster then headphones (keyboard): two visits in order, glance-up then speaker, nothing extra", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: false });
     hit("queen-poster").focus();
     vi.advanceTimersByTime(TRIGGERS.dwellMs);
-    hit("speakers").focus(); // focus moves inside the scene: no leave
+    hit("headphones").focus(); // focus moves inside the scene: no leave
     vi.advanceTimersByTime(TRIGGERS.dwellMs);
     expect(s.hotspot.mock.calls.filter(([, kind]) => kind === "visit")).toEqual(
       [
         ["queen-poster", "visit"],
-        ["speakers", "visit"],
+        ["headphones", "visit"],
       ],
     );
     expect(s.hotspot).not.toHaveBeenCalledWith("", "leave");
@@ -172,10 +172,10 @@ describe("hero triggers (M5)", () => {
   it("no hover intent on touch or on devices that cannot hover", () => {
     const s = sink();
     let off = wireTriggers(scene(), s, { hoverOK: true });
-    over(hit("speakers"), "touch");
+    over(hit("headphones"), "touch");
     off();
     off = wireTriggers(scene(), s, { hoverOK: false });
-    over(hit("speakers"));
+    over(hit("headphones"));
     vi.advanceTimersByTime(TRIGGERS.dwellMs);
     expect(s.intent).not.toHaveBeenCalled();
     expect(s.request).not.toHaveBeenCalled();
@@ -185,7 +185,7 @@ describe("hero triggers (M5)", () => {
   it("keyboard focus on a hotspot counts as intent, whatever the device", () => {
     const s = sink();
     const off = wireTriggers(scene(), s, { hoverOK: false });
-    hit("speakers").focus();
+    hit("headphones").focus();
     expect(s.intent).not.toHaveBeenCalled();
     vi.advanceTimersByTime(TRIGGERS.dwellMs);
     expect(s.intent).toHaveBeenCalledWith("speaker");
@@ -269,7 +269,7 @@ describe("hero triggers (M5)", () => {
     see(1);
     see(0.2);
     expect(s.hotspot).toHaveBeenCalledWith("", "leave");
-    hit("speakers").focus();
+    hit("headphones").focus();
     hidden = true;
     document.dispatchEvent(new Event("visibilitychange"));
     vi.advanceTimersByTime(TRIGGERS.dwellMs);

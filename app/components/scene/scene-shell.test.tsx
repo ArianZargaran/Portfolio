@@ -53,7 +53,7 @@ describe("<SceneShell>", () => {
       );
     expect(z("phone")).toBeGreaterThan(z("notebook"));
     expect(z("lego")).toBeGreaterThan(z("bookshelf"));
-    expect(z("speakers")).toBeGreaterThan(z("laptop"));
+    expect(z("headphones")).toBeGreaterThan(z("laptop"));
     expect(
       links
         .filter((a) => a.getAttribute("tabindex") === null)
@@ -65,7 +65,7 @@ describe("<SceneShell>", () => {
       "lego",
       "phone",
       "notebook",
-      "speakers",
+      "headphones",
     ]);
   });
 

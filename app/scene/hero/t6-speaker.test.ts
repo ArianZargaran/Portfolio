@@ -10,7 +10,7 @@
    - own-join entry for every variant, from every request frame;
    - queue priority against the glance-up (both 3) and a lower-priority
      reaction (fixture at 2);
-   - PLAN v3 §3 row 7: queen-poster then speakers within 10 s plays T6
+   - PLAN v3 §3 row 7: queen-poster then headphones within 10 s plays T6
      through the queue at its next own entry and arms the E2 nod as a
      one-shot at the first f180 at or after T6 ends (never inside the
      queue, never cutting T6). */
@@ -341,8 +341,8 @@ describe("T6 v3: queue priority (PLAN v3 §3: one slot, higher priority wins, th
   });
 });
 
-describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)", () => {
-  /** Poster at abs p, speakers at abs s (visit then request, as triggers.ts sends them). */
+describe("T6 v3 + E2: queen-poster then headphones within 10 s (PLAN v3 §3 row 7)", () => {
+  /** Poster at abs p, headphones at abs s (visit then request, as triggers.ts sends them). */
   const egg = (p: number, s: number, to = p + 3 * N) =>
     player(p, to, {
       [p]: [
@@ -350,14 +350,14 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
         { kind: "request", id: "glance-up" },
       ],
       [s]: [
-        { kind: "visit", id: "speakers" },
+        { kind: "visit", id: "headphones" },
         { kind: "request", id: "speaker" },
       ],
     });
 
   /*
    * Oracle for a poster visit at f0 (its glance-up asks for s1a.k36) and the
-   * speakers at frame s (s <= 120, inside the 10 s window):
+   * headphones at frame s (s <= 120, inside the 10 s window):
    * - s <= 32: the glance is still unlocked; T6 (equal priority, newer)
    *   replaces it and plays on the next join >= s + LEAD_FRAMES.
    * - s 33..36: the glance's slot is locked (it locks in f32's tick, starts
@@ -403,7 +403,7 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
     };
   };
 
-  it("from every speakers frame of the 10 s window: T6 right away on its own next join (through the queue), then the nod at the first f180 at or after T6 ends", () => {
+  it("from every headphones frame of the 10 s window: T6 right away on its own next join (through the queue), then the nod at the first f180 at or after T6 ends", () => {
     for (let s = 1; s <= 10 * FPS; s++)
       expect({ s, ...outcome(s) }).toEqual({
         s,
@@ -421,7 +421,7 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
   it("arms E2 as a one-shot: armed while T6 is queued/playing, then plays once and is gone", () => {
     const { log } = egg(0, 20); // T6 replaces the glance -> t6.k36
     const at = (abs: number) => log.find((x) => x.abs === abs)!;
-    // armed on the frame after the speakers visit, for f180 (T6 ends f72)
+    // armed on the frame after the headphones visit, for f180 (T6 ends f72)
     expect(at(21).egg.armed?.join).toBe(180);
     expect(at(21).egg.armed?.occ.action).toBe(NOD);
     expect(at(21).q.slot?.id).toBe("speaker");
@@ -439,7 +439,7 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
   });
 
   it("T6 at f144 ends on f180: the nod follows back to back", () => {
-    // poster at f0 (the glance plays at f36), speakers at f120 (10 s): the
+    // poster at f0 (the glance plays at f36), headphones at f120 (10 s): the
     // next join is f144 (the 6 s gap after f36 allows f108 already).
     const { log } = egg(0, 120);
     expect(onFrames(log, "s1a.k36")[0]).toBe(36);
@@ -455,7 +455,7 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
   });
 
   it("T6 at f180 runs to f215: the nod waits for the next cycle's f180 (delayed by design, <= 18 s)", () => {
-    // poster at f60 (glance s1a.k72 plays at f72), speakers 7.5 s later at
+    // poster at f60 (glance s1a.k72 plays at f72), headphones 7.5 s later at
     // f150: the 6 s gap after f72 allows f144 at the earliest, f150 + lead
     // -> f180.
     const { log } = egg(60, 150);
@@ -466,7 +466,7 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
     expect(onFrames(log, NOD.id)[0]).toBe(N + 180);
   });
 
-  it("speakers later than 10 s after the poster: T6 still plays, but no E2", () => {
+  it("headphones later than 10 s after the poster: T6 still plays, but no E2", () => {
     const late = Math.ceil(10 * FPS) + 1;
     const { log } = egg(0, late);
     expect(log.some((x) => isT6(x.shown))).toBe(true);
@@ -474,10 +474,10 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
     expect(log.every((x) => !x.egg.armed)).toBe(true);
   });
 
-  it("speakers alone (no poster first): T6 only, no E2", () => {
+  it("headphones alone (no poster first): T6 only, no E2", () => {
     const { log } = player(0, 2 * N, {
       5: [
-        { kind: "visit", id: "speakers" },
+        { kind: "visit", id: "headphones" },
         { kind: "request", id: "speaker" },
       ],
     });
@@ -487,8 +487,8 @@ describe("T6 v3 + E2: queen-poster then speakers within 10 s (PLAN v3 §3 row 7)
 
   it("exactly 10 s after the poster still completes the sequence", () => {
     const e = eggVisit(initialEgg(), "queen-poster", 1).state;
-    expect(eggVisit(e, "speakers", 11).completed).toBe(true);
-    expect(eggVisit(e, "speakers", 11.001).completed).toBe(false);
+    expect(eggVisit(e, "headphones", 11).completed).toBe(true);
+    expect(eggVisit(e, "headphones", 11.001).completed).toBe(false);
     expect(EGG.windowS).toBe(10);
     expect(EGG.reaction).toBe("speaker");
     expect(EGG.action).toBe(NOD);

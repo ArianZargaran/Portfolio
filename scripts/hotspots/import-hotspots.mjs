@@ -49,6 +49,7 @@ const cfg = {
   stacking: M.STACKING_RULES,
   defaultOrder: M.DEFAULT_HIT_ORDER,
   extraRects: M.LOCAL_EXTRA_RECTS,
+  superseded: M.SUPERSEDED_BOXES,
 };
 
 const raw = readFileSync(resolve(input));

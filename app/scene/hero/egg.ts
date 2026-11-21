@@ -1,6 +1,6 @@
 /**
  * E2 easter egg (PLAN v3.3 §3): visiting the queen poster and then the
- * speakers within 10 s plays the speaker reaction (T6 speaker groove v3,
+ * headphones within 10 s plays the speaker reaction (T6 speaker groove v3,
  * installed with LOCK_PAINTED_CHAR_ACTION_T6_SPEAKER_GROOVE_V3) through the
  * queue as usual, and also arms the E2 nod (nod v4, `nod.k180`, installed)
  * as a one-shot at the next join it can use (f180: nod v4 is baked for that
@@ -30,7 +30,7 @@ import {
 
 export const EGG = {
   /** Hotspot ids (hit-areas.ts), in order. */
-  sequence: ["queen-poster", "speakers"] as const,
+  sequence: ["queen-poster", "headphones"] as const,
   windowS: 10,
   /** The queued reaction the egg completes with. */
   reaction: "speaker" as const,

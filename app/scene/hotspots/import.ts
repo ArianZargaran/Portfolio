@@ -81,6 +81,11 @@ export interface ImportConfig {
   defaultOrder: readonly string[];
   /** Local pointer-only rects appended to an object (mapping.ts). */
   extraRects?: readonly LocalExtraRect[];
+  /**
+   * Box-file hotspots replaced by a local hotspot (mapping.ts
+   * SUPERSEDED_BOXES): ignored, with a warning, here and in hit_order.
+   */
+  superseded?: readonly string[];
 }
 
 export interface ImportResult {
@@ -109,7 +114,7 @@ const isNum4 = (v: unknown): v is [number, number, number, number] =>
 
 function rectsFor(
   h: BoxesHotspot,
-  src: BoxSource,
+  src: Exclude<BoxSource, { kind: "local" }>,
   errors: string[],
 ): { rects: Rect[]; from: string[] } | undefined {
   const where = `${h.id}`;
@@ -177,9 +182,14 @@ export function importHotspotBoxes(
   if (byId.size !== file.hotspots.length) errors.push("duplicate hotspot ids");
 
   // Every box-file hotspot is either mapped, no-hit, or reference.
-  const mapped = new Set(cfg.map.map((e) => e.source.box));
+  const mapped = new Set(
+    cfg.map.flatMap((e) => (e.source.kind === "local" ? [] : [e.source.box])),
+  );
+  const superseded = cfg.superseded ?? [];
   for (const h of file.hotspots) {
-    if (mapped.has(h.id)) {
+    if (superseded.includes(h.id)) {
+      warnings.push(`${h.id}: superseded by a local hotspot; ignored`);
+    } else if (mapped.has(h.id)) {
       if (h.role !== undefined && h.role !== "hit")
         errors.push(`${h.id}: role "${h.role}", expected "hit"`);
     } else if (cfg.noHit.includes(h.id)) {
@@ -199,12 +209,21 @@ export function importHotspotBoxes(
 
   const imported = new Map<string, ImportedHotspot>();
   for (const e of cfg.map) {
-    const h = byId.get(e.source.box);
-    if (!h) {
-      errors.push(`${e.id}: box "${e.source.box}" missing from the file`);
-      continue;
+    let got: { rects: Rect[]; from: string[] } | undefined;
+    if (e.source.kind === "local") {
+      // A hotspot the box file doesn't have (measured locally, mapping.ts).
+      got = {
+        rects: [[...e.source.rect] as Rect],
+        from: [`${e.id}.${e.source.name} (local)`],
+      };
+    } else {
+      const h = byId.get(e.source.box);
+      if (!h) {
+        errors.push(`${e.id}: box "${e.source.box}" missing from the file`);
+        continue;
+      }
+      got = rectsFor(h, e.source, errors);
     }
-    const got = rectsFor(h, e.source, errors);
     if (!got) continue;
     got.rects.forEach((r, i) => {
       const at = got.from[i];
@@ -263,10 +282,16 @@ export function importHotspotBoxes(
 
   // Stacking order (later wins).
   const ids = cfg.map.map((e) => e.id);
-  const fileOrder = file.hit_order?.dom_order_later_wins;
+  const fileOrder = file.hit_order?.dom_order_later_wins?.filter(
+    (id) => !superseded.includes(id),
+  );
   const order = fileOrder ? [...fileOrder] : [...cfg.defaultOrder];
   if (!fileOrder)
     warnings.push("no hit_order in the file; using DEFAULT_HIT_ORDER");
+  // Local hotspots aren't in the file's order: they stack on top, in
+  // mapping order.
+  for (const e of cfg.map)
+    if (e.source.kind === "local" && !order.includes(e.id)) order.push(e.id);
   const perm = [...order].sort().join() === [...ids].sort().join();
   if (!perm)
     errors.push(`hit order [${order}] is not a permutation of [${ids}]`);
@@ -276,6 +301,7 @@ export function importHotspotBoxes(
 
   // The file's own per-object rects must match what the mapping derives.
   for (const entry of file.hit_order?.entries ?? []) {
+    if (superseded.includes(entry.id)) continue;
     const o = imported.get(entry.id);
     if (!o) {
       if (!ids.includes(entry.id))

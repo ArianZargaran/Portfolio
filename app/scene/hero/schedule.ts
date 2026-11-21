@@ -29,7 +29,7 @@ export { absFrameAt, driftFrames, frameTime } from "./clock";
  *   cycle 1: typing, music nod cutting in at f180 (clip i60-131) into cycle 2
  *   cycle 2: typing (nod returns at the f36 join); no bounce until S1b locks
  * S1a (glance-up) and T6 (speaker groove) are visitor reactions only
- * (queen-poster, speakers), never rotated.
+ * (queen-poster, headphones), never rotated.
  *   cycle 3: typing only
  */
 export type Rotation = (ActionId | null)[];

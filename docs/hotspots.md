@@ -27,13 +27,22 @@ Then point the sha/fixture name in `import.test.ts` at the new file and run the 
 - Every box-file hotspot is mapped, no-hit (`mug-sip`) or reference (`character`); an unknown id is an error.
 - Rects inside the canvas, no side under `hit_rule.min_side_px` (44), `hit` and `hit_xyxy` agree.
 - Nothing touches the jersey frame (`informational[]`).
-- The hit order is a permutation of the mapped ids and obeys `STACKING_RULES` (lego > bookshelf, phone > notebook, notebook/phone/speakers > laptop).
+- The hit order is a permutation of the mapped ids and obeys `STACKING_RULES` (lego > bookshelf, phone > notebook, notebook/phone/headphones > laptop).
 - The file's own `hit_order.entries` rects equal the derived rects (order inside an object comes from the mapping: the first rect is focusable).
 
 ## Atlas's decisions (Nov 17 2026), encoded in `mapping.ts`
 
 1. Laptop hit area = `laptop.screen_lid` (the full body is reference only).
-2. T6/podcast (`speakers`) and the sip both sit on the navy Stanley: V12 has no speaker. S4 sip is timer-only, so `mug-sip` gets no hit box.
+2. The sip sits on the navy Stanley and is timer-only, so `mug-sip` gets no hit box. T6/podcast used to sit on the Stanley too (the box file's `speakers`); since Nov 21 2026 (Ari, t1034u) it is Ari's on-head **headphones**, see below.
+
+### Local hotspots (not in the box file)
+
+A `HOTSPOT_MAP` entry can use `source: { kind: "local", rect, name, why }` for an object the box file has no box for. The rect is exclusive xyxy in the 1440x900 composition, focusable, checked for bounds and the 44 px minimum like any other, and stacks on top of the file's hit order (it is appended in mapping order). A box-file hotspot it replaces goes in `SUPERSEDED_BOXES`: the importer ignores it (with a warning) in the hotspots and in `hit_order`; without that entry it stays an "unmapped hotspot" error, so nothing is dropped silently.
+
+- `headphones` (`/podcast`, the T6 groove trigger and the second step of the E2 egg): `[246, 298, 356, 410]` (110 x 112 px), measured on the V12 dusk still `public/scene/home-office.desk.coding.dusk.clear/laptop-1440.webp` around the headband (from x 300, y 305) and both ear cups (near x 313–348, y 363–406; far x 250–262, y 370–400), padded about 4 px for the head bob. It sits inside the character's reference box `[197, 298, 543, 824]` and clears every other hit rect. `speakers` (the Stanley, `[402, 429, 451, 571]`) is in `SUPERSEDED_BOXES`.
+- Tablet `[168, 632, 224, 750]` and mobile `[88, 540, 132, 604]` are by eye on the v3.2 placeholder stills (flagged `estimated`).
+- Accessible name "Podcast (headphones)"; it stays the last tab stop (where `speakers` was).
+- Checks: `import.test.ts` and `hit-areas.test.ts` (no overlap at any breakpoint), and `cypress/e2e/hotspots-geometry.cy.ts` (bounding rects inside the viewport and clear of the poster and every other hotspot at 1440x900, 1025/1280/1920x900, 1280x800 and 1920x1080).
 3. Phone above notebook.
 4. Bookshelf = 3 cabinet boxes (lower tier and base first: focusable and the zoom origin; middle tier; hutch) plus the photo frames on top (pointer-only). The jersey frame opens nothing. `/resume` stays on the bookshelf.
 
@@ -55,4 +64,4 @@ DOM order (= tab order, deep-link lookup) stays the `HIT_OBJECTS` order. Stackin
 
 ## graph.yaml vocabulary (proposals for Atlas, not edits)
 
-See `GRAPH_PROPOSALS` in `mapping.ts`: `speakers` (routes.map says "pair of speakers"; it is the Stanley), `lego` (X-Wing diorama bay, not a Lego figure), `mug-sip` (graph calls it `tumbler_sip`) and `jersey-frame` (decorative, not in routes.map).
+See `GRAPH_PROPOSALS` in `mapping.ts`: `headphones` (routes.map says "pair of speakers"; it is Ari's on-head headphones since Nov 21 2026), `lego` (X-Wing diorama bay, not a Lego figure), `mug-sip` (graph calls it `tumbler_sip`) and `jersey-frame` (decorative, not in routes.map).

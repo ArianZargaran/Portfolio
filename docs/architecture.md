@@ -47,7 +47,7 @@ app/routes/
   _scene.about.tsx           Queen poster -> /about   (home-office; office poster)
   _scene.case-studies.tsx    Lego figure -> /case-studies
   _scene.case-studies.$slug.tsx
-  _scene.podcast.tsx         speakers    -> /podcast (links to swe-feed-proxy)
+  _scene.podcast.tsx         headphones  -> /podcast (links to swe-feed-proxy)
   _scene.articles.tsx        notebook    -> /articles (static, non-interactive at launch)
   api.scene-state.ts         resource route: current scene ID (JSON)
   healthcheck.tsx
@@ -280,7 +280,7 @@ Open-Meteo `current=weather_code`, no API key, so no env var. Cached in memory p
 
 - `/` renders `<SceneShell>`: the server-rendered v3.2 still (`priority`, real alt text) plus link hit areas for all 7 routes (`app/scene/hit-areas.ts`). One `<nav aria-label="Scene">` per breakpoint, shown by the same media queries as the `<picture>` sources; boxes are % of the canvas, so they track the image at any width. Multi-rect objects (bookshelf: laptop photo frames, tablet lower shelf) expose only the first rect to AT and tab order. Lego is stacked after the bookshelf, so it wins the overlap.
 - No JS and no motion: this shell is also the reduced-motion and no-JS scene. Labels appear on hover/focus; the label fade only runs under `prefers-reduced-motion: no-preference`.
-- Minimal `/podcast` page (speakers) links to the SWE feed proxy.
+- Minimal `/podcast` page (headphones) links to the SWE feed proxy.
 - **Estimated hit areas (flag):** the Queen poster boxes on tablet and mobile are hand estimates (the layout json has only the old `framed_photo`). They are marked `estimated: ["tablet", "mobile"]` in the data. Replace when design supplies measured boxes.
 - **Placeholder compositions (flag):** the tablet (820×1180) and mobile (390×844) v3.2 stills are rough collages, used as placeholders only. Final paintings come from Design; hit boxes must be re-measured when they land.
 - The old home hero (`home.css`, blurry circles, doodles, noise, social nav) is no longer used by `/`; remove in a cleanup pass.

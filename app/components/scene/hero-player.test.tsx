@@ -100,10 +100,10 @@ const glance = () => {
   act(() => intentHeroReaction("glance-up"));
   act(() => requestHeroReaction("glance-up"));
 };
-const speakers = () => {
-  act(() => heroHotspot("speakers", "intent"));
+const headphones = () => {
+  act(() => heroHotspot("headphones", "intent"));
   act(() => intentHeroReaction("speaker"));
-  act(() => heroHotspot("speakers", "visit"));
+  act(() => heroHotspot("headphones", "visit"));
   act(() => requestHeroReaction("speaker"));
 };
 const variants = () => net.fetched().filter((id) => /^(s1a|t6)\./.test(id));
@@ -189,7 +189,7 @@ describe("HeroPlayer per-clip bytes (change 2)", () => {
   it("the budget equals the bytes the network sent, across glances, the groove and the egg", async () => {
     const { root } = await mountHero(<HeroPlayer />);
     act(() => heroHotspot("queen-poster", "visit"));
-    speakers();
+    headphones();
     await run(4_000);
     for (let i = 0; i < 5; i++) {
       glance();
@@ -215,13 +215,13 @@ describe("HeroPlayer replaced reaction is never fetched (change 3)", () => {
     expect(bytes(root)).toBe(H264.typing + H264.s1aK36);
   });
 
-  it("poster then speakers: the replaced glance is never fetched; only the nod and T6", async () => {
+  it("poster then headphones: the replaced glance is never fetched; only the nod and T6", async () => {
     const { root } = await mountHero(<HeroPlayer />);
     act(() => heroHotspot("queen-poster", "intent"));
     glance(); // s1a.k36 queued, not fetched
     act(() => heroHotspot("queen-poster", "visit"));
     await run(100);
-    speakers(); // replaces the glance with t6.k36 (newest wins)
+    headphones(); // replaces the glance with t6.k36 (newest wins)
     expect(root.dataset.reaction).toBe("speaker:t6.k36");
     await run(3_200);
     expect(net.fetched()).toEqual(["typing", "nod.k180", "t6.k36"]);
@@ -236,7 +236,7 @@ describe("HeroPlayer replaced reaction is never fetched (change 3)", () => {
     glance();
     expect(variants()).toEqual(["s1a.k36"]);
     const s1a = net.calls.find((c) => c.id === "s1a.k36")!;
-    speakers(); // f20, before the J-4 lock: replaces the glance
+    headphones(); // f20, before the J-4 lock: replaces the glance
     expect(root.dataset.reaction).toBe("speaker:t6.k36");
     expect(s1a.aborted).toBe(true);
     expect(root.dataset.aborted).toBe("1");
@@ -252,7 +252,7 @@ describe("HeroPlayer replaced reaction is never fetched (change 3)", () => {
     const { root } = await mountHero(<HeroPlayer />);
     act(() => heroHotspot("queen-poster", "visit"));
     glance();
-    speakers(); // glance replaced; t6.k36 + the nod
+    headphones(); // glance replaced; t6.k36 + the nod
     await run(34_000);
     glance(); // variant 2
     await run(34_000);
@@ -264,12 +264,12 @@ describe("HeroPlayer replaced reaction is never fetched (change 3)", () => {
     expect(bytes(root)).toBeLessThanOrEqual(993_280);
   });
 
-  it("keeps the lock window: speakers within 4 frames of the glance's join get no groove", async () => {
+  it("keeps the lock window: headphones within 4 frames of the glance's join get no groove", async () => {
     const { root } = await mountHero(<HeroPlayer />);
     await run(1_700);
     glance(); // s1a.k36, fetched (due)
     await run(1_100); // f33 >= J-4
-    speakers();
+    headphones();
     expect(root.dataset.reaction).toBe("speaker:locked");
     await run(500);
     expect(variants()).toEqual(["s1a.k36"]);
@@ -303,9 +303,9 @@ describe("HeroPlayer intents and requests (M3)", () => {
     expect(bytes(root)).toBe(H264.typing);
   });
 
-  it("design A: a speakers request fetches ONLY the T6 variant for its join, once", async () => {
+  it("design A: a headphones request fetches ONLY the T6 variant for its join, once", async () => {
     const { root } = await mountHero(<HeroPlayer />);
-    speakers();
+    headphones();
     expect(root).toHaveAttribute("data-reaction", "speaker:t6.k36");
     await run(2_000);
     act(() => requestHeroReaction("speaker")); // already queued: no refetch
@@ -318,7 +318,7 @@ describe("HeroPlayer intents and requests (M3)", () => {
     const { rerender } = await mountHero(<HeroPlayer />);
     rerender(<HeroPlayer frozen />);
     glance();
-    speakers();
+    headphones();
     act(() => intentHeroReaction("phone"));
     await settle(2);
     expect(net.fetched()).toEqual(["typing"]);
@@ -326,13 +326,13 @@ describe("HeroPlayer intents and requests (M3)", () => {
 });
 
 describe("HeroPlayer E2 egg (M4)", () => {
-  it("fetches the nod only once the poster -> speakers sequence is under way", async () => {
+  it("fetches the nod only once the poster -> headphones sequence is under way", async () => {
     await mountHero(<HeroPlayer />);
-    act(() => heroHotspot("speakers", "intent")); // no poster visit yet
+    act(() => heroHotspot("headphones", "intent")); // no poster visit yet
     expect(net.fetched()).toEqual(["typing"]);
     act(() => heroHotspot("queen-poster", "visit"));
     expect(net.fetched()).toEqual(["typing"]);
-    act(() => heroHotspot("speakers", "intent"));
+    act(() => heroHotspot("headphones", "intent"));
     expect(net.fetched()).toEqual(["typing", "nod.k180"]);
   });
 
@@ -340,12 +340,12 @@ describe("HeroPlayer E2 egg (M4)", () => {
     await mountHero(<HeroPlayer />);
     act(() => heroHotspot("queen-poster", "visit"));
     act(() => heroHotspot("", "leave"));
-    act(() => heroHotspot("speakers", "intent"));
-    act(() => heroHotspot("speakers", "visit"));
+    act(() => heroHotspot("headphones", "intent"));
+    act(() => heroHotspot("headphones", "visit"));
     expect(net.fetched()).toEqual(["typing"]);
   });
 
-  it("poster then speakers plays T6 at its join and the nod at the next f180 after it", async () => {
+  it("poster then headphones plays T6 at its join and the nod at the next f180 after it", async () => {
     const { root, container } = await mountHero(<HeroPlayer />);
     // Every clip comes up at once (no held frame callbacks in happy-dom).
     for (const id of Object.keys(ACTIONS))
@@ -353,7 +353,7 @@ describe("HeroPlayer E2 egg (M4)", () => {
         get: () => 4,
       });
     act(() => heroHotspot("queen-poster", "visit"));
-    speakers();
+    headphones();
     const seen = new Set<string>();
     for (let ms = 0; ms < 16_000; ms += 20) {
       tick(20);
@@ -547,7 +547,7 @@ describe("HeroPlayer glance: plan before fetch (review N1)", () => {
     const b = bytes(root);
     expect(b).toBeLessThanOrEqual(993_280 - H264.nod);
     act(() => heroHotspot("queen-poster", "visit"));
-    act(() => heroHotspot("speakers", "intent"));
+    act(() => heroHotspot("headphones", "intent"));
     expect(net.fetched()).toContain("nod.k180");
     expect(bytes(root)).toBe(b + H264.nod);
     expect(bytes(root)).toBeLessThanOrEqual(993_280);

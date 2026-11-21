@@ -47,7 +47,7 @@ const ROUTES = [
     Component: PodcastPage,
     loader: podcastLoader,
     h1: "Podcast",
-    object: "speakers",
+    object: "headphones",
   },
   {
     path: "/case-studies",

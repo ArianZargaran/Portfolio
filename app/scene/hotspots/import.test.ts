@@ -23,6 +23,7 @@ import {
   NO_HIT_BOXES,
   REFERENCE_BOXES,
   STACKING_RULES,
+  SUPERSEDED_BOXES,
 } from "./mapping";
 
 const fixture = (name: string) =>
@@ -38,6 +39,7 @@ const cfg: ImportConfig = {
   stacking: STACKING_RULES,
   defaultOrder: DEFAULT_HIT_ORDER,
   extraRects: LOCAL_EXTRA_RECTS,
+  superseded: SUPERSEDED_BOXES,
 };
 
 const V2 = "HOTSPOT_BOXES_t995_v2.json";
@@ -58,10 +60,38 @@ describe("hotspot importer: t995 v2 fixture", () => {
     expect(byId.laptop.rects).toEqual([[442, 420, 639, 573]]);
   });
 
-  it("decision 2: speakers on the Stanley, mug-sip gets no hit area", () => {
-    expect(byId.speakers.rects).toEqual([[402, 429, 451, 571]]);
-    expect(byId.speakers.route).toBe("/podcast");
+  it("decision 2: mug-sip gets no hit area; the podcast hotspot is the on-head headphones (local), not the Stanley", () => {
     expect(res.hotspots.map((h) => h.id)).not.toContain("mug-sip");
+    expect(res.hotspots.map((h) => h.id)).not.toContain("speakers");
+    expect(byId.headphones.rects).toEqual([[246, 298, 356, 410]]);
+    expect(byId.headphones.from).toEqual(["headphones.on_head (local)"]);
+    expect(byId.headphones.route).toBe("/podcast");
+    expect(res.warnings).toContain(
+      "speakers: superseded by a local hotspot; ignored",
+    );
+  });
+
+  it("headphones: on the character, clear of every other hit rect, >= 44 px", () => {
+    const [h] = byId.headphones.rects;
+    expect(h[2] - h[0]).toBeGreaterThanOrEqual(44);
+    expect(h[3] - h[1]).toBeGreaterThanOrEqual(44);
+    const clashes = res.hotspots
+      .filter((o) => o.id !== "headphones")
+      .filter((o) => o.rects.some((r) => intersects(h, r)))
+      .map((o) => o.id);
+    expect(clashes).toEqual([]);
+    const character = load(V2).hotspots.find((x) => x.id === "character")!
+      .tight_xyxy as [number, number, number, number];
+    expect(h[0]).toBeGreaterThanOrEqual(character[0]);
+    expect(h[1]).toBeGreaterThanOrEqual(character[1] - 4);
+    expect(h[2]).toBeLessThanOrEqual(character[2]);
+  });
+
+  it("without SUPERSEDED_BOXES the box file's speakers entry is an error (never silently dropped)", () => {
+    const r = importHotspotBoxes(load(V2), { ...cfg, superseded: [] });
+    expect(r.errors).toContain(
+      "speakers: unmapped hotspot (add it to HOTSPOT_MAP or NO_HIT_BOXES)",
+    );
   });
 
   it("decision 3: hit order with the phone above the notebook", () => {
@@ -72,7 +102,7 @@ describe("hotspot importer: t995 v2 fixture", () => {
       "laptop",
       "notebook",
       "phone",
-      "speakers",
+      "headphones",
     ]);
     expect(res.order.indexOf("phone")).toBeGreaterThan(
       res.order.indexOf("notebook"),
@@ -107,6 +137,7 @@ describe("hotspot importer: t995 v2 fixture", () => {
 
   it("flags the v2 hit_order bookshelf rect order (same rects, hutch listed first)", () => {
     expect(res.warnings).toEqual([
+      "speakers: superseded by a local hotspot; ignored",
       expect.stringMatching(/^bookshelf: hit_order lists the same rects/),
     ]);
   });
@@ -248,6 +279,6 @@ describe("hotspot mapping vs graph.yaml", () => {
     const offGraph = HOTSPOT_MAP.filter((e) => e.graphObject).map((e) => e.id);
     const proposed = GRAPH_PROPOSALS.map((p) => p.id);
     expect(offGraph.every((id) => proposed.includes(id))).toBe(true);
-    expect(proposed).toContain("speakers");
+    expect(proposed).toContain("headphones");
   });
 });

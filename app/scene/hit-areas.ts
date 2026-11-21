@@ -40,9 +40,10 @@ const measured = (id: string): Rect[] => {
  * Laptop rects are MEASURED on the V12 dusk still: they are generated from
  * Dusk's HOTSPOT_BOXES_t995_v2.json by scripts/hotspots/import-hotspots.mjs
  * (hotspots/laptop.generated.ts, decisions in hotspots/mapping.ts). The
- * X-Wing diorama bay stands in for the Lego (/case-studies) and `speakers`
- * is drawn on the navy Stanley (V12 has no speaker). Tablet/mobile boxes are
- * unmeasured and still belong to the v3.2 placeholder collages.
+ * X-Wing diorama bay stands in for the Lego (/case-studies) and the podcast
+ * hotspot is Ari's on-head `headphones` (a local rect: the box file has no
+ * headphones box). Tablet/mobile boxes are unmeasured and still belong to
+ * the v3.2 placeholder collages.
  *
  * DOM order = tab order (and the zoom/deep-link lookup order). Stacking is
  * per breakpoint (HIT_STACK, applied as z-index): later wins, so Lego
@@ -143,16 +144,19 @@ export const HIT_OBJECTS: HitObject[] = [
     },
   },
   {
-    /* Drawn on the navy Stanley (V12 has no speaker); the id stays
-       "speakers" until Atlas rules on graph.yaml (hotspots/mapping.ts). */
-    id: "speakers",
-    label: "Podcast",
+    /* Ari's on-head headphones (Nov 21 2026, t1034u): the T6 groove and
+       podcast hotspot, moved off the navy Stanley. Laptop: a local rect
+       (hotspots/mapping.ts). Tablet/mobile: by eye on the v3.2 placeholder
+       stills (headband + near ear cup, padded to >= 44 px). */
+    id: "headphones",
+    label: "Podcast (headphones)",
     href: "/podcast",
     rects: {
-      laptop: measured("speakers"),
-      tablet: [[593, 837, 662, 927]],
-      mobile: [[327, 655, 366, 705]],
+      laptop: measured("headphones"),
+      tablet: [[168, 632, 224, 750]],
+      mobile: [[88, 540, 132, 604]],
     },
+    estimated: ["tablet", "mobile"],
   },
 ];
 
