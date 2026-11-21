@@ -2,6 +2,13 @@
  * Per-visit byte budget for hero media (PLAN v3.3 §4, decided: fetch on
  * hover/focus intent only, no idle prefetch, budget kept at 0.75 / 0.97 MB).
  *
+ * Bytes are counted PER CLIP, not per request (change 2): each clip is
+ * charged its full size once, when its single fetch starts, and every clip
+ * is fetched at most once per visit into a Blob (clip-store.ts), so a
+ * replay or a re-use can never download it again, with the HTTP cache on
+ * or off. An aborted fetch is refunded down to the bytes that actually
+ * arrived (`refund`), so the charge always covers what crossed the wire.
+ *
  * The budget covers every hero clip a visit downloads: the typing loop, the
  * auto-rotation's clips and any reaction or egg clip. Sizes come from the
  * registry (ClipSource.bytes), so a fetch is checked before it starts. The
@@ -30,14 +37,10 @@
  * reserve (one variant of each hotspot reaction always affordable) was
  * measured at +110 B gzip of hero JS and is not in (docs/hero-player.md).
  */
-import type { Clip, ClipSource } from "./actions";
+import type { Clip } from "./base-loop";
+import { VISIT_BUDGET_BYTES, type Codec } from "./caps";
 
-export type Codec = ClipSource["codec"];
-
-export const VISIT_BUDGET_BYTES: Record<Codec, number> = {
-  av1: 750 * 1024,
-  h264: 970 * 1024,
-};
+export { VISIT_BUDGET_BYTES, type Codec } from "./caps";
 
 export interface Budget {
   readonly codec: Codec;
@@ -52,6 +55,16 @@ export interface Budget {
   canFetchKeeping(clip: Clip, reserve: readonly Clip[]): boolean;
   /** Records the clip as fetched. Returns false (and records nothing) if over. */
   charge(clip: Clip): boolean;
+  /**
+   * The clip's fetch was aborted (or failed) after `received` body bytes:
+   * it no longer counts as fetched (a later charge pays for it again), but
+   * the bytes that did cross the wire stay charged (change 3).
+   */
+  refund(clip: Clip, received: number): void;
+  /** Bytes downloaded and thrown away (aborted fetches, a codec fallback). */
+  readonly wasted: number;
+  /** Charges bytes that crossed the wire but belong to no fetched clip. */
+  waste(bytes: number): void;
   /** Called once the browser has picked a source for the base loop. */
   setCodec(codec: Codec): void;
 }
@@ -65,7 +78,9 @@ export function createBudget(
 ): Budget {
   let codec: Codec = "h264";
   const fetched = new Set<Clip>();
-  const spent = () => [...fetched].reduce((a, c) => a + sizeFor(c, codec), 0);
+  let wasted = 0;
+  const spent = () =>
+    [...fetched].reduce((a, c) => a + sizeFor(c, codec), wasted);
   const budget: Budget = {
     get codec() {
       return codec;
@@ -86,6 +101,16 @@ export function createBudget(
       if (!budget.canFetch(clip)) return false;
       fetched.add(clip);
       return true;
+    },
+    refund(clip, received) {
+      if (!fetched.delete(clip)) return;
+      wasted += Math.max(0, received);
+    },
+    get wasted() {
+      return wasted;
+    },
+    waste(bytes) {
+      wasted += Math.max(0, bytes);
     },
     setCodec(next) {
       codec = next;

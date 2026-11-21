@@ -103,3 +103,46 @@ describe("per-visit byte budget (0.75 / 0.97 MB)", () => {
     expect(b.canFetchKeeping(s, [nod])).toBe(b.canFetch(s));
   });
 });
+
+describe("per-clip charging (change 2) and refunds (change 3)", () => {
+  const nod = ACTIONS["nod.k180"].clip;
+  const k36 = ACTIONS["s1a.k36"].clip;
+
+  it("charges each clip once; re-charging a fetched clip costs nothing", () => {
+    const b = createBudget();
+    b.setCodec("av1");
+    expect(b.charge(BASE_LOOP.clip)).toBe(true);
+    expect(b.charge(k36)).toBe(true);
+    expect(b.charge(k36)).toBe(true);
+    expect(b.spent).toBe(332_028 + 89_515);
+  });
+
+  it("an aborted fetch is refunded down to the bytes that arrived", () => {
+    const b = createBudget();
+    b.setCodec("h264");
+    b.charge(BASE_LOOP.clip);
+    b.charge(k36);
+    b.refund(k36, 40_000);
+    expect(b.spent).toBe(442_525 + 40_000);
+    expect(b.wasted).toBe(40_000);
+    expect(b.cost(k36)).toBe(119_543); // no longer fetched: pays again
+    b.refund(k36, 99); // not charged any more: no-op
+    expect(b.wasted).toBe(40_000);
+  });
+
+  it("an abort before any byte arrived costs nothing and keeps room for another variant", () => {
+    const b = createBudget();
+    b.setCodec("h264");
+    b.charge(BASE_LOOP.clip);
+    b.charge(k36);
+    b.refund(k36, 0);
+    expect(b.spent).toBe(442_525);
+    expect(b.canFetchKeeping(ACTIONS["t6.k36"].clip, [nod])).toBe(true);
+  });
+
+  it("waste() charges bytes that belong to no clip (a codec fallback)", () => {
+    const b = createBudget();
+    b.waste(1000);
+    expect(b.spent).toBe(1000);
+  });
+});

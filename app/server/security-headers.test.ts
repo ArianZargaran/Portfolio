@@ -13,6 +13,10 @@ describe("security headers", () => {
     expect(csp).not.toMatch(/script-src[^;]*unsafe-inline/);
   });
 
+  it("allows same-origin and blob: media only (hero clips play from fetched blobs)", () => {
+    expect(buildCsp("n")).toContain("media-src 'self' blob:;");
+  });
+
   it("allows the Vite HMR websocket only in dev", () => {
     expect(buildCsp("n", { dev: true })).toContain(
       "connect-src 'self' ws: wss:",

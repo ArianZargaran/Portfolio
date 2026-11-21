@@ -11,7 +11,9 @@ export function buildCsp(nonce: string, { dev = false } = {}): string {
     "script-src": ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'"],
     "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     "img-src": ["'self'", "data:", "blob:"],
-    "media-src": ["'self'"],
+    // blob: = the hero clips, fetched once each and played from object
+    // URLs so a replay never re-downloads them (budget.ts, clip-store.ts).
+    "media-src": ["'self'", "blob:"],
     "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
     "connect-src": dev ? ["'self'", "ws:", "wss:"] : ["'self'"],
     "worker-src": ["'self'", "blob:"],
