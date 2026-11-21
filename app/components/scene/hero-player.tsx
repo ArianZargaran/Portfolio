@@ -1,57 +1,22 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 
+import { BASE_LOOP, type ClipSource } from "~/scene/hero/base-loop";
+import { createBudget } from "~/scene/hero/budget";
+import { createClipStore, pickSource } from "~/scene/hero/clip-store";
 import {
-  ACTIONS,
-  BASE_LOOP,
-  type ActionDef,
-  type ActionId,
-  type Clip,
-} from "~/scene/hero/actions";
-import { codecOfCurrentSrc, createBudget } from "~/scene/hero/budget";
-import { createClock } from "~/scene/hero/clock";
-import {
-  applyEgg,
-  armEgg,
-  disarmEgg,
-  EGG,
-  eggBusyUntil,
-  eggVisit,
-  eggWouldComplete,
-  initialEgg,
-  stepEgg,
-} from "~/scene/hero/egg";
-import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
-import { onHeroHotspot, onHeroReaction } from "~/scene/hero/reaction-bus";
-import {
-  gateRotation,
-  initialQueue,
-  initialRotationGate,
-  planReaction,
-  request,
-  resolveState,
-  rotationBusyUntil,
-  setFrozen,
-  step,
-} from "~/scene/hero/reactions";
-import {
-  clipEndAbs,
-  decide,
+  absFrameAt,
+  createClock,
   driftFrames,
   frameTime,
-  heroRotation,
-  nextOccurrence,
-  stateAt,
-  type Shown,
-} from "~/scene/hero/schedule";
-import { wireTriggers } from "~/scene/hero/triggers";
-import { isPrimed, warmTargets } from "~/scene/hero/warm";
+  mod,
+} from "~/scene/hero/clock";
+import type { ReactionEngine, ReactionHost } from "~/scene/hero/hero-reactions";
+import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
 
 const FPS = BASE_LOOP.fps;
-/** Re-seek a clip only when it is this many frames off the clock. */
+/** Re-seek the loop only when it is this many frames off the clock. */
 const MAX_DRIFT_FRAMES = 1.5;
-/** Start buffering an action clip this long before it can cut in. */
-const PRELOAD_S = 6;
 
 type FrameCallbackVideo = HTMLVideoElement & {
   requestVideoFrameCallback?: (cb: () => void) => number;
@@ -64,48 +29,23 @@ function onFirstFrame(v: FrameCallbackVideo, cb: () => void) {
   else v.addEventListener("loadeddata", cb, { once: true });
 }
 
-function ClipVideo({
-  clip,
-  id,
-  loop,
-  setRef,
-}: {
-  clip: Clip;
-  id: Shown;
-  loop?: boolean;
-  setRef: (el: HTMLVideoElement | null) => void;
-}) {
-  return (
-    <video
-      ref={setRef}
-      className="hero_clip"
-      data-clip={id}
-      muted
-      playsInline
-      loop={loop}
-      preload={loop ? "auto" : "none"}
-      disablePictureInPicture
-      disableRemotePlayback
-      aria-hidden="true"
-      tabIndex={-1}
-    >
-      {clip.sources.map((s) => (
-        <source
-          key={s.src}
-          src={s.src}
-          type={`${s.type}; codecs="${s.codecs}"`}
-        />
-      ))}
-    </video>
-  );
-}
+/**
+ * Loads the reactions chunk (code split, change 1). A module-level hook so
+ * tests can wait for it; the import() itself is what Vite splits on.
+ */
+export const loadReactions = () => import("~/scene/hero/hero-reactions");
 
 /**
- * Plays the hero character over the still: the typing loop, with actions
- * (the E2 nod, the S1a glance-up and the T6 speaker groove; S1b/T2 return
- * when they lock) spliced in on the shared clock. All timing comes from
- * the pure schedule (stateAt/decide); this component only keeps the
- * <video> elements on the frames it asks for. Lazy chunk (see HeroMount).
+ * Plays the hero character's typing loop over the still, on the shared
+ * clock. Lazy chunk (see HeroMount), the only player code on the critical
+ * path. Once the loop shows its first frame it lazy-loads the reactions
+ * chunk (scene/hero/hero-reactions.ts: the clip registry, the reaction
+ * queue, the E2 egg, the hover/focus wiring), which appends the action
+ * <video>s and drives them from this component's clock.
+ *
+ * Every clip, the loop included, is fetched once into a Blob and played
+ * from its object URL (clip-store.ts), so the per-visit byte budget counts
+ * clips, not requests, and holds with the HTTP cache off (change 2).
  */
 export default function HeroPlayer({
   frozen = false,
@@ -123,15 +63,12 @@ export default function HeroPlayer({
   rotationNod?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const rotationPrefetchRef = useRef(rotationPrefetch);
-  rotationPrefetchRef.current = rotationPrefetch;
-  const rotationRef = useRef(heroRotation(rotationNod));
-  rotationRef.current = heroRotation(rotationNod);
+  const baseRef = useRef<HTMLVideoElement>(null);
+  const flags = useRef({ rotationPrefetch, rotationNod });
+  flags.current = { rotationPrefetch, rotationNod };
   const frozenRef = useRef(frozen);
   /** Set by the main effect: applies a freeze change to the running player. */
   const applyFreeze = useRef<((frozen: boolean) => void) | null>(null);
-  const baseRef = useRef<HTMLVideoElement | null>(null);
-  const actionRefs = useRef<Partial<Record<ActionId, HTMLVideoElement>>>({});
 
   useEffect(() => {
     const root = rootRef.current;
@@ -139,144 +76,27 @@ export default function HeroPlayer({
     if (!root || !base) return;
     const clock = createClock();
     let raf = 0;
-    let shown: Shown = "base";
-    let prepared: ActionId | null = null;
-    let ready = false;
-    // Generation of the current prepare: bumped by every prepare and every
-    // release, so a play()/first-frame callback left over from an earlier
-    // prepare (even of the same clip) can never mark a newer one ready.
-    let prepareGen = 0;
-    /** True while the prepare (gen, id) is still the live one. */
-    const currentPrepare = (gen: number, id: ActionId) => () =>
-      gen === prepareGen && prepared === id;
     let dead = false;
-    // Reaction queue (M2): requests come from the bus, are applied here,
-    // and take effect on the next frame.
-    let queue = initialQueue(frozenRef.current);
-    // Every rotation play passes the cooldowns and needs a fetched clip (N1).
-    let rotGate = initialRotationGate();
-    const isFetched = (id: ActionId) =>
-      actionRefs.current[id]?.preload === "auto";
+    let unmounted = false;
+    let live = false;
+    let engine: ReactionEngine | null = null;
 
-    // Per-visit byte budget (M3). The typing loop is always fetched; every
-    // other clip goes through fetchClip, which refuses once over budget.
+    // Per-visit byte budget (M3), per clip (change 2). The codec is the
+    // first source the browser can play (the <source> selection rule), so
+    // it is known before anything is fetched.
     const budget = createBudget();
+    const store = createClipStore();
+    const sources = BASE_LOOP.clip.sources;
+    let source: ClipSource =
+      pickSource(sources, (t) => base.canPlayType(t)) ??
+      sources[sources.length - 1];
+    budget.setCodec(source.codec);
     budget.charge(BASE_LOOP.clip);
-    const syncBudget = () => {
-      if (base.currentSrc)
-        budget.setCodec(codecOfCurrentSrc(BASE_LOOP.clip, base.currentSrc));
+    const syncBytes = () => {
       root.dataset.bytes = String(budget.spent);
+      root.dataset.fetches = String(store.fetches);
     };
-    /** Starts buffering an action clip if the budget allows. */
-    const fetchClip = (a: ActionDef): boolean => {
-      const v = actionRefs.current[a.id];
-      if (!v) return false;
-      if (v.preload === "auto") return true;
-      if (!budget.charge(a.clip)) {
-        root.dataset.budget = "full";
-        return false;
-      }
-      v.preload = "auto";
-      v.load();
-      root.dataset.bytes = String(budget.spent);
-      return true;
-    };
-    /**
-     * A reaction clip (S1a, T6) is fetched only while the E2 egg nod still
-     * fits beside it, so hovers can never starve the egg (review N1).
-     */
-    const fetchReactionClip = (a: ActionDef): boolean => {
-      if (actionRefs.current[a.id]?.preload === "auto") return true;
-      if (!budget.canFetchKeeping(a.clip, [EGG.action.clip])) {
-        root.dataset.budget = "full";
-        return false;
-      }
-      return fetchClip(a);
-    };
-    // Frame up to which a live rotation clip or committed egg nod holds the
-    // stage (from the last tick), for planning a reaction's join.
-    let busyUntil = 0;
-    // E2 egg (M4), outside the queue. Hotspot visits come from the event
-    // wiring (M5); a completed sequence arms the nod on the next frame,
-    // once the queue has scheduled T6 (so the nod waits for its end).
-    let egg = initialEgg();
-    let eggPending = false;
-    const hotspotIntent = (id: string) => {
-      if (eggWouldComplete(egg, id, clock.now())) fetchClip(EGG.action);
-    };
-    const hotspotVisit = (id: string) => {
-      if (dead || frozenRef.current) return;
-      const r = eggVisit(egg, id, clock.now());
-      egg = r.state;
-      if (r.completed && fetchClip(EGG.action)) eggPending = true;
-    };
-    const leaveHero = () => {
-      egg = disarmEgg(egg);
-      eggPending = false;
-    };
-    const offHotspot = onHeroHotspot((id, kind) => {
-      if (kind === "intent") hotspotIntent(id);
-      else if (kind === "visit") hotspotVisit(id);
-      else leaveHero();
-    });
 
-    // Intent (hover/focus, dwell-confirmed) and the request first dry-run
-    // the queue (planReaction: freeze, cooldowns, playing/locked slot, the
-    // join step would pick, own entry) and only then fetch that one variant,
-    // keeping the egg nod affordable. A refused plan or an unaffordable clip
-    // fetches nothing and the request is dropped: the loop carries on.
-    const offReaction = onHeroReaction((id, kind) => {
-      if (dead || frozenRef.current || document.hidden) return;
-      const t = clock.now();
-      const plan = planReaction(queue, id, t, stateAt(t).abs, busyUntil);
-      root.dataset.reaction = plan.ok
-        ? `${id}:${plan.action.id}`
-        : `${id}:${plan.reason}`;
-      if (!plan.ok) return;
-      if (!fetchReactionClip(plan.action)) {
-        root.dataset.reaction = `${id}:budget`;
-        return;
-      }
-      // Schedule straight away onto the planned join (review R1): left
-      // unscheduled until the next tick, a request in the last tick of
-      // frame J-4 would be re-planned at J-3 onto J+36 and fetch a second
-      // variant while the first is never played.
-      if (kind === "request")
-        queue = step(request(queue, id, t).state, t, stateAt(t).abs, busyUntil);
-    });
-
-    // The base loop is always visible; an action clip covers it while on.
-    const setShown = (next: Shown) => {
-      if (next === shown) return;
-      if (next !== "base")
-        actionRefs.current[next]?.setAttribute("data-on", "");
-      if (shown !== "base")
-        actionRefs.current[shown]?.removeAttribute("data-on");
-      shown = next;
-      root.dataset.shown = next;
-    };
-    // Warm pool (M6): action elements seeked to their first clip frame and
-    // held paused just before they cut in (at most 2, plus the base).
-    const warmed = new Set<ActionId>();
-    const warm = (targets: ReturnType<typeof warmTargets>) => {
-      const want = new Set(targets.map((w) => w.action.id));
-      warmed.forEach((id) => !want.has(id) && warmed.delete(id));
-      for (const { action } of targets) {
-        const v = actionRefs.current[action.id];
-        if (!v || warmed.has(action.id) || prepared === action.id) continue;
-        if (v.preload !== "auto" || v.readyState < 1) continue; // not fetched yet
-        v.pause();
-        v.currentTime = frameTime(0, FPS);
-        warmed.add(action.id);
-      }
-    };
-    const release = () => {
-      if (!prepared) return;
-      actionRefs.current[prepared]?.pause();
-      prepared = null;
-      ready = false;
-      prepareGen++;
-    };
     const fail = () => {
       dead = true;
       root.dataset.state = "failed"; // the still underneath stays
@@ -288,193 +108,126 @@ export default function HeroPlayer({
         return;
       fail();
     };
-    // A failed <source> is not fatal: the browser moves on to the next one
-    // (AV1 -> H.264). Only the last source failing, or a media error on the
-    // element itself, means no clip can play.
-    const onError = (e: Event) => {
-      const t = e.target;
-      if (t === base || t === base.querySelector("source:last-of-type")) fail();
+    const host: ReactionHost = {
+      root,
+      clock,
+      budget,
+      store,
+      fps: FPS,
+      frozen: () => frozenRef.current,
+      dead: () => dead,
+      rotationNod: () => flags.current.rotationNod,
+      rotationPrefetch: () => flags.current.rotationPrefetch,
+    };
+    // First frame up: show the loop, then lazy-load the reactions chunk.
+    const goLive = () =>
+      onFirstFrame(base, () => {
+        if (dead || unmounted || live) return;
+        live = true;
+        root.dataset.state = "live";
+        loadReactions().then(
+          (m) => {
+            if (unmounted || dead || engine) return;
+            engine = m.startReactions(host);
+            if (frozenRef.current) engine.freeze(true);
+          },
+          () => {
+            // No reactions chunk (offline, a deploy in between): the loop
+            // carries on without reactions.
+          },
+        );
+      });
+    const play = () => {
+      base.play().then(goLive, playFailed);
+    };
+    const attach = (url: string) => {
+      if (unmounted) return;
+      base.src = url;
+      base.currentTime = frameTime(
+        mod(absFrameAt(clock.now(), FPS), BASE_LOOP.frames),
+        FPS,
+      );
+      if (!frozenRef.current && !document.hidden) play();
+    };
+    const fetchBase = () => {
+      syncBytes();
+      store.load(source.src, source.type).then(attach, (e: unknown) => {
+        if (!unmounted && (e as Error | undefined)?.name !== "AbortError")
+          fail();
+      });
+    };
+    // A source that won't decode is not fatal while another is left: what
+    // it downloaded stays charged, and the next source is fetched (AV1 ->
+    // H.264). Only the last source failing means no clip can play.
+    const onError = () => {
+      const i = sources.indexOf(source);
+      if (dead || i < 0 || i >= sources.length - 1) return fail();
+      budget.waste(store.received(source.src));
+      source = sources[i + 1];
+      budget.setCodec(source.codec);
+      fetchBase();
     };
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
       if (dead || clock.paused || frozenRef.current) return;
       const t = clock.now();
-      const gated = gateRotation(
-        queue,
-        rotGate,
-        stateAt(t, rotationRef.current),
-        t,
-        isFetched,
-      );
-      queue = gated.queue;
-      rotGate = gated.gate;
-      const rotation = gated.rotation;
-      const abs = rotation.abs;
-      busyUntil = Math.max(rotationBusyUntil(rotation), eggBusyUntil(egg, abs));
-      queue = step(queue, t, abs, busyUntil);
-      if (eggPending) {
-        eggPending = false;
-        const t6 =
-          queue.playing?.id === EGG.reaction
-            ? queue.playing.occ
-            : queue.slot?.id === EGG.reaction
-              ? queue.slot.occ
-              : undefined;
-        egg = armEgg(egg, abs, t6 ? clipEndAbs(t6) : 0);
-      }
-      egg = stepEgg(egg, abs, [
-        queue.slot?.occ,
-        queue.playing?.occ,
-        rotation.action?.occurrence,
-      ]);
-      const s = resolveState(applyEgg(rotation, egg), queue);
-
       // Base loop: free-runs, re-seeked only on real drift.
       if (base.readyState >= 1) {
+        const baseFrame = mod(absFrameAt(t, FPS), BASE_LOOP.frames);
         const d = driftFrames(
           base.currentTime,
-          s.baseFrame,
+          baseFrame,
           FPS,
           BASE_LOOP.frames,
         );
         if (Math.abs(d) > MAX_DRIFT_FRAMES)
-          base.currentTime = frameTime(s.baseFrame, FPS);
+          base.currentTime = frameTime(baseFrame, FPS);
       }
-
-      // A reaction rescheduled onto another variant needs that clip too.
-      const queued = queue.slot?.occ?.action;
-      if (queued && !fetchReactionClip(queued))
-        queue = { ...queue, slot: undefined };
-      // The auto-rotation (a DRAFT for Ari, not a reaction) buffers its next
-      // clip ahead of the cut-in only behind FEATURE_HERO_ROTATION_PREFETCH.
-      const next = nextOccurrence(s.abs, rotationRef.current);
-      if (
-        rotationPrefetchRef.current &&
-        next &&
-        next.start + next.action.clip.firstFrame - s.abs < PRELOAD_S * FPS
-      )
-        fetchClip(next.action);
-
-      warm(
-        warmTargets(s.abs, [
-          queue.slot?.occ,
-          egg.armed?.occ,
-          nextOccurrence(s.abs, rotationRef.current) ?? undefined,
-        ]),
-      );
-
-      const d = decide(s, shown, ready);
-      if (d.prepare) {
-        const { action, clipFrame } = d.prepare;
-        const v = actionRefs.current[action.id] as
-          | FrameCallbackVideo
-          | undefined;
-        // Never play() an element that wasn't fetched through fetchClip:
-        // play() on preload="none" would start a download outside the
-        // intent rule and the budget. That occurrence shows the base.
-        if (v && v.preload !== "auto") {
-          if (prepared) release();
-        } else if (v && prepared !== action.id) {
-          // Review N2: an element held paused on this very frame, decoded
-          // (the warm pool leaves it there just before the join, and its
-          // `warmed` mark is already pruned by now), already shows the
-          // cut-in pixels: ready now, no seek (a seek would throw the
-          // decoded frame away). isPrimed reads the element's real state.
-          const primed = isPrimed(v, clipFrame, FPS);
-          release();
-          prepared = action.id;
-          const current = currentPrepare(++prepareGen, action.id);
-          warmed.delete(action.id);
-          if (primed) ready = true;
-          else v.currentTime = frameTime(clipFrame, FPS);
-          root.dataset.primed = primed ? action.id : "";
-          v.play().then(
-            () =>
-              onFirstFrame(v, () => {
-                if (current()) ready = true;
-              }),
-            () => {
-              if (current()) release();
-            },
-          );
-        } else if (v && ready) {
-          const drift = driftFrames(v.currentTime, clipFrame, FPS);
-          if (Math.abs(drift) > MAX_DRIFT_FRAMES)
-            v.currentTime = frameTime(clipFrame, FPS);
-        }
-      } else if (prepared) {
-        release();
-      }
-      setShown(d.show);
+      engine?.tick(t);
     };
 
     // Freeze (WCAG 2.2.2) is an instant stop: the clock and every <video>
     // pause where they are, so the visible frame (base or action) holds.
     // Playing again resumes the same clock, so the splice stays in sync.
     applyFreeze.current = (on: boolean) => {
-      queue = setFrozen(queue, on);
-      if (on) leaveHero();
+      engine?.freeze(on);
       if (dead) return;
-      const action = prepared ? actionRefs.current[prepared] : undefined;
       if (on) {
         clock.pause();
         base.pause();
-        action?.pause();
       } else if (!document.hidden) {
         clock.resume();
-        void base.play().catch(playFailed);
-        if (action && ready && prepared) {
-          // Same generation guard as the prepare path: a late rejection of
-          // this resume must not release a newer prepare (review Low 3).
-          const current = currentPrepare(prepareGen, prepared);
-          void action.play().catch(() => {
-            if (current()) release();
-          });
-        }
+        if (base.src) play();
       }
     };
 
     const onVisibility = () => {
       if (document.hidden) {
-        leaveHero();
+        engine?.hidden();
         clock.pause();
         base.pause();
-        release();
-        setShown("base");
       } else if (!frozenRef.current) {
         clock.resume();
-        void base.play().catch(playFailed);
+        if (base.src) play();
       }
     };
 
-    base.addEventListener("error", onError, true);
-    base.addEventListener("loadedmetadata", syncBudget);
+    base.addEventListener("error", onError);
     document.addEventListener("visibilitychange", onVisibility);
-    base.currentTime = frameTime(stateAt(clock.now()).baseFrame, FPS);
-    base.play().then(
-      () =>
-        onFirstFrame(base, () => {
-          if (!dead) root.dataset.state = "live";
-        }),
-      playFailed,
-    );
+    fetchBase();
     raf = requestAnimationFrame(tick);
     if (frozenRef.current) applyFreeze.current(true);
-    // Event wiring (M5): hotspot hover/focus, idle, tab return, back in view.
-    const frame = root.closest<HTMLElement>(".scene_frame");
-    const offTriggers = frame ? wireTriggers(frame) : null;
     return () => {
+      unmounted = true;
       applyFreeze.current = null;
-      offReaction();
-      offHotspot();
-      offTriggers?.();
+      engine?.dispose();
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
-      base.removeEventListener("error", onError, true);
-      base.removeEventListener("loadedmetadata", syncBudget);
+      base.removeEventListener("error", onError);
       base.pause();
-      release();
+      base.removeAttribute("src");
+      store.dispose();
     };
   }, []);
 
@@ -498,23 +251,21 @@ export default function HeroPlayer({
       aria-hidden="true"
       style={{ ...heroBoxPercent(), ...feather } as CSSProperties}
     >
-      <ClipVideo
-        clip={BASE_LOOP.clip}
-        id="base"
+      {/* The loop: muted, inline, looping, no controls. No <source>s: the
+          player picks the codec and attaches the fetched blob. */}
+      <video
+        ref={baseRef}
+        className="hero_clip"
+        data-clip="base"
+        muted
+        playsInline
         loop
-        setRef={(el) => (baseRef.current = el)}
+        preload="auto"
+        disablePictureInPicture
+        disableRemotePlayback
+        aria-hidden="true"
+        tabIndex={-1}
       />
-      {Object.values(ACTIONS).map((a) => (
-        <ClipVideo
-          key={a.id}
-          clip={a.clip}
-          id={a.id}
-          setRef={(el) => {
-            if (el) actionRefs.current[a.id] = el;
-            else delete actionRefs.current[a.id];
-          }}
-        />
-      ))}
     </div>
   );
 }

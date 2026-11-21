@@ -3,7 +3,6 @@
    Library queries cannot reach them; this test checks their markup. */
 import { act, render } from "@testing-library/react";
 
-import { ACTIONS } from "~/scene/hero/actions";
 import {
   FREEZE_STORAGE_KEY,
   heroFreeze,
@@ -73,34 +72,26 @@ describe("HeroMount", () => {
 });
 
 describe("HeroPlayer markup", () => {
-  it("renders muted, hidden-from-AT clips with AV1 first and an H.264 fallback", () => {
+  it("renders only the muted, hidden-from-AT, looping base video (no <source>s: the player attaches a fetched blob)", () => {
     // happy-dom has no media playback; only check the markup.
     HTMLMediaElement.prototype.play = () =>
       Promise.reject(new Error("no media"));
     HTMLMediaElement.prototype.pause = vi.fn();
+    globalThis.fetch = vi.fn(() => new Promise<Response>(() => undefined));
     const { container } = render(<HeroPlayer />);
     const root = container.querySelector(".hero")!;
     expect(root).toHaveAttribute("aria-hidden", "true");
     const videos = [...container.querySelectorAll("video")];
-    // Design A: one element per baked clip (the locked install has
-    // nod.k180, s1a.k0..k180 and t6.k0..k180), none fetched up front
-    // (intent/trigger fetch, M3).
-    expect(videos.map((v) => v.dataset.clip)).toEqual([
-      "base",
-      ...Object.keys(ACTIONS),
-    ]);
-    expect(videos).toHaveLength(14);
-    for (const v of videos.slice(1)) expect(v.preload).toBe("none");
-    for (const v of videos) {
-      expect(v.muted).toBe(true);
-      expect(v).toHaveAttribute("playsinline");
-    }
-    expect(videos[0].loop).toBe(true);
-    const types = [...videos[0].querySelectorAll("source")].map((s) =>
-      s.getAttribute("type"),
-    );
-    expect(types[0]).toBe('video/mp4; codecs="av01.0.01M.08"');
-    expect(types[types.length - 1]).toMatch(/^video\/mp4; codecs="avc1/);
+    // The 13 action clips are appended by the lazy reactions chunk after the
+    // loop's first frame (hero-player.test.tsx), not by this markup.
+    expect(videos.map((v) => v.dataset.clip)).toEqual(["base"]);
+    const [base] = videos;
+    expect(base.muted).toBe(true);
+    expect(base).toHaveAttribute("playsinline");
+    expect(base.loop).toBe(true);
+    expect(base.controls).toBe(false);
+    expect(base.querySelector("source")).toBeNull();
+    expect(base).not.toHaveAttribute("src");
   });
 });
 

@@ -1,10 +1,11 @@
 {
-  "$comment": "gzip kB. Baseline 2026-10-13: initial 132.3, total JS 204.2, CSS 19.6, largest chunk 44.4. ~10-20% headroom. three.js (M4) must load as a lazy chunk; raise totalJsKb/maxChunkKb deliberately then, never initialJsKb. heroChunkKb (M8): the lazy hero-player chunk, gzip, PLAN v3.3 proposal <= 8 kB. sceneChunkKb (review N4): the always-loaded scene-*.js route chunk (shell, hit areas, freeze, net gate, actions registry), 7.4 kB after the N1-N7 fixes (7.1 kB at review); cap 9 kB (~25% headroom; 8 kB would leave < 1 kB). heroTotalKb: scene chunk + lazy hero player, 13.4 kB after the N1-N7 fixes (Nov 17 2026), cap 15 kB, against the PLAN \u00a74 estimate of ~6 kB that only counted the player.",
+  "$comment": "gzip kB. Baseline 2026-10-13: initial 132.3, total JS 204.2, CSS 19.6, largest chunk 44.4. ~10-20% headroom. three.js (M4) must load as a lazy chunk; raise totalJsKb/maxChunkKb deliberately then, never initialJsKb. heroChunkKb (M8): the lazy hero-player chunk, gzip, PLAN v3.3 proposal <= 8 kB. sceneChunkKb (review N4): the always-loaded scene-*.js route chunk (shell, hit areas, freeze, net gate, actions registry), 7.4 kB after the N1-N7 fixes (7.1 kB at review); cap 9 kB (~25% headroom; 8 kB would leave < 1 kB). heroTotalKb: scene chunk + lazy hero player, 13.4 kB after the N1-N7 fixes (Nov 17 2026), cap 15 kB, against the PLAN §4 estimate of ~6 kB that only counted the player. heroTotalKb is unchanged (15 kB gzip = 15,360 B): since the code split (Nov 21 2026, feat/hero-player-split) it is measured on the hero critical path, the scene chunk + the lazy loop player chunk + any chunk they statically import (scene + player was 15,269 B at 7c6ea46). heroReactionsChunkKb: the lazy reactions chunk (clip registry, queue, egg, triggers, warm pool), import()ed by the loop player after the loop's first frame and never under reduced motion/Save-Data; 7.4 kB at the split, cap 10 kB.",
   "initialJsKb": 150,
   "totalJsKb": 240,
   "totalCssKb": 25,
   "maxChunkKb": 55,
   "heroChunkKb": 8,
   "sceneChunkKb": 9,
-  "heroTotalKb": 15
+  "heroTotalKb": 15,
+  "heroReactionsChunkKb": 10
 }
