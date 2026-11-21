@@ -1,7 +1,7 @@
 /* eslint-disable testing-library/no-container, testing-library/no-node-access --
    The hero clips are aria-hidden <video>s with no role or text; this test
    checks which of them the player fetches and shows. */
-import { act } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 
 import { ACTIONS } from "~/scene/hero/actions";
 import {
@@ -669,5 +669,157 @@ describe("HeroPlayer glance: plan before fetch (review N1)", () => {
     await run(3_100);
     expect(root.dataset.primed).toBe("");
     expect(root.dataset.shown).toBe("base");
+  });
+});
+
+/* Review R1: an AV1 base loop that fails to LOAD (404, network error)
+   falls back to H.264 like a decode failure, as base 7c6ea46 did natively
+   with <source>. A reaction clip that fails to load is refunded and
+   skipped; the loop keeps playing. */
+describe("HeroPlayer load failures (review R1)", () => {
+  const av1Typing = (c: { id: string; codec: string }) =>
+    c.id === "typing" && c.codec === "av1";
+
+  it.each([404, "network"] as const)(
+    "AV1 loop answered with %s -> live on H.264, nothing wasted",
+    async (failure) => {
+      HTMLMediaElement.prototype.canPlayType = () => "probably";
+      net.fail = (c) => (av1Typing(c) ? failure : undefined);
+      const { root, base } = await mountHero(<HeroPlayer />);
+      await settle(3);
+      expect(net.calls.map((c) => [c.id, c.codec])).toEqual([
+        ["typing", "av1"],
+        ["typing", "h264"],
+      ]);
+      expect(root.dataset.state).toBe("live");
+      expect(root.dataset.reactions).toBe("ready");
+      expect(base.getAttribute("src")).toMatch(/^blob:/);
+      expect(root.dataset.wasted).toBe("0");
+      expect(bytes(root)).toBe(H264.typing);
+    },
+  );
+
+  it("both loop files fail to load -> the still (failed), no third fetch", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    net.fail = (c) => (c.id === "typing" ? 404 : undefined);
+    const { root } = await mountHero(<HeroPlayer />);
+    await settle(3);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    expect(root.dataset.state).toBe("failed");
+  });
+
+  it("a reaction clip that fails to load is refunded and never shown; the loop keeps playing", async () => {
+    net.fail = (c) => (c.id.startsWith("s1a.") ? 404 : undefined);
+    const { root } = await mountHero(<HeroPlayer />);
+    glance();
+    await run(4_000);
+    expect(variants()).toEqual(["s1a.k36"]);
+    expect(root.dataset.state).toBe("live");
+    expect(root.dataset.shown).toBe("base");
+    expect(bytes(root)).toBe(H264.typing);
+  });
+});
+
+/* Review R3: the adaptive lead's wiring (N1). The clip store times each
+   download; the harness simulates the link per clip. */
+describe("HeroPlayer adaptive fetch lead wiring (review N1/R3)", () => {
+  const slow = { bps: 700_000, ttfbMs: 270 };
+  const fast = { bps: 20_000_000, ttfbMs: 10 };
+  const setConnection = (c: object | undefined) =>
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      get: () => c,
+    });
+  afterEach(() => setConnection(undefined));
+
+  it("a slow base-loop download lengthens the lead (host.link feeds the engine)", async () => {
+    net.timeLinks((c) => (c.id === "typing" ? slow : fast));
+    const { root } = await mountHero(<HeroPlayer />);
+    headphones();
+    expect(root.dataset.linkKbps).toBe("700");
+    expect(Number(root.dataset.fetchLead)).toBeGreaterThan(FETCH_LEAD_FRAMES);
+  });
+
+  it("takes the SLOWEST estimate: a fast NetInfo downlink doesn't hide a slow loop download", async () => {
+    setConnection({ effectiveType: "4g", downlink: 10, rtt: 50 });
+    net.timeLinks((c) => (c.id === "typing" ? slow : fast));
+    const { root } = await mountHero(<HeroPlayer />);
+    headphones();
+    expect(root.dataset.linkKbps).toBe("700");
+    expect(Number(root.dataset.fetchLead)).toBeGreaterThan(FETCH_LEAD_FRAMES);
+  });
+
+  it("a slow NetInfo downlink wins over a fast loop download", async () => {
+    setConnection({ effectiveType: "4g", downlink: 0.7, rtt: 270 });
+    net.timeLinks(() => fast);
+    const { root } = await mountHero(<HeroPlayer />);
+    headphones();
+    expect(root.dataset.linkKbps).toBe("700");
+    expect(Number(root.dataset.fetchLead)).toBeGreaterThan(FETCH_LEAD_FRAMES);
+  });
+
+  it("a fast loop and no other estimate keep the 18-frame minimum", async () => {
+    net.timeLinks(() => fast);
+    const { root } = await mountHero(<HeroPlayer />);
+    headphones();
+    expect(root.dataset.fetchLead).toBe(String(FETCH_LEAD_FRAMES));
+  });
+
+  it("a downloaded reaction clip updates the estimate: a slow first clip lengthens the next clip's lead", async () => {
+    net.timeLinks((c) => (c.id.startsWith("s1a.") ? slow : fast));
+    const { root } = await mountHero(<HeroPlayer />);
+    glance();
+    expect(root.dataset.fetchLead).toBe(String(FETCH_LEAD_FRAMES));
+    await run(8_000);
+    expect(variants()).toEqual(["s1a.k36"]);
+    headphones();
+    expect(root.dataset.linkKbps).toBe("700");
+    expect(Number(root.dataset.fetchLead)).toBeGreaterThan(FETCH_LEAD_FRAMES);
+  });
+});
+
+/* Review R3 (optional): the two defensive guards of the fallback path. */
+describe("HeroPlayer fallback guards (review R3)", () => {
+  it("an `error` on the detached base (no src, H.264 still loading) is not a second failure", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    net.fail = (c) =>
+      c.id === "typing" && c.codec === "av1" ? 404 : undefined;
+    net.hold = true;
+    const r = render(<HeroPlayer />);
+    const root = r.container.querySelector<HTMLElement>(".hero")!;
+    const base = r.container.querySelector<HTMLVideoElement>(
+      'video[data-clip="base"]',
+    )!;
+    await settle(3);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    expect(base.hasAttribute("src")).toBe(false);
+    act(() => {
+      base.dispatchEvent(new Event("error"));
+    });
+    expect(root.dataset.state).not.toBe("failed");
+    act(() => net.calls[1].resolve());
+    await settle(3);
+    expect(base.getAttribute("src")).toMatch(/^blob:/);
+    expect(root.dataset.state).not.toBe("failed");
+  });
+
+  it("a late non-media play() rejection for the replaced AV1 source doesn't kill the H.264 loop", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    let rejectOld: ((e: unknown) => void) | undefined;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      if (rejectOld === undefined) {
+        // First play() = the AV1 blob: the element errors at once, the
+        // promise rejects later with a non-media error.
+        this.dispatchEvent(new Event("error"));
+        return new Promise((_, rej) => (rejectOld = rej));
+      }
+      return Promise.resolve();
+    };
+    const { root } = await mountHero(<HeroPlayer />);
+    await settle(3);
+    expect(root.dataset.state).toBe("live");
+    rejectOld!(new DOMException("late", "NotAllowedError"));
+    await settle(3);
+    expect(root.dataset.state).toBe("live");
   });
 });

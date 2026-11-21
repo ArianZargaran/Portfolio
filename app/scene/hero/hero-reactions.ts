@@ -183,12 +183,17 @@ export function startReactions(host: ReactionHost): ReactionEngine {
     return fetchDue(occ, abs, lead);
   };
   let aborted = 0;
+  // Clips whose fetch failed (404, network error) this visit: never asked
+  // for again, so a broken clip can't be re-fetched on every tick (review
+  // R1). Its request is refused like an unaffordable one; the loop plays.
+  const failedClips = new Set<string>();
 
   /** Charges and starts the single fetch of an action clip. */
   const fetchClip = (a: ActionDef): boolean => {
     const v = els[a.id];
     if (!v) return false;
     if (loading(a)) return true;
+    if (failedClips.has(srcOf(a.clip).src)) return false;
     if (!budget.charge(a.clip)) {
       root.dataset.budget = "full";
       return false;
@@ -206,6 +211,7 @@ export function startReactions(host: ReactionHost): ReactionEngine {
         // A failed fetch keeps only what arrived; an aborted one was
         // refunded where it was aborted.
         if (store.state(s.src) === "failed") {
+          failedClips.add(s.src);
           budget.refund(a.clip, store.received(s.src));
           queueFetches.delete(a.id);
           if (!disposed) syncData();

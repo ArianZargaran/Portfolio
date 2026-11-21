@@ -42,15 +42,32 @@ export interface FakeNet {
   sent(): number;
   /** Hold responses until resolve() (to test in-flight aborts). */
   hold: boolean;
+  /** Answer a clip with an HTTP error status or a network error (review R1). */
+  fail?: (c: ClipInfo) => number | "network" | undefined;
+  /**
+   * Simulated link per clip (review R3): the response headers arrive
+   * `ttfbMs` after the request and the body takes bytes*8/bps. Turns on a
+   * virtual Date.now() that only these downloads advance (the clip store
+   * times downloads with Date.now()).
+   */
+  timeLinks(link: (c: ClipInfo) => { bps: number; ttfbMs: number }): void;
 }
+
+export type ClipInfo = { id: string; codec: "av1" | "h264"; bytes: number };
 
 /** Installs fetch / createObjectURL fakes; call in beforeEach. */
 export function installFakeNet(): FakeNet {
+  let link: ((c: ClipInfo) => { bps: number; ttfbMs: number }) | undefined;
+  let netNow = 1_700_000_000_000;
   const net: FakeNet = {
     calls: [],
     hold: false,
     fetched: () => net.calls.map((c) => c.id),
     sent: () => sentBytes,
+    timeLinks(l) {
+      link = l;
+      vi.spyOn(Date, "now").mockImplementation(() => netNow);
+    },
   };
   let sentBytes = 0;
   let n = 0;
@@ -59,6 +76,13 @@ export function installFakeNet(): FakeNet {
       const src = String(input);
       const clip = CLIP_OF.get(src);
       if (!clip) return Promise.reject(new Error(`unknown ${src}`));
+      const failure = net.fail?.(clip);
+      if (failure) {
+        net.calls.push({ ...clip, aborted: false, resolve: () => {} });
+        return failure === "network"
+          ? Promise.reject(new TypeError("Failed to fetch"))
+          : Promise.resolve(new Response(null, { status: failure }));
+      }
       return new Promise<Response>((resolve, reject) => {
         let done = false;
         const call: FetchCall = {
@@ -69,7 +93,22 @@ export function installFakeNet(): FakeNet {
             if (call.aborted || done) return;
             done = true;
             sentBytes += clip.bytes;
-            resolve(new Response(new Uint8Array(clip.bytes)));
+            const l = link?.(clip);
+            if (!l) return resolve(new Response(new Uint8Array(clip.bytes)));
+            netNow += l.ttfbMs;
+            // highWaterMark 0: pull() runs on the store's first read, after
+            // it noted the headers time, not eagerly at construction.
+            const body = new ReadableStream<Uint8Array>(
+              {
+                pull(ctrl) {
+                  netNow += (clip.bytes * 8 * 1000) / l.bps;
+                  ctrl.enqueue(new Uint8Array(clip.bytes));
+                  ctrl.close();
+                },
+              },
+              { highWaterMark: 0 },
+            );
+            resolve(new Response(body));
           },
         };
         init?.signal?.addEventListener("abort", () => {

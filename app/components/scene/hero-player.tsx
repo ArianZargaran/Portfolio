@@ -161,9 +161,13 @@ export default function HeroPlayer({
       if (!frozenRef.current && !document.hidden) play();
     };
     const fetchBase = () => {
-      store.load(source.src, source.type).then(attach, (e: unknown) => {
+      const from = source;
+      store.load(from.src, from.type).then(attach, (e: unknown) => {
+        // A load failure (404, network error) is handled like a decode
+        // failure: fall back to the next source while one is left, fail on
+        // the last one (review R1; base 7c6ea46 did this natively).
         if (!unmounted && (e as Error | undefined)?.name !== "AbortError")
-          fail();
+          fallbackFrom(from);
       });
       syncBytes(); // after load(): data-fetches counts this request
     };
