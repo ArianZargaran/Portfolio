@@ -74,13 +74,31 @@ describe("clip store (change 2: one fetch per clip per visit)", () => {
   });
 });
 
-describe("clip store release (review N6)", () => {
+describe("clip store link estimate and release (review N1, N6)", () => {
   beforeEach(() => {
     let i = 0;
     URL.createObjectURL = vi.fn(() => `blob:y/${++i}`);
     URL.revokeObjectURL = vi.fn();
   });
   afterEach(() => vi.restoreAllMocks());
+
+  it("link(): bits per second over the body time and the time to first byte", async () => {
+    const t = [1000, 1270, 6270]; // fetch() call, headers, end
+    vi.spyOn(Date, "now").mockImplementation(() => t.shift() ?? 6270);
+    const s = createClipStore(ok(437_500) as unknown as typeof fetch);
+    await s.load("/a.mp4", "video/mp4");
+    const l = s.link("/a.mp4")!;
+    expect(l.ttfbMs).toBe(270);
+    expect(l.bps).toBe(700_000); // 437,500 B in 5 s
+  });
+
+  it("link(): undefined while fetching, for an instant body, or an unknown clip", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(5);
+    const s = createClipStore(ok(10) as unknown as typeof fetch);
+    expect(s.link("/nope.mp4")).toBeUndefined();
+    await s.load("/a.mp4", "video/mp4");
+    expect(s.link("/a.mp4")).toBeUndefined();
+  });
 
   it("release(): revokes the object URL of an unusable clip once; bytes stay counted", async () => {
     const s = createClipStore(ok(99) as unknown as typeof fetch);

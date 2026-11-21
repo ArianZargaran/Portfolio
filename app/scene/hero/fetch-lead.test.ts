@@ -2,7 +2,9 @@ import { ACTIONS } from "./actions";
 import {
   abandonedFetches,
   FETCH_LEAD_FRAMES,
+  FETCH_LEAD_MAX_FRAMES,
   fetchDue,
+  fetchLeadFrames,
   initialQueue,
   LEAD_FRAMES,
   request,
@@ -61,5 +63,38 @@ describe("change 3: deferred reaction fetch and abandoned fetches", () => {
     expect(q.playing?.occ.action.id).toBe("s1a.k72");
     expect(abandonedFetches(q, ["s1a.k72"])).toEqual([]);
     expect(N).toBe(216);
+  });
+});
+
+describe("review N1: adaptive fetch lead from the measured link", () => {
+  const T6_H264 = 126_461;
+  it("unknown or instant link: the 18-frame minimum (change 3 unchanged)", () => {
+    expect(fetchLeadFrames(T6_H264, undefined)).toBe(FETCH_LEAD_FRAMES);
+    expect(fetchLeadFrames(T6_H264, { bps: Infinity, ttfbMs: 0 })).toBe(18);
+    expect(fetchLeadFrames(T6_H264, { bps: 0, ttfbMs: 0 })).toBe(18);
+    expect(fetchLeadFrames(T6_H264, { bps: 50e6, ttfbMs: 20 })).toBe(18);
+  });
+
+  it("700 kbps / 270 ms: (1.445 s x 1.5 + 0.27 s) x 12 + 4 = 34 frames", () => {
+    expect(fetchLeadFrames(T6_H264, { bps: 700_000, ttfbMs: 270 })).toBe(34);
+  });
+
+  it("1.5 Mbps / 150 ms: the 18-frame minimum; 1.0 Mbps: 25", () => {
+    expect(fetchLeadFrames(T6_H264, { bps: 1_500_000, ttfbMs: 150 })).toBe(18);
+    expect(fetchLeadFrames(T6_H264, { bps: 1_000_000, ttfbMs: 150 })).toBe(25);
+  });
+
+  it("very slow links are capped at two join intervals (fetch at intent)", () => {
+    expect(FETCH_LEAD_MAX_FRAMES).toBe(72);
+    expect(fetchLeadFrames(T6_H264, { bps: 100_000, ttfbMs: 800 })).toBe(72);
+  });
+
+  it("the lead always lets the download finish (at the measured rate) LEAD_FRAMES before the join", () => {
+    for (const bps of [400e3, 700e3, 1e6, 1.5e6, 3e6])
+      for (const ttfbMs of [50, 150, 270, 500]) {
+        const lead = fetchLeadFrames(T6_H264, { bps, ttfbMs });
+        const needed = ((T6_H264 * 8) / bps + ttfbMs / 1000) * 12;
+        expect(lead === 72 || lead - LEAD_FRAMES >= needed).toBe(true);
+      }
   });
 });

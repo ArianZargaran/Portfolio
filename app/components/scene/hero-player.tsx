@@ -123,6 +123,7 @@ export default function HeroPlayer({
       fps: FPS,
       frozen: () => frozenRef.current,
       dead: () => dead,
+      link: () => store.link(source.src),
       rotationNod: () => flags.current.rotationNod,
       rotationPrefetch: () => flags.current.rotationPrefetch,
     };

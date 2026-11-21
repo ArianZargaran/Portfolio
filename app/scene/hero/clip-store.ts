@@ -19,10 +19,26 @@
 
 export type ClipFetchState = "fetching" | "done" | "aborted" | "failed";
 
+/** Link speed seen by one finished download (review N1: adaptive lead). */
+export interface LinkEstimate {
+  /** Body bits per second, from first response byte to the end. */
+  bps: number;
+  /** fetch() call to response headers (round trip + server), ms. */
+  ttfbMs: number;
+}
+
+// Wall clock, not performance.now(): the link estimate times a network
+// download, and the hero clock (and test harnesses) may pin or virtualise
+// performance.now(). Millisecond resolution is plenty for clip downloads.
+const now = () => Date.now();
+
 interface Entry {
   state: ClipFetchState;
   /** Body bytes received so far. */
   received: number;
+  t0?: number;
+  tHeaders?: number;
+  tEnd?: number;
   url?: string;
   ctrl: AbortController;
   promise: Promise<string>;
@@ -47,6 +63,12 @@ export interface ClipStore {
    * counted by the caller's budget.
    */
   release(src: string): void;
+  /**
+   * Throughput and round trip of a finished download, if measurable
+   * (undefined for an instant one, e.g. served from memory or a frozen
+   * test clock).
+   */
+  link(src: string): LinkEstimate | undefined;
   /** Number of fetch() calls made (tests / data-fetches). */
   readonly fetches: number;
   /** Aborts everything and revokes every object URL. */
@@ -60,10 +82,12 @@ export function createClipStore(
   let fetches = 0;
 
   const run = async (src: string, type: string, e: Entry): Promise<string> => {
+    e.t0 = now();
     const res = await fetchImpl(src, {
       signal: e.ctrl.signal,
       credentials: "same-origin",
     });
+    e.tHeaders = now();
     if (!res.ok) throw new Error(`hero clip ${res.status}`);
     const parts: BlobPart[] = [];
     if (res.body) {
@@ -80,6 +104,7 @@ export function createClipStore(
       parts.push(b);
     }
     if (e.ctrl.signal.aborted) throw new DOMException("aborted", "AbortError");
+    e.tEnd = now();
     return URL.createObjectURL(new Blob(parts, { type }));
   };
 
@@ -125,6 +150,16 @@ export function createClipStore(
       const e = entries.get(src);
       if (e?.url) URL.revokeObjectURL(e.url);
       if (e) e.url = undefined;
+    },
+    link(src) {
+      const e = entries.get(src);
+      if (!e || e.state !== "done" || e.t0 === undefined) return undefined;
+      const body = (e.tEnd ?? 0) - (e.tHeaders ?? 0);
+      if (!(body > 0) || e.received <= 0) return undefined;
+      return {
+        bps: (e.received * 8 * 1000) / body,
+        ttfbMs: Math.max(0, (e.tHeaders ?? e.t0) - e.t0),
+      };
     },
     get fetches() {
       return fetches;

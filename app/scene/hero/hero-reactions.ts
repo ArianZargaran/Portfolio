@@ -18,7 +18,7 @@
  */
 import { ACTIONS, type ActionDef, type ActionId, type Clip } from "./actions";
 import type { Budget } from "./budget";
-import type { ClipStore } from "./clip-store";
+import type { ClipStore, LinkEstimate } from "./clip-store";
 import { frameTime, driftFrames, type SceneClock } from "./clock";
 import {
   applyEgg,
@@ -35,6 +35,7 @@ import { onHeroHotspot, onHeroReaction } from "./reaction-bus";
 import {
   abandonedFetches,
   fetchDue,
+  fetchLeadFrames,
   gateRotation,
   initialQueue,
   initialRotationGate,
@@ -51,6 +52,7 @@ import {
   heroRotation,
   nextOccurrence,
   stateAt,
+  type Occurrence,
   type Shown,
 } from "./schedule";
 import { wireTriggers } from "./triggers";
@@ -84,6 +86,8 @@ export interface ReactionHost {
   dead(): boolean;
   rotationNod(): boolean;
   rotationPrefetch(): boolean;
+  /** The base loop's download speed (adaptive fetch lead, review N1). */
+  link(): LinkEstimate | undefined;
 }
 
 export interface ReactionEngine {
@@ -149,6 +153,35 @@ export function startReactions(host: ReactionHost): ReactionEngine {
   };
   // Reaction clips whose fetch the queue started (change 3).
   const queueFetches = new Set<ActionId>();
+  // Review N1: fetch lead from the measured link, per clip size. The most
+  // pessimistic of: the base loop's download, the latest reaction clip's
+  // download, and the browser's own estimate (Network Information API
+  // downlink/rtt, where it exists).
+  let clipLink: LinkEstimate | undefined;
+  const linkNow = (): LinkEstimate | undefined => {
+    const c = (
+      navigator as { connection?: { downlink?: number; rtt?: number } }
+    ).connection;
+    const all = [
+      host.link(),
+      clipLink,
+      c && c.downlink && c.downlink > 0
+        ? { bps: c.downlink * 1e6, ttfbMs: c.rtt ?? 0 }
+        : undefined,
+    ].filter((x): x is LinkEstimate => !!x);
+    if (!all.length) return undefined;
+    const l = {
+      bps: Math.min(...all.map((x) => x.bps)),
+      ttfbMs: Math.max(...all.map((x) => x.ttfbMs)),
+    };
+    root.dataset.linkKbps = String(Math.round(l.bps / 1000));
+    return l;
+  };
+  const due = (occ: Occurrence, abs: number) => {
+    const lead = fetchLeadFrames(srcOf(occ.action.clip).bytes, linkNow(), FPS);
+    root.dataset.fetchLead = String(lead);
+    return fetchDue(occ, abs, lead);
+  };
   let aborted = 0;
 
   /** Charges and starts the single fetch of an action clip. */
@@ -167,6 +200,7 @@ export function startReactions(host: ReactionHost): ReactionEngine {
         v.src = url;
         v.preload = "auto";
         queueFetches.delete(a.id);
+        clipLink = store.link(s.src) ?? clipLink;
       },
       () => {
         // A failed fetch keeps only what arrived; an aborted one was
@@ -266,7 +300,7 @@ export function startReactions(host: ReactionHost): ReactionEngine {
     queue = step(request(queue, id, t).state, t, abs, busyUntil);
     abortAbandoned();
     const occ = queue.slot?.occ;
-    if (occ && fetchDue(occ, abs) && !fetchReactionClip(occ.action)) {
+    if (occ && due(occ, abs) && !fetchReactionClip(occ.action)) {
       root.dataset.reaction = `${id}:budget`;
       queue = { ...queue, slot: undefined };
     }
@@ -342,7 +376,7 @@ export function startReactions(host: ReactionHost): ReactionEngine {
     const queued = queue.slot?.occ;
     if (queued && !loading(queued.action)) {
       if (!affordable(queued.action)) queue = { ...queue, slot: undefined };
-      else if (fetchDue(queued, abs) && !fetchReactionClip(queued.action))
+      else if (due(queued, abs) && !fetchReactionClip(queued.action))
         queue = { ...queue, slot: undefined };
     }
     // The auto-rotation (a DRAFT for Ari, not a reaction) buffers its next

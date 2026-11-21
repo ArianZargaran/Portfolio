@@ -165,12 +165,37 @@ export const LEAD_FRAMES = 4;
  * fetched when the request is accepted, only once its clip is at most
  * FETCH_LEAD_FRAMES (1.5 s) from cutting in. Until then the slot can still
  * be replaced (newest wins until LEAD_FRAMES before the join) and the
- * replaced variant has cost nothing. 1.5 s covers the largest reaction clip
- * (126,461 B H.264) at the network gate's 1.5 Mbps floor (0.67 s) plus a
- * round trip and decode. A request whose join is already that close
- * fetches at once, as before.
+ * replaced variant has cost nothing. This is the MINIMUM lead (1.5 s); the
+ * player lengthens it from the measured link (fetchLeadFrames below). A
+ * request whose join is already that close fetches at once, as before.
  */
 export const FETCH_LEAD_FRAMES = 18;
+/**
+ * Review N1: 18 frames is too short on a slow link the gate still lets
+ * through (Chromium's effectiveType "4g" at ~0.7 Mbps / 270 ms). So the
+ * lead is adaptive: from the base loop's own download (bits per second and
+ * time to first byte, clip-store `link()`), a clip starts downloading
+ * early enough to finish with margin before its join:
+ *   frames = ceil((bytes·8/bps · 1.5 + ttfb) · fps) + LEAD_FRAMES (decode),
+ * never less than FETCH_LEAD_FRAMES (so on a normal link a replaced glance
+ * still costs nothing) and at most FETCH_LEAD_MAX_FRAMES (two join
+ * intervals, 6 s: in practice "fetch at intent", as before change 3).
+ */
+export const FETCH_LEAD_MAX_FRAMES = 72;
+export const FETCH_LEAD_SAFETY = 1.5;
+
+export function fetchLeadFrames(
+  bytes: number,
+  link: { bps: number; ttfbMs: number } | undefined,
+  fps = 12,
+): number {
+  if (!link || !(link.bps > 0) || !Number.isFinite(link.bps))
+    return FETCH_LEAD_FRAMES;
+  const seconds =
+    ((bytes * 8) / link.bps) * FETCH_LEAD_SAFETY + link.ttfbMs / 1000;
+  const frames = Math.ceil(seconds * fps) + LEAD_FRAMES;
+  return Math.min(FETCH_LEAD_MAX_FRAMES, Math.max(FETCH_LEAD_FRAMES, frames));
+}
 
 /** True once a queued occurrence's clip should start downloading. */
 export const fetchDue = (
