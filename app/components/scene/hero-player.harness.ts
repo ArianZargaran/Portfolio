@@ -53,7 +53,11 @@ export interface FakeNet {
   timeLinks(link: (c: ClipInfo) => { bps: number; ttfbMs: number }): void;
 }
 
-export type ClipInfo = { id: string; codec: "av1" | "h264"; bytes: number };
+export interface ClipInfo {
+  id: string;
+  codec: "av1" | "h264";
+  bytes: number;
+}
 
 /** Installs fetch / createObjectURL fakes; call in beforeEach. */
 export function installFakeNet(): FakeNet {
@@ -78,7 +82,7 @@ export function installFakeNet(): FakeNet {
       if (!clip) return Promise.reject(new Error(`unknown ${src}`));
       const failure = net.fail?.(clip);
       if (failure) {
-        net.calls.push({ ...clip, aborted: false, resolve: () => {} });
+        net.calls.push({ ...clip, aborted: false, resolve: () => undefined });
         return failure === "network"
           ? Promise.reject(new TypeError("Failed to fetch"))
           : Promise.resolve(new Response(null, { status: failure }));

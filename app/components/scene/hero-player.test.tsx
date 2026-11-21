@@ -693,7 +693,7 @@ describe("HeroPlayer load failures (review R1)", () => {
       ]);
       expect(root.dataset.state).toBe("live");
       expect(root.dataset.reactions).toBe("ready");
-      expect(base.getAttribute("src")).toMatch(/^blob:/);
+      expect(base).toHaveAttribute("src", expect.stringMatching(/^blob:/));
       expect(root.dataset.wasted).toBe("0");
       expect(bytes(root)).toBe(H264.typing);
     },
@@ -785,21 +785,21 @@ describe("HeroPlayer fallback guards (review R3)", () => {
     net.fail = (c) =>
       c.id === "typing" && c.codec === "av1" ? 404 : undefined;
     net.hold = true;
-    const r = render(<HeroPlayer />);
-    const root = r.container.querySelector<HTMLElement>(".hero")!;
-    const base = r.container.querySelector<HTMLVideoElement>(
+    const view = render(<HeroPlayer />);
+    const root = view.container.querySelector<HTMLElement>(".hero")!;
+    const base = view.container.querySelector<HTMLVideoElement>(
       'video[data-clip="base"]',
     )!;
     await settle(3);
     expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
-    expect(base.hasAttribute("src")).toBe(false);
+    expect(base).not.toHaveAttribute("src");
     act(() => {
       base.dispatchEvent(new Event("error"));
     });
     expect(root.dataset.state).not.toBe("failed");
     act(() => net.calls[1].resolve());
     await settle(3);
-    expect(base.getAttribute("src")).toMatch(/^blob:/);
+    expect(base).toHaveAttribute("src", expect.stringMatching(/^blob:/));
     expect(root.dataset.state).not.toBe("failed");
   });
 
