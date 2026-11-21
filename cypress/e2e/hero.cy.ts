@@ -1,6 +1,13 @@
 /* Hero motion end to end with stub clips (M10a). Every .mp4 is answered with
    a tiny solid-colour AV1 stub (cypress/fixtures/hero-stub.av1.mp4), so the
-   test checks behaviour and requests, never the art. Laptop composition. */
+   test checks behaviour and requests, never the art. Laptop composition.
+
+   Since the code split (feat/hero-player-split): the action <video>s are
+   appended by the lazy reactions chunk once the loop shows its first frame
+   (`.hero[data-reactions=ready]`), every clip is ONE fetch() into a blob
+   (identified here by the element's data-clip id), and a queued reaction's
+   clip is fetched only FETCH_LEAD_FRAMES (18) before its join, so tests on
+   the pinned clock move it to J-18 (`due(J)`) before waiting for the clip. */
 
 type Conn = { effectiveType?: string; saveData?: boolean } | null;
 
@@ -34,8 +41,14 @@ const HOLD_MS = 500;
 const MIN_TICKS = 8;
 const AFTER_PLAYING_TICKS = 4;
 const AFTER_PLAYING_MS = 250;
-const srcOf = (v: Element) =>
-  v.querySelector("source")?.getAttribute("src") ?? "";
+/** "/<clip id>." for a hero <video> (the src is a blob: URL now). */
+const srcOf = (v: Element) => `/${v.getAttribute("data-clip") ?? ""}.`;
+/** reactions.ts FETCH_LEAD_FRAMES: a queued clip is fetched from J-18. */
+const FETCH_LEAD = 18;
+const due = (join: number, cycle = 0) =>
+  setHeroMs(msAtFrame(join - FETCH_LEAD, cycle));
+/** The loop is live and the lazy reactions chunk is attached. */
+const LIVE = ".hero[data-state=live][data-reactions=ready]";
 function holdAt(f: number, watch: RegExp, allowed: string[], cycle = 0) {
   setHeroMs(msAtFrame(f, cycle));
   return cy.window().then(
@@ -114,11 +127,21 @@ const hoverOver = (sel: string) =>
 const SPEAKERS = '.scene_hits--laptop [data-object="speakers"]';
 const POSTER = '.scene_hits--laptop [data-object="queen-poster"]';
 
+/** Lazy hero chunks the page requested in the current visit (change 1). */
+let chunks: string[] = [];
+
 function visitHome(
   conn: Conn,
   opts: { noTiming?: boolean; pinnedClock?: boolean; hover?: boolean } = {},
 ) {
   const requested: string[] = [];
+  chunks = [];
+  cy.intercept(
+    { method: "GET", url: /\/assets\/hero-(player|reactions)-[\w-]+\.js/ },
+    (req) => {
+      chunks.push(/hero-reactions-/.test(req.url) ? "reactions" : "player");
+    },
+  );
   cy.intercept({ method: "GET", url: /\.mp4($|\?)/ }, (req) => {
     requested.push(clipOf(req.url));
     req.reply({
@@ -168,11 +191,37 @@ const clearBrowserCache = () =>
       });
   });
 
+/** Hero chunk loads the page actually made (Resource Timing, cache or not). */
+const heroChunks = (w: Cypress.AUTWindow) =>
+  w.performance
+    .getEntriesByType("resource")
+    .map((e) => e.name)
+    .filter((n) => /\/assets\/hero-(player|reactions)-/.test(n))
+    .map((n) => (/hero-reactions-/.test(n) ? "reactions" : "player"));
+
 describe("hero motion (stub clips)", () => {
+  // CDP overrides used by some cases must never leak into the next one.
+  afterEach(() => {
+    if (Cypress.isBrowser({ family: "chromium" })) {
+      cy.then(() =>
+        Cypress.automation("remote:debugger:protocol", {
+          command: "Network.setCacheDisabled",
+          params: { cacheDisabled: false },
+        }),
+      );
+      cy.then(() =>
+        Cypress.automation("remote:debugger:protocol", {
+          command: "Emulation.setEmulatedMedia",
+          params: { features: [] },
+        }),
+      );
+    }
+  });
+
   it("4G: plays, and fetches only the typing loop before any intent", () => {
     const requested = visitHome({ effectiveType: "4g" });
     gate().should("eq", "play:connection-4g");
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
     cy.wait(1500).then(() =>
       expect([...new Set(requested)]).to.deep.eq(["typing"]),
@@ -185,27 +234,21 @@ describe("hero motion (stub clips)", () => {
 
   it("E2 intent (poster visit, then focus on the speakers) fetches only the nod and one T6 variant, within the budget", () => {
     const requested = visitHome({ effectiveType: "4g" });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
     cy.wait(400);
-    // The poster's dwell is the glance-up intent (S1a, locked t1014s5523):
-    // it fetches exactly ONE S1a variant (the next join's), and counts as the
-    // egg's first visit. (A media element may issue several range requests
-    // per clip, so compare the set of clips requested, not the request count.)
-    cy.wrap(requested).should((r) => {
-      const ids = [...new Set(r.filter((id) => id !== "typing"))];
-      expect(ids).to.have.length(1);
-      expect(ids[0]).to.match(/^s1a\.k(0|36|72|108|144|180)$/);
-    });
+    // The poster's dwell queues the glance-up (S1a, locked t1014s5523) for
+    // the next join and counts as the egg's first visit. Its clip is fetched
+    // only 18 frames before that join, so if the speakers replace it first it
+    // is never fetched (change 3): at most ONE S1a variant.
     cy.get('.scene_hits--laptop [data-object="speakers"]').first().focus();
     cy.wrap(requested).should("include", "nod.k180");
     // The speakers' dwell is also the speaker-groove intent (T6 v3, locked
     // t1029s5606): exactly ONE T6 variant, the next join's.
-    cy.wrap(requested).should((r) => {
+    cy.wrap(requested, { timeout: 6000 }).should((r) => {
       const ids = [...new Set(r.filter((id) => id !== "typing"))];
-      expect(ids).to.have.length(3);
-      expect(ids.filter((id) => id.startsWith("s1a."))).to.have.length(1);
+      expect(ids.filter((id) => id.startsWith("s1a."))).to.have.length.lte(1);
       expect(ids.filter((id) => id.startsWith("t6."))).to.have.length(1);
       expect(ids.find((id) => id.startsWith("t6."))).to.match(
         /^t6\.k(0|36|72|108|144|180)$/,
@@ -221,7 +264,7 @@ describe("hero motion (stub clips)", () => {
 
   it("M10b + T6: poster then speakers at f0 -> t6.k36 at f36 (replacing the queued glance), then the egg nod at f180 (controlled clock)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(0)); // arm at f0, before all the foreign joins
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
@@ -231,19 +274,17 @@ describe("hero motion (stub clips)", () => {
     cy.wait(400);
     cy.wrap(requested).should("include", "nod.k180");
     // The speakers request (equal priority, newer) replaced the queued
-    // glance: t6.k36 is fetched; s1a.k36 was fetched by the poster intent.
-    cy.wrap(requested).should("include", "t6.k36");
+    // glance before its clip was due: t6.k36 is fetched at f18, s1a.k36
+    // never (change 3).
     cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k36");
+    due(36);
+    cy.wrap(requested).should("include", "t6.k36");
     waitDecodable("t6.k36");
+    cy.wrap(requested).should((r) =>
+      expect(r.filter((id) => id.startsWith("s1a."))).to.deep.eq([]),
+    );
     // Wait (real time, hero clock still at f12) until the nod clip can decode.
-    cy.get("video")
-      .filter((_, v) =>
-        /nod\.k180/.test(v.querySelector("source")?.getAttribute("src") ?? ""),
-      )
-      .should("have.length", 1)
-      .should((v) =>
-        expect((v[0] as HTMLVideoElement).readyState).to.be.gte(2),
-      );
+    waitDecodable("nod.k180");
     // Hold each foreign join long enough for a wrong cut-in to become
     // visible (holdAt: >= HOLD_MS real time and >= MIN_TICKS player ticks,
     // longer if the nod fires `playing`). The nod must never be on before
@@ -278,11 +319,17 @@ describe("hero motion (stub clips)", () => {
 
   it("S1a: poster focus at f40 fetches only s1a.k72 and it comes up exactly at f72 (controlled clock)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(40));
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
+    cy.get(".hero").should("have.attr", "data-reaction", "glance-up:s1a.k72");
+    // Not fetched until it is due (f54, change 3).
+    cy.wrap(requested).should((r) =>
+      expect(r.filter((id) => id !== "typing")).to.deep.equal([]),
+    );
+    due(72);
     cy.wrap(requested).should((r) =>
       expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
         "s1a.k72",
@@ -318,11 +365,12 @@ describe("hero motion (stub clips)", () => {
 
   it("S1a: a glance scheduled for f36 never shows at a foreign join when the clock skips its entry", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(0));
     cy.get('.scene_hits--laptop [data-object="queen-poster"]').first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
+    due(36);
     cy.wrap(requested).should((r) =>
       expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
         "s1a.k36",
@@ -342,13 +390,14 @@ describe("hero motion (stub clips)", () => {
 
   it("S1a (review N1): repeated poster hovers during the 30 s cooldown fetch no extra S1a clip, and the egg nod still fits after", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     const poster = () =>
       cy.get('.scene_hits--laptop [data-object="queen-poster"]').first();
     setHeroMs(msAtFrame(40));
     poster().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
+    due(72);
     cy.wrap(requested).should((r) =>
       expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
         "s1a.k72",
@@ -412,17 +461,18 @@ describe("hero motion (stub clips)", () => {
       { effectiveType: "4g" },
       { pinnedClock: true, hover: true },
     );
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(40));
     hoverOver(SPEAKERS);
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
+    cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k72");
+    due(72);
     cy.wrap(requested).should((r) =>
       expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
         "t6.k72",
       ]),
     );
-    cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k72");
     waitDecodable("t6.k72");
     // Before its join only the base shows (f68 is inside the lead).
     for (const f of [41, 60, 68, 71]) holdAt(f, /\/t6\.k\d+\./, ["base"]);
@@ -453,7 +503,7 @@ describe("hero motion (stub clips)", () => {
 
   it("T6: a speakers hover that leaves before the 250 ms dwell fetches nothing and queues nothing", () => {
     const requested = visitHome({ effectiveType: "4g" }, { hover: true });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     hoverOver(SPEAKERS);
     hoverOver(".scene_frame"); // straight off, onto the background
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window (or the 250 ms dwell)
@@ -466,11 +516,12 @@ describe("hero motion (stub clips)", () => {
 
   it("T6: a groove planned for f144 never shows at a foreign join when the clock skips its entry (keyboard focus)", () => {
     const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(110));
     cy.get(SPEAKERS).first().focus();
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
     cy.wait(400);
+    due(144);
     cy.wrap(requested).should((r) =>
       expect([...new Set(r.filter((id) => id !== "typing"))]).to.deep.equal([
         "t6.k144",
@@ -493,7 +544,7 @@ describe("hero motion (stub clips)", () => {
       { effectiveType: "4g" },
       { pinnedClock: true, hover: true },
     );
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     setHeroMs(msAtFrame(60));
     hoverOver(POSTER);
     // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
@@ -514,6 +565,7 @@ describe("hero motion (stub clips)", () => {
     cy.wait(400);
     cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k180");
     cy.wrap(requested).should("include", "nod.k180");
+    due(180);
     waitDecodable("t6.k180");
     waitDecodable("nod.k180");
     // f180 belongs to T6 (the egg nod is armed for the f180 AFTER T6 ends).
@@ -545,6 +597,129 @@ describe("hero motion (stub clips)", () => {
     });
   });
 
+  it("change 1: the loop player chunk loads first, the reactions chunk only after the loop's first frame", () => {
+    visitHome({ effectiveType: "4g" });
+    cy.get(LIVE, { timeout: 15000 });
+    cy.window().then((w) =>
+      expect(heroChunks(w)).to.deep.eq(["player", "reactions"]),
+    );
+    cy.get(".hero video").should("have.length", 14);
+    cy.get(".hero video[data-clip=base]")
+      .should("have.attr", "src")
+      .and("match", /^blob:/);
+  });
+
+  it("change 1: prefers-reduced-motion loads neither hero chunk and no media", () => {
+    cy.then(() =>
+      Cypress.automation("remote:debugger:protocol", {
+        command: "Emulation.setEmulatedMedia",
+        params: {
+          features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+        },
+      }),
+    );
+    const requested = visitHome({ effectiveType: "4g" });
+    cy.get(".scene-still_img").should("be.visible");
+    cy.window()
+      .its("matchMedia")
+      .then((mm) =>
+        expect(mm("(prefers-reduced-motion: reduce)").matches).to.eq(true),
+      );
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(2500);
+    cy.get(".hero").should("not.exist");
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(chunks).to.deep.eq([]);
+      expect(requested).to.deep.eq([]);
+    });
+    cy.then(() =>
+      Cypress.automation("remote:debugger:protocol", {
+        command: "Emulation.setEmulatedMedia",
+        params: { features: [] },
+      }),
+    );
+  });
+
+  it("change 2: with the HTTP cache disabled a re-used variant is NOT downloaded again (one request per clip, bytes = clips)", () => {
+    cy.then(() =>
+      Cypress.automation("remote:debugger:protocol", {
+        command: "Network.setCacheDisabled",
+        params: { cacheDisabled: true },
+      }),
+    );
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(LIVE, { timeout: 15000 });
+    const poster = () =>
+      cy.get('.scene_hits--laptop [data-object="queen-poster"]').first();
+    for (const cycle of [0, 2]) {
+      // cycle 2 starts at 36 s: past the glance's 30 s cooldown.
+      setHeroMs(msAtFrame(40, cycle));
+      if (cycle) poster().blur();
+      poster().focus();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+      cy.wait(400);
+      cy.get(".hero").should("have.attr", "data-reaction", "glance-up:s1a.k72");
+      due(72, cycle);
+      waitDecodable("s1a.k72");
+      setHeroMs(msAtFrame(72, cycle));
+      cy.get(".hero", { timeout: 5000 }).should(
+        "have.attr",
+        "data-shown",
+        "s1a.k72",
+      );
+      setHeroMs(msAtFrame(110, cycle));
+      cy.get(".hero", { timeout: 5000 }).should(
+        "have.attr",
+        "data-shown",
+        "base",
+      );
+    }
+    // Every request, not the set: one per clip, even with the cache off.
+    cy.wrap(requested).should("deep.eq", ["typing", "s1a.k72"]);
+    cy.get(".hero").should("have.attr", "data-fetches", "2");
+    cy.get(".hero").should("have.attr", "data-bytes", String(332_028 + 90_003));
+    cy.then(() =>
+      Cypress.automation("remote:debugger:protocol", {
+        command: "Network.setCacheDisabled",
+        params: { cacheDisabled: false },
+      }),
+    );
+  });
+
+  it("change 3: poster at f40 then speakers at f42: the replaced glance s1a.k72 is never fetched, nor counted", () => {
+    const requested = visitHome({ effectiveType: "4g" }, { pinnedClock: true });
+    cy.get(LIVE, { timeout: 15000 });
+    setHeroMs(msAtFrame(40));
+    cy.get(POSTER).first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.get(".hero").should("have.attr", "data-reaction", "glance-up:s1a.k72");
+    setHeroMs(msAtFrame(42));
+    cy.get(SPEAKERS).first().focus();
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the 250 ms dwell runs on real timers
+    cy.wait(400);
+    cy.get(".hero").should("have.attr", "data-reaction", "speaker:t6.k72");
+    due(72);
+    waitDecodable("t6.k72");
+    setHeroMs(msAtFrame(72));
+    cy.get(".hero", { timeout: 5000 }).should(
+      "have.attr",
+      "data-shown",
+      "t6.k72",
+    );
+    cy.wrap(requested).should((r) =>
+      expect([...r].sort()).to.deep.eq(["nod.k180", "t6.k72", "typing"]),
+    );
+    cy.get(".hero").should("not.have.attr", "data-aborted");
+    // typing + nod + t6.k72 (AV1 registry sizes): nothing for the glance.
+    cy.get(".hero").should(
+      "have.attr",
+      "data-bytes",
+      String(332_028 + 115_975 + 93_644),
+    );
+  });
+
   it("Save-Data: still only, no player, no media", () => {
     const requested = visitHome({ effectiveType: "4g", saveData: true });
     cy.get(".scene-still_img").should("be.visible");
@@ -552,6 +727,11 @@ describe("hero motion (stub clips)", () => {
     cy.wait(2500);
     cy.get(".hero").should("not.exist");
     cy.wrap(requested).should("have.length", 0);
+    // Change 1: neither lazy hero chunk is even requested.
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(chunks).to.deep.eq([]);
+    });
   });
 
   it("a reported 3G connection: still", () => {
@@ -589,7 +769,7 @@ describe("hero motion (stub clips)", () => {
   it("no connection API, cached repeat visit: inconclusive, starts frozen and stores nothing", () => {
     clearBrowserCache();
     visitHome({ effectiveType: "4g" }); // warm the cache (no measured verdict)
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     cy.get(".scene-still_img").should((imgs) =>
       expect((imgs[0] as HTMLImageElement).complete).to.eq(true),
     );
@@ -619,7 +799,7 @@ describe("hero motion (stub clips)", () => {
 
   it("Esc freezes instantly and the freeze persists", () => {
     visitHome({ effectiveType: "4g" });
-    cy.get(".hero[data-state=live]", { timeout: 15000 });
+    cy.get(LIVE, { timeout: 15000 });
     cy.get("body").type("{esc}");
     cy.get(".hero[data-frozen]");
     cy.window().then((w) =>
