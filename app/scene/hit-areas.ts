@@ -147,13 +147,15 @@ export const HIT_OBJECTS: HitObject[] = [
     /* Ari's on-head headphones (Nov 21 2026, t1034u): the T6 groove and
        podcast hotspot, moved off the navy Stanley. Laptop: a local rect
        (hotspots/mapping.ts). Tablet/mobile: by eye on the v3.2 placeholder
-       stills (headband + near ear cup, padded to >= 44 px). */
+       stills (headband + near ear cup). Tablet is 61 px wide so it stays
+       >= 44 CSS px at the narrowest tablet width (601 / 820 scale; review
+       N7: it was 56 -> 41 px). */
     id: "headphones",
     label: "Podcast (headphones)",
     href: "/podcast",
     rects: {
       laptop: measured("headphones"),
-      tablet: [[168, 632, 224, 750]],
+      tablet: [[166, 632, 227, 750]],
       mobile: [[88, 540, 132, 604]],
     },
     estimated: ["tablet", "mobile"],

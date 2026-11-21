@@ -60,6 +60,14 @@ describe("scene hit areas", () => {
     expect(clashes).toEqual([]);
   });
 
+  it("tablet headphones stay >= 44 CSS px at the narrowest tablet width (601 px of the 820 composition, review N7)", () => {
+    const [[l, t, r, b]] = HIT_OBJECTS.find((o) => o.id === "headphones")!
+      .rects.tablet;
+    const scale = 601 / 820;
+    expect((r - l) * scale).toBeGreaterThanOrEqual(44);
+    expect((b - t) * scale).toBeGreaterThanOrEqual(44);
+  });
+
   it("maps /case-studies to the layer 6 Lego entity and /resume to the rest of the shelf", () => {
     const byId = Object.fromEntries(HIT_OBJECTS.map((o) => [o.id, o]));
     expect(byId.lego.href).toBe("/case-studies");
@@ -163,9 +171,9 @@ describe("scene hit areas", () => {
         "headphones": [
           [
             [
-              168,
+              166,
               632,
-              224,
+              227,
               750,
             ],
           ],
