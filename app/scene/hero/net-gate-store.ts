@@ -3,6 +3,7 @@
  * once after the load event, decides, remembers a measured verdict, and
  * shares the result with the scene (freeze UI) and the hero mount.
  */
+import { heroFreeze } from "./freeze";
 import {
   decideGate,
   measureThroughput,
@@ -81,6 +82,10 @@ export function evaluateHeroGate(win: Window = window): Promise<GateResult> {
   pending ??= readGateEnv(win).then((env) => {
     const r = decideGate(env);
     if (r.store) writeStoredVerdict(storage(win), r.store);
+    // Live-review N1: freeze for this page BEFORE anyone hears the verdict,
+    // so no render ever sees "motion allowed" without the gate's freeze
+    // (the player would mount, frozen, and fetch the loop before a tap).
+    if (r.verdict === "frozen") heroFreeze().freezeForPage();
     result = r;
     win.document.documentElement.dataset.heroGate = `${r.verdict}:${r.reason}`;
     listeners.forEach((l) => l());

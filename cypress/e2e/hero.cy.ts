@@ -138,6 +138,11 @@ function visitHome(
     hover?: boolean;
     /** A `hero:frozen` value already in storage before the page loads. */
     storedFreeze?: string;
+    /**
+     * Live-review N1: hold the network gate this long (it awaits
+     * navigator.getBattery()), so it decides AFTER the mount's idle slot.
+     */
+    gateDelayMs?: number;
   } = {},
 ) {
   const requested: string[] = [];
@@ -166,6 +171,16 @@ function visitHome(
         get: () => (conn === null ? undefined : conn),
       });
       if (opts.noTiming) win.performance.getEntries = () => [];
+      if (opts.gateDelayMs !== undefined) {
+        const ms = opts.gateDelayMs;
+        Object.defineProperty(win.navigator, "getBattery", {
+          configurable: true,
+          value: () =>
+            new Promise((resolve) =>
+              win.setTimeout(() => resolve({ level: 1, charging: true }), ms),
+            ),
+        });
+      }
       if (opts.hover) {
         const mm = win.matchMedia.bind(win);
         win.matchMedia = (q: string) =>
@@ -761,6 +776,29 @@ describe("hero motion (stub clips)", () => {
     cy.focused().type("{enter}");
     cy.get(".hero", { timeout: 15000 }).should("exist");
     cy.wrap(requested).should("include", "typing");
+  });
+
+  it("N1: a gate that decides frozen AFTER the idle slot mounts no player and fetches nothing until play", () => {
+    const requested = visitHome(null, { noTiming: true, gateDelayMs: 3000 });
+    cy.get(".scene-still_img").should("be.visible");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the idle slot (<= 1.5 s) fires before the held gate
+    cy.wait(2000);
+    gate().should("be.undefined");
+    cy.get(".hero").should("not.exist");
+    gate().should("eq", "frozen:inconclusive");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(2000);
+    cy.get(".hero").should("not.exist");
+    cy.wrap(requested).should("have.length", 0);
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(chunks).to.deep.eq([]);
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null);
+    });
+    cy.get(".scene_frame[role=group]").focus();
+    cy.focused().type("{enter}");
+    cy.get(".hero", { timeout: 15000 }).should("exist");
+    cy.wrap(requested).should("deep.eq", ["typing"]);
   });
 
   it("no connection API, measured on a fast network: plays and remembers the verdict", () => {
