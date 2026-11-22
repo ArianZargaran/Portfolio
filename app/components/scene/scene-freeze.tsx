@@ -15,9 +15,13 @@ export const sceneLabel = (frozen: boolean) =>
 /**
  * Wires the WCAG 2.2.2 pause mechanisms onto the scene frame, keyboard
  * only (Ari, Nov 21 2026, t1034u: a click or tap anywhere on the scene
- * never pauses or freezes; hotspots navigate, the background does nothing):
+ * never pauses or freezes; hotspots navigate):
  * - Enter or Space while the scene frame itself has focus toggles it;
- * - Esc anywhere on the page pauses (unless a dialog or menu is open).
+ * - Esc anywhere on the page pauses (unless a dialog or menu is open), and
+ *   turns a network-gate freeze into a keyboard freeze;
+ * - N2 (Ari, Nov 22 2026, t1035s5644): a click or tap on the scene (not on
+ *   a hotspot link or a button) starts a scene the network gate left
+ *   frozen, and does nothing else (freeze.ts `startFromTap`).
  * Freezes made here are stored tagged `v2:keyboard` (freeze.ts).
  * Freeze is an instant stop (the player holds the current frame).
  */
@@ -41,14 +45,22 @@ export function useSceneFreezeHandlers(
     };
     const onEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
-      if (heroFreeze().get() || !escAppliesToScene(document, frame)) return;
-      setFrozen(true, "keyboard");
-      cb.current(true);
+      if (!escAppliesToScene(document, frame)) return;
+      const was = heroFreeze().get();
+      setFrozen(true, "keyboard"); // no-op unless playing or gate-frozen
+      if (!was) cb.current(true);
+    };
+    const onClick = (e: MouseEvent) => {
+      // Hotspots (links) and buttons keep their own click.
+      if ((e.target as Element | null)?.closest?.("a[href], button")) return;
+      if (heroFreeze().startFromTap()) cb.current(false);
     };
     frame.addEventListener("keydown", onKey);
+    frame.addEventListener("click", onClick);
     document.addEventListener("keydown", onEsc);
     return () => {
       frame.removeEventListener("keydown", onKey);
+      frame.removeEventListener("click", onClick);
       document.removeEventListener("keydown", onEsc);
     };
   }, [enabled, frameRef, setFrozen, toggle]);

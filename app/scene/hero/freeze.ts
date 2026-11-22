@@ -8,6 +8,12 @@
  * frame, with no easing. A click or tap on the scene never pauses (Ari,
  * Nov 21 2026, t1034u): the pause is keyboard-first (WCAG 2.2.2).
  *
+ * N2 (Ari, Nov 22 2026, t1035s5644): a click or tap MAY start a scene the
+ * network gate left frozen (`freezeForPage`, never stored), and nothing
+ * else: never a pause, and never a resume of a keyboard or control freeze
+ * (in memory or stored as `v2:keyboard` / `v2:control`); only the keyboard
+ * toggle (or the F5 control) resumes those (`startFromTap`).
+ *
  * F3: the state is persisted in localStorage under FREEZE_STORAGE_KEY, so it
  * survives reloads and route changes. If storage is unavailable (private
  * mode, quota, SSR), the state lives in memory for this page only.
@@ -49,6 +55,12 @@ export interface FreezeStore {
    * "inconclusive -> start frozen", M7). Playing afterwards clears it.
    */
   freezeForPage(): void;
+  /**
+   * N2: a click or tap on the scene. Plays the scene only when it is frozen
+   * by the network gate alone (and no tagged freeze is in storage, e.g.
+   * from another tab); otherwise does nothing. True if it started it.
+   */
+  startFromTap(): boolean;
   toggle(source?: FreezeSource): boolean;
   /** Returns an unsubscribe function. */
   subscribe(listener: () => void): () => void;
@@ -68,6 +80,8 @@ export function createFreezeStore(
   storage: StorageLike | undefined = safeStorage(),
 ): FreezeStore {
   let frozen = false;
+  /** Frozen by the network gate only (no user freeze since). */
+  let byGate = false;
   try {
     frozen = readStoredFreeze(storage);
   } catch {
@@ -77,7 +91,9 @@ export function createFreezeStore(
   const store: FreezeStore = {
     get: () => frozen,
     set(next, source = "keyboard") {
-      if (next === frozen) return;
+      // A user freeze over a gate freeze makes it a user freeze (stored).
+      if (next === frozen && !(next && byGate)) return;
+      byGate = false;
       frozen = next;
       try {
         if (next) storage?.setItem(FREEZE_STORAGE_KEY, freezeValue(source));
@@ -89,8 +105,19 @@ export function createFreezeStore(
     },
     freezeForPage() {
       if (frozen) return;
-      frozen = true;
+      frozen = byGate = true;
       listeners.forEach((l) => l());
+    },
+    startFromTap() {
+      if (!frozen || !byGate) return false;
+      try {
+        if (readStoredFreeze(storage)) return false;
+      } catch {
+        /* storage unreadable: the in-memory gate freeze decides */
+      }
+      frozen = byGate = false;
+      listeners.forEach((l) => l());
+      return true;
     },
     toggle(source) {
       store.set(!frozen, source);
