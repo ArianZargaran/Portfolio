@@ -46,9 +46,15 @@ export function useSceneFreezeHandlers(
     const onEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
       if (!escAppliesToScene(document, frame)) return;
-      const was = heroFreeze().get();
+      const store = heroFreeze();
+      // Playing, or frozen by the gate only: Esc makes a keyboard pause.
+      const pauses = !store.get() || store.gateOnly();
       setFrozen(true, "keyboard"); // no-op unless playing or gate-frozen
-      if (!was) cb.current(true);
+      // Announce it either way (live-review / REVIEW-4 N1a): on a
+      // gate-frozen scene the picture and label don't change, so the
+      // polite status is the only confirmation a screen-reader user gets
+      // that Esc took (and that a tap will no longer start the scene).
+      if (pauses) cb.current(true);
     };
     const onClick = (e: MouseEvent) => {
       // Hotspots (links) and buttons keep their own click.

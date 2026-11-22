@@ -419,6 +419,56 @@ describe("N2: tap to start a gate-frozen scene", () => {
     expect(heroFreeze().get()).toBe(true);
   });
 
+  it("Esc on a gate-frozen scene is announced in the polite status (screen-reader confirmation)", async () => {
+    const { group } = await gateFrozen();
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveTextContent("");
+    expect(group).toHaveAccessibleName(/paused/i);
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(status).toHaveTextContent("Scene animation paused");
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
+    // Still only the keyboard plays it (WCAG 2.2.2), and that is announced.
+    fireEvent.click(group);
+    expect(heroFreeze().get()).toBe(true);
+    fireEvent.keyDown(group, { key: "Enter" });
+    expect(heroFreeze().get()).toBe(false);
+    expect(status).toHaveTextContent("Scene animation playing");
+  });
+
+  it("Esc on an already keyboard-paused scene changes nothing and announces nothing new", async () => {
+    const { group } = await gateFrozen();
+    fireEvent.keyDown(group, { key: "Enter" }); // play
+    fireEvent.keyDown(group, { key: " " }); // pause: "paused" announced
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Scene animation paused");
+    fireEvent.keyDown(group, { key: "Enter" }); // play
+    expect(status).toHaveTextContent("Scene animation playing");
+    fireEvent.keyDown(document.body, { key: "Escape" }); // pause
+    expect(status).toHaveTextContent("Scene animation paused");
+    fireEvent.keyDown(document.body, { key: "Escape" }); // no-op
+    expect(heroFreeze().get()).toBe(true);
+    expect(status).toHaveTextContent("Scene animation paused");
+  });
+
+  it("after unmount the scene's click and key listeners are gone (REVIEW-4 N4)", async () => {
+    const view = await gateFrozen();
+    const frame = view.container.querySelector<HTMLElement>(".scene_frame")!;
+    const tap = vi.spyOn(heroFreeze(), "startFromTap");
+    const set = vi.spyOn(heroFreeze(), "set");
+    const toggle = vi.spyOn(heroFreeze(), "toggle");
+    view.unmount();
+    expect(frame.isConnected).toBe(false);
+    fireEvent.click(frame);
+    fireEvent.keyDown(frame, { key: "Enter" });
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(tap).not.toHaveBeenCalled();
+    expect(set).not.toHaveBeenCalled();
+    expect(toggle).not.toHaveBeenCalled();
+    expect(heroFreeze().get()).toBe(true);
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBeNull();
+  });
+
   it("keyboard play then pause on a gate-frozen scene: a click does nothing", async () => {
     const { group } = await gateFrozen();
     fireEvent.keyDown(group, { key: "Enter" }); // play

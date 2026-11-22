@@ -61,6 +61,8 @@ export interface FreezeStore {
    * from another tab); otherwise does nothing. True if it started it.
    */
   startFromTap(): boolean;
+  /** Frozen by the network gate only (no user freeze since). */
+  gateOnly(): boolean;
   toggle(source?: FreezeSource): boolean;
   /** Returns an unsubscribe function. */
   subscribe(listener: () => void): () => void;
@@ -119,6 +121,7 @@ export function createFreezeStore(
       listeners.forEach((l) => l());
       return true;
     },
+    gateOnly: () => frozen && byGate,
     toggle(source) {
       store.set(!frozen, source);
       return frozen;
