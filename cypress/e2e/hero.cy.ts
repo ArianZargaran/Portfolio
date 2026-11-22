@@ -877,4 +877,137 @@ describe("hero motion (stub clips)", () => {
       expect(w.localStorage.getItem("hero:frozen")).to.eq("v2:keyboard");
     });
   });
+  /* N2 (Ari, Nov 22 2026, t1035s5644): a click or tap may START a scene
+     the network gate left frozen; never pause, never override a keyboard
+     freeze; nothing under reduced motion or Save-Data. */
+  const offHotspot = [
+    [100, 100],
+    [300, 650],
+    [700, 850],
+    [850, 150],
+  ] as const;
+
+  it("N2: a click on the gate-frozen scene starts it (loop fetched once, charged per clip); further clicks never pause", () => {
+    const requested = visitHome(null, { noTiming: true });
+    gate().should("eq", "frozen:inconclusive");
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+    cy.get(".hero").should("not.exist");
+    cy.wrap(requested).should("have.length", 0);
+    cy.get(".scene_frame").click(300, 650, { force: true });
+    cy.get(LIVE, { timeout: 15000 });
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "false");
+    cy.get(".scene_frame[role=group]").should(
+      "have.attr",
+      "aria-label",
+      "Animated scene. Press Enter or Space to pause, or Esc",
+    );
+    cy.wrap(requested).should("deep.equal", ["typing"]);
+    cy.get(".hero")
+      .invoke("attr", "data-bytes")
+      .then(Number)
+      .should("be.oneOf", [332_028, 442_525]); // the typing loop, AV1 or H.264
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null),
+    );
+    // The moving scene: every click is checked on its own.
+    for (const [x, y] of offHotspot) {
+      cy.get(".scene_frame").click(x, y, { force: true });
+      cy.get(".hero").should("not.have.attr", "data-frozen");
+      cy.get(".scene_pause").should("have.attr", "aria-pressed", "false");
+    }
+    cy.get(".scene_frame").dblclick(120, 120, { force: true });
+    cy.get(".hero").should("not.have.attr", "data-frozen");
+    cy.wrap(requested).should("deep.equal", ["typing"]);
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null),
+    );
+  });
+
+  it("N2: a tap (touch pointer) on the gate-frozen scene starts it too", () => {
+    const requested = visitHome(null, { noTiming: true });
+    gate().should("eq", "frozen:inconclusive");
+    const at = { pointerType: "touch", force: true };
+    cy.get(".scene_frame").trigger("pointerdown", 700, 850, at);
+    cy.get(".scene_frame").trigger("pointerup", 700, 850, at);
+    cy.get(".scene_frame").click(700, 850, { force: true });
+    cy.get(LIVE, { timeout: 15000 });
+    cy.wrap(requested).should("deep.equal", ["typing"]);
+  });
+
+  it("N2: a stored keyboard freeze (v2:keyboard) stays frozen on click; only the keyboard plays it", () => {
+    const requested = visitHome(null, {
+      noTiming: true,
+      storedFreeze: "v2:keyboard",
+    });
+    gate().should("eq", "frozen:inconclusive");
+    for (const [x, y] of offHotspot) {
+      cy.get(".scene_frame").click(x, y, { force: true });
+      cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+    }
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(1500);
+    cy.get(".hero").should("not.exist");
+    cy.wrap(requested).should("have.length", 0);
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(w.localStorage.getItem("hero:frozen")).to.eq("v2:keyboard");
+    });
+    cy.get(".scene_frame[role=group]").focus();
+    cy.focused().type("{enter}");
+    cy.get(LIVE, { timeout: 15000 });
+  });
+
+  it("N2: Esc on a gate-frozen scene makes it a keyboard freeze; a click then does nothing", () => {
+    const requested = visitHome(null, { noTiming: true });
+    gate().should("eq", "frozen:inconclusive");
+    cy.get("body").type("{esc}");
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq("v2:keyboard"),
+    );
+    cy.get(".scene_frame").click(300, 650, { force: true });
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(1500);
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+    cy.get(".hero").should("not.exist");
+    cy.wrap(requested).should("have.length", 0);
+  });
+
+  it("N2: reduced motion: a click does nothing (no player, no media)", () => {
+    cy.then(() =>
+      Cypress.automation("remote:debugger:protocol", {
+        command: "Emulation.setEmulatedMedia",
+        params: {
+          features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+        },
+      }),
+    );
+    const requested = visitHome(null, { noTiming: true });
+    cy.get(".scene-still_img").should("be.visible");
+    cy.get(".scene_frame[role=group]").should("not.exist");
+    for (const [x, y] of offHotspot)
+      cy.get(".scene_frame").click(x, y, { force: true });
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(2000);
+    cy.get(".hero").should("not.exist");
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(requested).to.deep.eq([]);
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null);
+    });
+  });
+
+  it("N2: Save-Data: a click does nothing (no player, no media)", () => {
+    const requested = visitHome({ effectiveType: "4g", saveData: true });
+    cy.get(".scene-still_img").should("be.visible");
+    for (const [x, y] of offHotspot)
+      cy.get(".scene_frame").click(x, y, { force: true });
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(2000);
+    cy.get(".hero").should("not.exist");
+    cy.window().then((w) => {
+      expect(heroChunks(w)).to.deep.eq([]);
+      expect(requested).to.deep.eq([]);
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null);
+    });
+  });
 });
