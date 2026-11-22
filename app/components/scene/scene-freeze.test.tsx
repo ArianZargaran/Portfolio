@@ -2,7 +2,14 @@
    The still <img> and the hero <video>s have no role/text; the freeze
    boundary test has to click them directly. */
 import "@testing-library/jest-dom/vitest";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 
 import {
@@ -13,6 +20,7 @@ import {
 import { resetHeroGateForTests } from "~/scene/hero/net-gate-store";
 
 import HeroPlayer from "./hero-player";
+import { installFakeNet, type FakeNet } from "./hero-player.harness";
 import { PauseAnimationsControl } from "./scene-freeze";
 import { SceneShell } from "./scene-shell";
 
@@ -277,6 +285,173 @@ describe("scene freeze (WCAG 2.2.2, F1-F3)", () => {
     expect(btn).toHaveAttribute("aria-pressed", "true");
     expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:control");
   });
+});
+
+/* N2 (Ari, Nov 22 2026, t1035s5644): a click or tap may START a scene the
+   network gate left frozen; it never pauses and never overrides a keyboard
+   freeze. Reduced motion / Save-Data never load the player: a click does
+   nothing there. */
+describe("N2: tap to start a gate-frozen scene", () => {
+  const original = window.matchMedia;
+  let net: FakeNet;
+  beforeEach(() => {
+    window.localStorage.clear();
+    resetHeroFreezeForTests();
+    resetHeroGateForTests();
+    delete document.documentElement.dataset.heroGate;
+    // No connection API and no measurable timing -> the gate says "frozen".
+    Reflect.deleteProperty(navigator, "connection");
+    net = installFakeNet();
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    HTMLMediaElement.prototype.pause = vi.fn();
+  });
+  afterEach(() => {
+    window.matchMedia = original;
+    Reflect.deleteProperty(navigator, "connection");
+  });
+  const wait = (ms: number) =>
+    act(async () => {
+      await new Promise((r) => setTimeout(r, ms));
+    });
+  const gateFrozen = async () => {
+    mockMatchMedia(LAPTOP);
+    const view = await mountHome();
+    const group = await screen.findByRole("group");
+    await waitFor(() =>
+      expect(document.documentElement.dataset.heroGate).toBe(
+        "frozen:inconclusive",
+      ),
+    );
+    await waitFor(() => expect(heroFreeze().get()).toBe(true));
+    await wait(400);
+    expect(view.container.querySelector(".hero")).toBeNull(); // still only
+    expect(net.fetched()).toEqual([]);
+    return { ...view, group };
+  };
+
+  it("a click on the scene starts a gate-frozen scene; the loop is charged per clip as before", async () => {
+    const { container, group } = await gateFrozen();
+    fireEvent.click(container.querySelector(".scene-still_img")!);
+    expect(heroFreeze().get()).toBe(false);
+    expect(group).toHaveAccessibleName(/Press Enter or Space to pause/);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Scene animation playing",
+    );
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBeNull();
+    await waitFor(() =>
+      expect(container.querySelector(".hero")?.getAttribute("data-bytes")).toBe(
+        String(net.sent()),
+      ),
+    );
+    // Only the typing loop, fetched once and charged its full size.
+    expect(net.fetched()).toEqual(["typing"]);
+    expect(net.sent()).toBeGreaterThan(0);
+  });
+
+  it("a second click on the now-moving scene does not pause it", async () => {
+    const { container, group } = await gateFrozen();
+    fireEvent.click(group);
+    expect(heroFreeze().get()).toBe(false);
+    await waitFor(() =>
+      expect(container.querySelector(".hero")).not.toBeNull(),
+    );
+    const targets = [
+      group,
+      container.querySelector(".scene-still_img")!,
+      ...container.querySelectorAll(".scene_frame video"),
+    ];
+    for (const el of targets) {
+      fireEvent.pointerDown(el);
+      fireEvent.click(el);
+      expect(heroFreeze().get()).toBe(false); // after EVERY click
+      fireEvent.click(el, { detail: 2 });
+      expect(heroFreeze().get()).toBe(false);
+    }
+    expect(container.querySelector(".hero")).not.toHaveAttribute("data-frozen");
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBeNull();
+  });
+
+  it("a click on a hotspot link navigates and does not start the scene", async () => {
+    const { group } = await gateFrozen();
+    fireEvent.click(
+      within(group).getAllByRole("link", { name: "About me" })[0],
+    );
+    expect(await screen.findByText("About page")).toBeInTheDocument();
+    expect(heroFreeze().get()).toBe(true);
+  });
+
+  it("the F1 button keeps its own click (toggles once, no double toggle)", async () => {
+    await gateFrozen();
+    const btn = screen.getByRole("button", { name: "Pause animation" });
+    expect(btn).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(btn);
+    expect(heroFreeze().get()).toBe(false);
+    expect(btn).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("a stored keyboard freeze (v2:keyboard) stays frozen on click; only the keyboard plays it", async () => {
+    mockMatchMedia(LAPTOP);
+    window.localStorage.setItem(FREEZE_STORAGE_KEY, "v2:keyboard");
+    const { container } = await mountHome();
+    const group = await screen.findByRole("group");
+    await waitFor(() =>
+      expect(document.documentElement.dataset.heroGate).toBe(
+        "frozen:inconclusive",
+      ),
+    );
+    fireEvent.click(container.querySelector(".scene-still_img")!);
+    expect(heroFreeze().get()).toBe(true);
+    fireEvent.click(group);
+    expect(heroFreeze().get()).toBe(true);
+    await wait(400);
+    expect(container.querySelector(".hero")).toBeNull();
+    expect(net.fetched()).toEqual([]);
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
+    fireEvent.keyDown(group, { key: "Enter" });
+    expect(heroFreeze().get()).toBe(false);
+  });
+
+  it("Esc on a gate-frozen scene makes it a keyboard freeze: a click then does nothing", async () => {
+    const { group } = await gateFrozen();
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
+    fireEvent.click(group);
+    expect(heroFreeze().get()).toBe(true);
+  });
+
+  it("keyboard play then pause on a gate-frozen scene: a click does nothing", async () => {
+    const { group } = await gateFrozen();
+    fireEvent.keyDown(group, { key: "Enter" }); // play
+    fireEvent.keyDown(group, { key: " " }); // pause (keyboard)
+    expect(heroFreeze().get()).toBe(true);
+    fireEvent.click(group);
+    expect(heroFreeze().get()).toBe(true);
+  });
+
+  it.each([
+    ["reduced motion", { "(prefers-reduced-motion: reduce)": true }, {}],
+    ["Save-Data", {}, { effectiveType: "4g", saveData: true }],
+  ] as const)(
+    "%s: a click does nothing (no group, no player, no media)",
+    async (_, mq, conn) => {
+      if ("saveData" in conn)
+        Object.defineProperty(navigator, "connection", {
+          configurable: true,
+          value: conn,
+        });
+      mockMatchMedia({ ...LAPTOP, ...mq });
+      const { container } = await mountHome();
+      await wait(800);
+      expect(screen.queryByRole("group")).not.toBeInTheDocument();
+      fireEvent.click(container.querySelector(".scene-still_img")!);
+      fireEvent.click(container.querySelector(".scene_frame")!);
+      await wait(800);
+      expect(heroFreeze().get()).toBe(false);
+      expect(container.querySelector(".hero")).toBeNull();
+      expect(net.fetched()).toEqual([]);
+      expect(window.localStorage.getItem(FREEZE_STORAGE_KEY)).toBeNull();
+    },
+  );
 });
 
 describe("HeroPlayer freeze (instant stop)", () => {

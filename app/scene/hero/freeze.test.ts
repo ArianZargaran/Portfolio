@@ -112,6 +112,100 @@ describe("freeze store (F3 persistence)", () => {
   });
 });
 
+describe("N2: startFromTap (a click or tap starts a gate-frozen scene only)", () => {
+  it("starts a scene the network gate froze, writing nothing", () => {
+    const s = memoryStorage();
+    const store = createFreezeStore(s);
+    const l = vi.fn();
+    store.subscribe(l);
+    store.freezeForPage();
+    expect(store.startFromTap()).toBe(true);
+    expect(store.get()).toBe(false);
+    expect(s.data.has(FREEZE_STORAGE_KEY)).toBe(false);
+    expect(l).toHaveBeenCalledTimes(2);
+  });
+
+  it("never pauses a moving scene", () => {
+    const s = memoryStorage();
+    const store = createFreezeStore(s);
+    expect(store.startFromTap()).toBe(false);
+    expect(store.startFromTap()).toBe(false);
+    expect(store.get()).toBe(false);
+    expect(s.data.has(FREEZE_STORAGE_KEY)).toBe(false);
+  });
+
+  it("never overrides a stored keyboard or control freeze", () => {
+    for (const src of ["keyboard", "control"] as const) {
+      const s = memoryStorage({ [FREEZE_STORAGE_KEY]: freezeValue(src) });
+      const store = createFreezeStore(s);
+      store.freezeForPage(); // the gate also says frozen: already frozen
+      expect(store.startFromTap()).toBe(false);
+      expect(store.get()).toBe(true);
+      expect(s.data.get(FREEZE_STORAGE_KEY)).toBe(freezeValue(src));
+    }
+  });
+
+  it("never overrides a keyboard freeze made this page (stored or memory-only)", () => {
+    for (const s of [memoryStorage(), undefined]) {
+      const store = createFreezeStore(s);
+      store.set(true, "keyboard");
+      store.freezeForPage();
+      expect(store.startFromTap()).toBe(false);
+      expect(store.get()).toBe(true);
+    }
+  });
+
+  it("a keyboard pause over a gate freeze becomes a keyboard freeze (stored, tap-proof)", () => {
+    const s = memoryStorage();
+    const store = createFreezeStore(s);
+    store.freezeForPage();
+    store.set(true, "keyboard"); // Esc on the gate-frozen scene
+    expect(s.data.get(FREEZE_STORAGE_KEY)).toBe("v2:keyboard");
+    expect(store.startFromTap()).toBe(false);
+    expect(store.get()).toBe(true);
+  });
+
+  it("after the keyboard plays and pauses again, a tap does nothing", () => {
+    const store = createFreezeStore(memoryStorage());
+    store.freezeForPage();
+    store.toggle("keyboard"); // play
+    store.toggle("keyboard"); // pause
+    expect(store.startFromTap()).toBe(false);
+    expect(store.get()).toBe(true);
+  });
+
+  it("a tagged freeze written by another tab after the gate froze wins", () => {
+    const s = memoryStorage();
+    const store = createFreezeStore(s);
+    store.freezeForPage();
+    s.data.set(FREEZE_STORAGE_KEY, "v2:keyboard");
+    expect(store.startFromTap()).toBe(false);
+    expect(store.get()).toBe(true);
+  });
+
+  it("only one start per gate freeze: a second tap on the now-moving scene is a no-op", () => {
+    const store = createFreezeStore(memoryStorage());
+    store.freezeForPage();
+    expect(store.startFromTap()).toBe(true);
+    expect(store.startFromTap()).toBe(false);
+    expect(store.get()).toBe(false);
+  });
+
+  it("unreadable storage: the in-memory gate freeze still starts on tap", () => {
+    const broken = {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    };
+    const store = createFreezeStore(broken);
+    store.freezeForPage();
+    expect(store.startFromTap()).toBe(true);
+    expect(store.get()).toBe(false);
+  });
+});
+
 describe("overlayOpen", () => {
   it("detects an open modal so Esc is left to it", () => {
     expect(overlayOpen(document)).toBe(false);
