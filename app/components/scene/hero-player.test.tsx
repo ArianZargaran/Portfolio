@@ -369,6 +369,58 @@ describe("HeroPlayer replaced reaction is never fetched (change 3)", () => {
   });
 });
 
+describe("HeroPlayer 6 s spacing is frame-stable (live-review S1)", () => {
+  // Live preview 2c3acaf: a groove asked for within 6 s of a glance kept
+  // re-planning between t6.k108 and t6.k144 tick by tick (the gap was
+  // measured from the glance's sub-frame tick time), so its fetch was started
+  // and aborted up to 13 times and an accepted groove could be dropped. The
+  // mount offsets shift every rAF tick's sub-frame phase against the clock.
+  it.each([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])(
+    "mount offset %i ms: one t6.k108 fetch, no abort, and the groove plays at f108",
+    async (offset) => {
+      tick(offset);
+      const { root, container } = await mountHero(<HeroPlayer />);
+      for (const id of Object.keys(ACTIONS))
+        Object.defineProperty(clipEl(container, id), "readyState", {
+          get: () => 4,
+        });
+      // Every clip takes 400 ms to arrive (a real link), so a re-plan that
+      // abandons an in-flight fetch shows up as an abort.
+      net.hold = true;
+      const age = new Map<object, number>();
+      const shown = new Set<string>();
+      const advance = async (ms: number) => {
+        for (let i = 0; i < ms; i += 20) {
+          tick(20);
+          for (const c of net.calls) {
+            if (c.aborted) continue;
+            const a = (age.get(c) ?? 0) + 20;
+            age.set(c, a);
+            if (a >= 400) c.resolve();
+          }
+          await settle(1);
+          shown.add(root.dataset.shown ?? "");
+        }
+      };
+      await advance(400); // the loop arrives
+      glance(); // s1a.k36, starts at f36 (3 s)
+      await advance(3_000); // ~f41
+      act(() => intentHeroReaction("speaker"));
+      act(() => requestHeroReaction("speaker"));
+      expect(root.dataset.reaction).toBe("speaker:t6.k108");
+      await advance(9_000);
+      expect(variants()).toEqual(["s1a.k36", "t6.k108"]);
+      expect(net.calls.filter((c) => c.aborted)).toEqual([]);
+      expect(root.dataset.aborted).toBeUndefined();
+      expect(root.dataset.wasted).toBe("0");
+      expect(root.dataset.fetches).toBe("3");
+      expect(shown).toContain("t6.k108");
+      expect(shown).not.toContain("t6.k144");
+      expect(bytes(root)).toBe(net.sent());
+    },
+  );
+});
+
 describe("HeroPlayer intents and requests (M3)", () => {
   it("fetches only the typing loop until a reaction is due", async () => {
     const { root } = await mountHero(<HeroPlayer />);

@@ -298,6 +298,41 @@ export function setFrozen(q: QueueState, frozen: boolean): QueueState {
   return frozen ? { ...q, frozen, slot: undefined } : { ...q, frozen };
 }
 
+/**
+ * Live-review S1 (2c3acaf): cooldown arithmetic is frame-quantized. The
+ * player ticks at sub-frame clock times (rAF), so `t * fps - abs` (the
+ * tick's phase inside its frame) varies from tick to tick. Starts used to be
+ * recorded at the raw tick time and the 6 s gap converted back to a frame
+ * with that tick's phase, so a request exactly one join-interval-plus-6 s
+ * away flipped between two joins (t6.k108 / t6.k144) tick by tick: its
+ * fetch was started and aborted every frame and the slot could be dropped.
+ *
+ * Now a start is recorded at the clock time where its join FRAME begins
+ * (`frameStartTime`), and a cooldown time is turned back into a frame with
+ * `frameAtOrAfter`, which ignores the current tick's sub-frame phase. Both
+ * use the integer offset between the tick's clock and its frame count
+ * (`frameOffset`: 0 in the player, where abs = floor(t * fps)), so callers
+ * (and tests) whose t and abs are not aligned still get exact frames.
+ */
+const FRAME_EPS = 1e-6;
+/** Whole frames between the tick's clock (t * fps) and its absolute frame. */
+export const frameOffset = (t: number, abs: number, fps: number): number =>
+  Math.floor(t * fps - abs + FRAME_EPS);
+/** Clock time at which absolute frame `frame` begins, in the tick (t, abs). */
+export const frameStartTime = (
+  frame: number,
+  t: number,
+  abs: number,
+  fps: number,
+): number => (frame + frameOffset(t, abs, fps)) / fps;
+/** First absolute frame that begins at or after clock time `time`. */
+export const frameAtOrAfter = (
+  time: number,
+  t: number,
+  abs: number,
+  fps: number,
+): number => Math.ceil(time * fps - frameOffset(t, abs, fps) - FRAME_EPS);
+
 /** Earliest clock time the cooldowns allow the next start. */
 export function earliestStart(q: QueueState, t: number): number {
   let e = t;
@@ -340,7 +375,7 @@ export function step(
       abs + LEAD_FRAMES,
       busyUntil,
       next.playing ? clipEndAbs(next.playing.occ) : 0,
-      Math.ceil(earliestStart(next, t) * fps - (t * fps - abs)),
+      frameAtOrAfter(earliestStart(next, t), t, abs, fps),
     );
     const join = nextJoinAbs(from, entryKs(def), cfg.loopFrames);
     if (join === undefined) return { ...next, slot: undefined };
@@ -361,12 +396,14 @@ export function step(
 
   const s = next.slot!;
   if (s.join !== undefined && s.occ && abs >= s.join) {
+    // Recorded at the join frame's start, not this tick's time (S1 above).
+    const tStart = frameStartTime(s.join, t, abs, cfg.fps);
     next = {
       ...next,
       slot: undefined,
       playing: { id: s.id, occ: s.occ },
-      lastStart: { ...next.lastStart, [s.id]: t },
-      starts: [...next.starts.filter((x) => t - x < 60), t],
+      lastStart: { ...next.lastStart, [s.id]: tStart },
+      starts: [...next.starts.filter((x) => tStart - x < 60), tStart],
     };
   }
   return next;
@@ -495,8 +532,9 @@ export const initialRotationGate = (): RotationGate => ({ allowed: false });
 /** Whether the cooldowns allow `id` to start at clock time `t`. */
 export function cooldownAllows(q: QueueState, id: string, t: number): boolean {
   const last = q.lastStart[id];
-  if (last !== undefined && t - last < COOLDOWNS.sameS) return false;
-  return earliestStart(q, t) <= t + 1e-9;
+  if (last !== undefined && t - last < COOLDOWNS.sameS - FRAME_EPS)
+    return false;
+  return earliestStart(q, t) <= t + FRAME_EPS;
 }
 
 /**
@@ -526,7 +564,8 @@ export function gateRotation(
     const id = occ.action.id;
     const key = cooldownKey(occ.action);
     const startAbs = occ.start + occ.action.clip.firstFrame;
-    const tStart = t + (startAbs - rotation.abs) / fps;
+    // Frame-quantized like a reaction start (live-review S1).
+    const tStart = frameStartTime(startAbs, t, rotation.abs, fps);
     const allowed =
       !q.frozen &&
       !q.playing &&
