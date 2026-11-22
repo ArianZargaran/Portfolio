@@ -38,12 +38,20 @@ export interface FakeNet {
   calls: FetchCall[];
   /** Clip ids fetched, in order (one entry per fetch() call). */
   fetched(): string[];
-  /** Bytes the fake network actually sent (completed bodies only). */
+  /** Bytes the fake network actually sent (bodies, or the partial part). */
   sent(): number;
   /** Hold responses until resolve() (to test in-flight aborts). */
   hold: boolean;
   /** Answer a clip with an HTTP error status or a network error (review R1). */
   fail?: (c: ClipInfo) => number | "network" | undefined;
+  /**
+   * Partial body (review-3 N1): send only `bytes` of the clip, then the
+   * connection drops ("error": the body stream errors) or stalls ("stall":
+   * no more bytes until the request is aborted).
+   */
+  partial?: (
+    c: ClipInfo,
+  ) => { bytes: number; end: "error" | "stall" } | undefined;
   /**
    * Simulated link per clip (review R3): the response headers arrive
    * `ttfbMs` after the request and the body takes bytes*8/bps. Turns on a
@@ -96,6 +104,31 @@ export function installFakeNet(): FakeNet {
           resolve: () => {
             if (call.aborted || done) return;
             done = true;
+            const cut = net.partial?.(clip);
+            if (cut) {
+              sentBytes += cut.bytes;
+              let first = true;
+              const body = new ReadableStream<Uint8Array>(
+                {
+                  pull(ctrl) {
+                    if (first) {
+                      first = false;
+                      ctrl.enqueue(new Uint8Array(cut.bytes));
+                      return;
+                    }
+                    if (cut.end === "error")
+                      return ctrl.error(new TypeError("network error"));
+                    return new Promise<void>((_, rej) =>
+                      init?.signal?.addEventListener("abort", () =>
+                        rej(new DOMException("aborted", "AbortError")),
+                      ),
+                    );
+                  },
+                },
+                { highWaterMark: 0 },
+              );
+              return resolve(new Response(body));
+            }
             sentBytes += clip.bytes;
             const l = link?.(clip);
             if (!l) return resolve(new Response(new Uint8Array(clip.bytes)));

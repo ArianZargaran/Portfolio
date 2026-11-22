@@ -720,6 +720,42 @@ describe("HeroPlayer load failures (review R1)", () => {
   });
 });
 
+/* REVIEW-3 N1 (test gap): a reaction clip that received part of its body
+   before failing or being aborted is charged exactly the bytes that
+   arrived (budget.refund down to store.received), not 0 and not the clip. */
+describe("HeroPlayer partial-download refunds (REVIEW-3 N1)", () => {
+  it("a reaction clip whose body fails after 40,000 B is charged exactly 40,000 B and never shown", async () => {
+    net.partial = (c) =>
+      c.id.startsWith("s1a.") ? { bytes: 40_000, end: "error" } : undefined;
+    const { root } = await mountHero(<HeroPlayer />);
+    glance();
+    await run(4_000);
+    expect(variants()).toEqual(["s1a.k36"]);
+    expect(root.dataset.state).toBe("live");
+    expect(root.dataset.shown).toBe("base");
+    expect(bytes(root)).toBe(H264.typing + 40_000);
+    expect(root.dataset.wasted).toBe("40000");
+    expect(bytes(root)).toBe(net.sent());
+  });
+
+  it("a replaced glance aborted after 30,000 B arrived is charged exactly 30,000 B", async () => {
+    net.partial = (c) =>
+      c.id === "s1a.k36" ? { bytes: 30_000, end: "stall" } : undefined;
+    const { root } = await mountHero(<HeroPlayer />);
+    await run(1_700); // f20.4: the f36 join is due
+    glance();
+    await settle(3); // the first 30,000 B of the glance arrive
+    expect(variants()).toEqual(["s1a.k36"]);
+    headphones(); // f20, before the J-4 lock: replaces the glance
+    expect(root.dataset.reaction).toBe("speaker:t6.k36");
+    expect(root.dataset.aborted).toBe("1");
+    await settle(3);
+    expect(bytes(root)).toBe(H264.typing + H264.t6K36 + 30_000);
+    expect(root.dataset.wasted).toBe("30000");
+    expect(bytes(root)).toBe(net.sent());
+  });
+});
+
 /* Review R3: the adaptive lead's wiring (N1). The clip store times each
    download; the harness simulates the link per clip. */
 describe("HeroPlayer adaptive fetch lead wiring (review N1/R3)", () => {
