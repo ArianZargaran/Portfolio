@@ -145,15 +145,101 @@ describe("N2: startFromTap (a click or tap starts a gate-frozen scene only)", ()
     }
   });
 
-  it("never overrides a keyboard freeze made this page (stored or memory-only)", () => {
-    for (const s of [memoryStorage(), undefined]) {
+  it("never overrides a keyboard or control freeze made this page (stored)", () => {
+    for (const src of ["keyboard", "control"] as const) {
+      const s = memoryStorage();
       const store = createFreezeStore(s);
-      store.set(true, "keyboard");
+      store.set(true, src);
       store.freezeForPage();
       expect(store.startFromTap()).toBe(false);
       expect(store.get()).toBe(true);
+      expect(s.data.get(FREEZE_STORAGE_KEY)).toBe(freezeValue(src));
     }
   });
+
+  /* REVIEW-4 S1: storage that can't persist (writes blocked by policy, quota
+     errors, or storage denied outright). Nothing is stored, so the
+     cross-tab storage read can't cover for the in-memory guard: only
+     `byGate` (cleared by every user set()) keeps a tap from resuming a
+     keyboard or control freeze. Before, the "memory-only" case passed
+     `undefined`, which fell back to jsdom localStorage and persisted. */
+  const unpersistable = () => {
+    const calls = { set: 0 };
+    return {
+      calls,
+      writeFails: {
+        getItem: () => null,
+        setItem: () => {
+          calls.set++;
+          throw new DOMException("quota", "QuotaExceededError");
+        },
+        removeItem: () => undefined,
+      },
+      denied: {
+        getItem: (): string | null => {
+          throw new DOMException("denied", "SecurityError");
+        },
+        setItem: () => {
+          calls.set++;
+          throw new DOMException("denied", "SecurityError");
+        },
+        removeItem: () => {
+          throw new DOMException("denied", "SecurityError");
+        },
+      },
+    };
+  };
+  describe.each(["writeFails", "denied"] as const)(
+    "storage that can't persist (%s): the in-memory guard alone",
+    (kind) => {
+      it.each(["keyboard", "control"] as const)(
+        "a %s freeze, then the gate's freeze: a tap does nothing",
+        (src) => {
+          const u = unpersistable();
+          const store = createFreezeStore(u[kind]);
+          store.set(true, src);
+          expect(u.calls.set).toBe(1); // the write was tried and failed
+          store.freezeForPage();
+          expect(store.startFromTap()).toBe(false);
+          expect(store.get()).toBe(true);
+        },
+      );
+
+      it.each(["keyboard", "control"] as const)(
+        "the gate's freeze, then a %s freeze over it: a tap does nothing",
+        (src) => {
+          const u = unpersistable();
+          const store = createFreezeStore(u[kind]);
+          store.freezeForPage();
+          store.set(true, src); // Esc / the F5 control on the frozen scene
+          expect(u.calls.set).toBe(1);
+          expect(store.startFromTap()).toBe(false);
+          expect(store.get()).toBe(true);
+        },
+      );
+
+      it.each(["keyboard", "control"] as const)(
+        "the gate's freeze, %s play then pause: a tap does nothing",
+        (src) => {
+          const u = unpersistable();
+          const store = createFreezeStore(u[kind]);
+          store.freezeForPage();
+          store.toggle(src); // play
+          expect(store.get()).toBe(false);
+          store.toggle(src); // pause
+          expect(store.startFromTap()).toBe(false);
+          expect(store.get()).toBe(true);
+        },
+      );
+
+      it("a gate freeze alone still starts on tap", () => {
+        const store = createFreezeStore(unpersistable()[kind]);
+        store.freezeForPage();
+        expect(store.startFromTap()).toBe(true);
+        expect(store.get()).toBe(false);
+      });
+    },
+  );
 
   it("a keyboard pause over a gate freeze becomes a keyboard freeze (stored, tap-proof)", () => {
     const s = memoryStorage();
