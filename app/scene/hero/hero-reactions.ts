@@ -203,7 +203,17 @@ export function startReactions(host: ReactionHost): ReactionEngine {
           els[a.id]!.src = url;
           els[a.id]!.preload = "auto";
         },
-        () => undefined,
+        () => {
+          // A fetch joined in flight that fails after this mount started
+          // (review2 S1): refuse the clip from now on, like one that failed
+          // earlier, and show the refund. The mount that started the fetch
+          // registered its handler first (same promise), so its refund to
+          // what arrived has already run when this one syncs data-bytes.
+          // An abort is not a failure: the clip may be asked for again.
+          if (store.state(s.src) !== "failed") return;
+          failedClips.add(s.src);
+          if (!disposed) syncData();
+        },
       );
   }
 

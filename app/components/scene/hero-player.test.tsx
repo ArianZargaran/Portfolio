@@ -347,6 +347,29 @@ describe("HeroPlayer remount in the same visit (visit-media.ts)", () => {
     expect(net.sent()).toBeLessThanOrEqual(993_280);
   });
 
+  it("a reaction fetch in flight at unmount that fails after the remount is not fetched again (review2 S1)", async () => {
+    const first = await mountHero(<HeroPlayer />);
+    net.hold = true;
+    await run(1_700);
+    glance();
+    expect(variants()).toEqual(["s1a.k36"]);
+    first.unmount();
+    const again = await mountHero(<HeroPlayer />);
+    net.partial = (c) =>
+      c.id === "s1a.k36" ? { bytes: 0, end: "error" } : undefined;
+    net.calls.filter((c) => !c.aborted).forEach((c) => c.resolve());
+    await settle(3);
+    // The failed clip is refunded to what arrived (0 B) and the remounted
+    // root shows it straight away, before anything else syncs.
+    expect(bytes(again.root)).toBe(net.sent());
+    net.hold = false;
+    net.partial = () => undefined;
+    glance();
+    await run(3_500);
+    expect(variants()).toEqual(["s1a.k36"]);
+    expect(net.sent()).toBe(bytes(again.root));
+  });
+
   it("a reaction clip that failed earlier in the visit is not fetched again after a remount", async () => {
     net.fail = (c) => (c.id === "s1a.k36" ? 404 : undefined);
     const view = await mountHero(<HeroPlayer />);
