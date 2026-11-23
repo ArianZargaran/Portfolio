@@ -2,8 +2,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 
 import { BASE_LOOP, type ClipSource } from "~/scene/hero/base-loop";
-import { createBudget } from "~/scene/hero/budget";
-import { createClipStore, pickSource } from "~/scene/hero/clip-store";
+import { pickSource } from "~/scene/hero/clip-store";
 import {
   absFrameAt,
   createClock,
@@ -13,6 +12,7 @@ import {
 } from "~/scene/hero/clock";
 import type { ReactionEngine, ReactionHost } from "~/scene/hero/hero-reactions";
 import { HERO_FEATHER_PX, HERO_RECT, heroBoxPercent } from "~/scene/hero/media";
+import { heroVisitMedia } from "~/scene/hero/visit-media";
 
 const FPS = BASE_LOOP.fps;
 /** Re-seek the loop only when it is this many frames off the clock. */
@@ -83,15 +83,21 @@ export default function HeroPlayer({
 
     // Per-visit byte budget (M3), per clip (change 2). The codec is the
     // first source the browser can play (the <source> selection rule), so
-    // it is known before anything is fetched.
-    const budget = createBudget();
-    const store = createClipStore();
+    // it is known before anything is fetched. Budget, clip store and the
+    // chosen source belong to the page load, not to this mount
+    // (visit-media.ts): a remount after a resize or a hotspot round trip
+    // re-uses the loop's blob and keeps charging the same budget.
+    const visit = heroVisitMedia();
+    const { budget, store } = visit;
     const sources = BASE_LOOP.clip.sources;
     let source: ClipSource =
+      visit.source ??
       pickSource(sources, (t) => base.canPlayType(t)) ??
       sources[sources.length - 1];
+    visit.source = source;
     budget.setCodec(source.codec);
-    budget.charge(BASE_LOOP.clip);
+    budget.charge(BASE_LOOP.clip); // once per visit (a Set): 0 on a remount
+    if (budget.wasted) root.dataset.wasted = String(budget.wasted);
     const syncBytes = () => {
       root.dataset.bytes = String(budget.spent);
       root.dataset.fetches = String(store.fetches);
@@ -183,6 +189,7 @@ export default function HeroPlayer({
       if (i < 0 || i >= sources.length - 1) return fail();
       budget.waste(store.received(from.src));
       source = sources[i + 1];
+      visit.source = source;
       budget.setCodec(source.codec);
       root.dataset.wasted = String(budget.wasted);
       base.pause();
@@ -245,7 +252,11 @@ export default function HeroPlayer({
 
     base.addEventListener("error", onError);
     document.addEventListener("visibilitychange", onVisibility);
-    fetchBase();
+    // A loop download that failed while no player was mounted takes the
+    // fallback path now (its bytes stay charged); otherwise load() returns
+    // the blob already fetched this visit, or joins the fetch in flight.
+    if (store.state(source.src) === "failed") fallbackFrom(source);
+    else fetchBase();
     raf = requestAnimationFrame(tick);
     if (frozenRef.current) applyFreeze.current(true);
     return () => {
@@ -257,7 +268,8 @@ export default function HeroPlayer({
       base.removeEventListener("error", onError);
       base.pause();
       base.removeAttribute("src");
-      store.dispose();
+      // No store.dispose(): the visit keeps its blobs and lets fetches in
+      // flight finish (already charged), for the next mount (visit-media.ts).
     };
   }, []);
 

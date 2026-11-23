@@ -188,6 +188,25 @@ export function startReactions(host: ReactionHost): ReactionEngine {
   // R1). Its request is refused like an unaffordable one; the loop plays.
   const failedClips = new Set<string>();
 
+  // Clips this visit already fetched (or is fetching) under an earlier
+  // mount (visit-media.ts): attach their blobs to this mount's elements
+  // instead of fetching or charging them again; a clip that failed earlier
+  // in the visit stays refused (review R1).
+  for (const a of Object.values(ACTIONS)) {
+    const s = srcOf(a.clip);
+    const st = store.state(s.src);
+    if (st === "failed") failedClips.add(s.src);
+    else if (st === "fetching" || st === "done")
+      store.load(s.src, s.type).then(
+        (url) => {
+          if (disposed || !els[a.id]) return;
+          els[a.id]!.src = url;
+          els[a.id]!.preload = "auto";
+        },
+        () => undefined,
+      );
+  }
+
   /** Charges and starts the single fetch of an action clip. */
   const fetchClip = (a: ActionDef): boolean => {
     const v = els[a.id];

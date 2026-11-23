@@ -282,6 +282,123 @@ describe("HeroPlayer per-clip bytes (change 2)", () => {
   });
 });
 
+/* Resize refreeze fix (Ari t1038s5660): the budget, the clip store and the
+   loop source are per visit (page load), not per mount. The player
+   unmounts when the window narrows below 1025 px or the scene leaves the
+   page; a remount must re-use what the visit already has. */
+describe("HeroPlayer remount in the same visit (visit-media.ts)", () => {
+  it("re-uses the loop and a fetched reaction blob: no refetch, data-bytes not reset", async () => {
+    const first = await mountHero(<HeroPlayer />);
+    glance(); // s1a.k36
+    await run(3_500);
+    expect(net.fetched()).toEqual(["typing", "s1a.k36"]);
+    const b = bytes(first.root);
+    expect(b).toBe(H264.typing + H264.s1aK36);
+    first.unmount();
+    const again = await mountHero(<HeroPlayer />);
+    expect(net.fetched()).toEqual(["typing", "s1a.k36"]);
+    expect(bytes(again.root)).toBe(b);
+    expect(again.root.dataset.fetches).toBe("2");
+    expect(again.base).toHaveAttribute("src", expect.stringMatching(/^blob:/));
+    await settle(2);
+    const k36 = clipEl(again.container, "s1a.k36");
+    expect(k36).toHaveAttribute("src", expect.stringMatching(/^blob:/));
+    expect(k36.preload).toBe("auto");
+    expect(net.sent()).toBe(b);
+  });
+
+  it("a reaction fetch still in flight at unmount is joined by the next mount, not repeated", async () => {
+    const first = await mountHero(<HeroPlayer />);
+    net.hold = true;
+    await run(1_700); // the f36 join is due
+    glance();
+    expect(variants()).toEqual(["s1a.k36"]);
+    first.unmount();
+    const again = await mountHero(<HeroPlayer />);
+    net.calls.filter((c) => !c.aborted).forEach((c) => c.resolve());
+    await settle(3);
+    expect(variants()).toEqual(["s1a.k36"]);
+    expect(net.calls.some((c) => c.aborted)).toBe(false);
+    expect(clipEl(again.container, "s1a.k36")).toHaveAttribute(
+      "src",
+      expect.stringMatching(/^blob:/),
+    );
+    expect(bytes(again.root)).toBe(H264.typing + H264.s1aK36);
+    expect(net.sent()).toBe(bytes(again.root));
+  });
+
+  it("the per-visit cap spans remounts: never more than 3 hotspot variants, sent bytes <= 993,280", async () => {
+    for (let i = 0; i < 6; i++) {
+      const m = await mountHero(<HeroPlayer />);
+      tick(i * 3_000); // a different join each time
+      glance(); // a fresh mount has a fresh queue: no 30 s cooldown here
+      await run(4_000);
+      m.unmount();
+    }
+    const last = await mountHero(<HeroPlayer />);
+    expect(variants().length).toBeLessThanOrEqual(3);
+    expect(new Set(net.fetched()).size).toBe(net.fetched().length);
+    expect(net.sent()).toBe(bytes(last.root));
+    expect(net.sent()).toBeLessThanOrEqual(993_280);
+    // The egg nod still fits beside them.
+    act(() => heroHotspot("queen-poster", "visit"));
+    act(() => heroHotspot("headphones", "intent"));
+    expect(net.fetched()).toContain("nod.k180");
+    expect(net.sent()).toBeLessThanOrEqual(993_280);
+  });
+
+  it("a reaction clip that failed earlier in the visit is not fetched again after a remount", async () => {
+    net.fail = (c) => (c.id === "s1a.k36" ? 404 : undefined);
+    const view = await mountHero(<HeroPlayer />);
+    glance(); // s1a.k36: 404
+    await run(3_500);
+    expect(variants()).toEqual(["s1a.k36"]);
+    view.unmount();
+    const again = await mountHero(<HeroPlayer />);
+    glance(); // the f36 join again on the new mount's clock
+    await run(3_500);
+    expect(variants()).toEqual(["s1a.k36"]);
+    expect(again.root.dataset.shown).toBe("base");
+    expect(net.sent()).toBe(H264.typing);
+  });
+
+  it("after an AV1 -> H.264 fallback a remount stays on H.264 (no second AV1 or H.264 fetch)", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    const first = await mountHero(<HeroPlayer />);
+    act(() => {
+      first.base.dispatchEvent(new Event("error"));
+    });
+    await settle(3);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    first.unmount();
+    const again = await mountHero(<HeroPlayer />);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    expect(bytes(again.root)).toBe(332_028 + H264.typing);
+    expect(again.root.dataset.wasted).toBe("332028");
+  });
+
+  it("a loop download that failed while unmounted falls back on the next mount; its bytes stay charged once", async () => {
+    HTMLMediaElement.prototype.canPlayType = () => "probably";
+    net.hold = true;
+    const view = render(<HeroPlayer />);
+    await settle(2);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1"]);
+    view.unmount();
+    net.partial = (c) =>
+      c.id === "typing" && c.codec === "av1"
+        ? { bytes: 1_000, end: "error" }
+        : undefined;
+    net.calls[0].resolve();
+    await settle(3);
+    net.hold = false;
+    const again = await mountHero(<HeroPlayer />);
+    expect(net.calls.map((c) => c.codec)).toEqual(["av1", "h264"]);
+    expect(bytes(again.root)).toBe(1_000 + H264.typing);
+    expect(again.root.dataset.wasted).toBe("1000");
+    expect(net.sent()).toBe(bytes(again.root));
+  });
+});
+
 describe("HeroPlayer replaced reaction is never fetched (change 3)", () => {
   it(`a queued glance is fetched only ${FETCH_LEAD_FRAMES} frames before its join`, async () => {
     const { root } = await mountHero(<HeroPlayer />);
