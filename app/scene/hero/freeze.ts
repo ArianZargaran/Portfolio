@@ -52,7 +52,9 @@ export interface FreezeStore {
   set(frozen: boolean, source?: FreezeSource): void;
   /**
    * Freeze for this page only, without writing storage (the network gate's
-   * "inconclusive -> start frozen", M7). Playing afterwards clears it.
+   * "inconclusive -> start frozen", M7). Playing afterwards clears it, and
+   * once the visitor has played the scene this page load it no longer
+   * freezes (unless a tagged freeze is stored by then).
    */
   freezeForPage(): void;
   /**
@@ -84,6 +86,11 @@ export function createFreezeStore(
   let frozen = false;
   /** Frozen by the network gate only (no user freeze since). */
   let byGate = false;
+  /**
+   * The visitor played the scene this page load (a tap on a gate freeze,
+   * Enter/Space, F1 or F5). In memory only, never stored: see freezeForPage.
+   */
+  let started = false;
   try {
     frozen = readStoredFreeze(storage);
   } catch {
@@ -97,6 +104,7 @@ export function createFreezeStore(
       if (next === frozen && !(next && byGate)) return;
       byGate = false;
       frozen = next;
+      if (!next) started = true;
       try {
         if (next) storage?.setItem(FREEZE_STORAGE_KEY, freezeValue(source));
         else storage?.removeItem(FREEZE_STORAGE_KEY);
@@ -107,6 +115,23 @@ export function createFreezeStore(
     },
     freezeForPage() {
       if (frozen) return;
+      if (started) {
+        // Resize refreeze fix (Ari t1038s5660): once the visitor has
+        // started the scene this page load, the gate's verdict is not
+        // re-applied when motion comes back (the window widens past
+        // 1025 px again, or the visitor returns from a hotspot page). A
+        // tagged freeze stored since (another tab's Esc / F5) still wins.
+        let stored = false;
+        try {
+          stored = readStoredFreeze(storage);
+        } catch {
+          /* unreadable: nothing stored to honour */
+        }
+        if (!stored) return;
+        frozen = true;
+        listeners.forEach((l) => l());
+        return;
+      }
       frozen = byGate = true;
       listeners.forEach((l) => l());
     },
@@ -118,6 +143,7 @@ export function createFreezeStore(
         /* storage unreadable: the in-memory gate freeze decides */
       }
       frozen = byGate = false;
+      started = true;
       listeners.forEach((l) => l());
       return true;
     },

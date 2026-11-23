@@ -374,3 +374,122 @@ describe("escAppliesToScene (review N7)", () => {
     stage.remove();
   });
 });
+
+/* Resize refreeze fix (Ari t1038s5660): once the visitor started the scene
+   this page load, the gate's freeze is not re-applied when motion comes
+   back (freezeForPage on remount), unless a tagged freeze is stored. The
+   start is in memory only. */
+describe("a start is remembered for the page load", () => {
+  const memory = (init: Record<string, string> = {}) => {
+    const data = new Map(Object.entries(init));
+    return {
+      data,
+      getItem: (k: string) => data.get(k) ?? null,
+      setItem: (k: string, v: string) => void data.set(k, v),
+      removeItem: (k: string) => void data.delete(k),
+    };
+  };
+
+  it("before any start, the gate freezes every time motion comes back (unchanged)", () => {
+    const store = createFreezeStore(memory());
+    store.freezeForPage();
+    expect(store.get()).toBe(true);
+    expect(store.gateOnly()).toBe(true);
+  });
+
+  it.each([
+    ["a tap", (s: ReturnType<typeof createFreezeStore>) => s.startFromTap()],
+    [
+      "Enter/Space",
+      (s: ReturnType<typeof createFreezeStore>) => s.toggle("keyboard"),
+    ],
+    [
+      "the F5 control",
+      (s: ReturnType<typeof createFreezeStore>) => s.set(false, "control"),
+    ],
+  ] as const)(
+    "after %s on a gate freeze, freezeForPage is a no-op",
+    (_, start) => {
+      const s = memory();
+      const store = createFreezeStore(s);
+      store.freezeForPage();
+      start(store);
+      expect(store.get()).toBe(false);
+      const l = vi.fn();
+      store.subscribe(l);
+      store.freezeForPage(); // resize back / hotspot round trip
+      store.freezeForPage();
+      expect(store.get()).toBe(false);
+      expect(l).not.toHaveBeenCalled();
+      expect(s.data.size).toBe(0); // nothing persisted
+    },
+  );
+
+  it("a keyboard play of a stored keyboard freeze also counts as a start", () => {
+    const s = memory({ [FREEZE_STORAGE_KEY]: "v2:keyboard" });
+    const store = createFreezeStore(s);
+    store.toggle("keyboard"); // play
+    store.freezeForPage();
+    expect(store.get()).toBe(false);
+  });
+
+  it("a later keyboard or control freeze still wins (stored, tap-proof)", () => {
+    for (const src of ["keyboard", "control"] as const) {
+      const s = memory();
+      const store = createFreezeStore(s);
+      store.freezeForPage();
+      store.startFromTap();
+      store.set(true, src);
+      store.freezeForPage();
+      expect(store.get()).toBe(true);
+      expect(store.startFromTap()).toBe(false);
+      expect(s.data.get(FREEZE_STORAGE_KEY)).toBe(freezeValue(src));
+    }
+  });
+
+  it.each(["keyboard", "control"] as const)(
+    "a %s freeze stored by another tab after the start freezes on the next freezeForPage (not tap-startable)",
+    (src) => {
+      const s = memory();
+      const store = createFreezeStore(s);
+      store.freezeForPage();
+      store.startFromTap();
+      s.data.set(FREEZE_STORAGE_KEY, freezeValue(src));
+      const l = vi.fn();
+      store.subscribe(l);
+      store.freezeForPage();
+      expect(store.get()).toBe(true);
+      expect(store.gateOnly()).toBe(false);
+      expect(l).toHaveBeenCalledTimes(1);
+      expect(store.startFromTap()).toBe(false);
+    },
+  );
+
+  it("after a start, unreadable storage doesn't refreeze", () => {
+    let fail = false;
+    const store = createFreezeStore({
+      getItem: () => {
+        if (fail) throw new Error("denied");
+        return null;
+      },
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    });
+    store.freezeForPage();
+    store.startFromTap();
+    fail = true;
+    store.freezeForPage();
+    expect(store.get()).toBe(false);
+  });
+
+  it("a new store (a new page load) gate-freezes again", () => {
+    const s = memory();
+    const a = createFreezeStore(s);
+    a.freezeForPage();
+    a.startFromTap();
+    const b = createFreezeStore(s);
+    b.freezeForPage();
+    expect(b.get()).toBe(true);
+    expect(b.gateOnly()).toBe(true);
+  });
+});
