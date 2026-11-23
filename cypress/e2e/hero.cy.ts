@@ -961,6 +961,87 @@ describe("hero motion (stub clips)", () => {
     );
   });
 
+  /* Resize refreeze fix (Ari t1038s5660): a scene the visitor started stays
+     started for the page load; the loop is never fetched again and
+     data-bytes doesn't reset when the player remounts. */
+  const tapStart = (requested: string[]) => {
+    gate().should("eq", "frozen:inconclusive");
+    cy.get(".hero").should("not.exist");
+    cy.get(".scene_frame").click(300, 650, { force: true });
+    cy.get(LIVE, { timeout: 15000 });
+    cy.wrap(requested).should("deep.equal", ["typing"]);
+    return cy.get(".hero").invoke("attr", "data-bytes").then(Number);
+  };
+  const playingAgain = (requested: string[], bytes: number) => {
+    cy.get(LIVE, { timeout: 15000 }).should("not.have.attr", "data-frozen");
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "false");
+    cy.get(".hero")
+      .invoke("attr", "data-bytes")
+      .then(Number)
+      .should("eq", bytes);
+    cy.wrap(requested).should("deep.equal", ["typing"]);
+    cy.window().then((w) =>
+      expect(w.localStorage.getItem("hero:frozen")).to.eq(null),
+    );
+  };
+
+  it("resize refreeze: after a tap-start, below 1025 px and back (twice) keeps it playing; no second loop fetch, data-bytes stable", () => {
+    const requested = visitHome(null, { noTiming: true });
+    tapStart(requested).then((bytes) => {
+      for (let i = 0; i < 2; i++) {
+        cy.viewport(1000, 900);
+        cy.get(".hero").should("not.exist");
+        cy.get(".scene_frame[role=group]").should("not.exist");
+        cy.viewport(1440, 900);
+        playingAgain(requested, bytes);
+      }
+    });
+  });
+
+  it("resize refreeze: after a tap-start, a hotspot page and Back keeps it playing; no second loop fetch", () => {
+    const requested = visitHome(null, { noTiming: true });
+    tapStart(requested).then((bytes) => {
+      cy.get("a.scene_hit[href='/about']")
+        .filter(":visible")
+        .first()
+        .click({ force: true });
+      cy.location("pathname").should("eq", "/about");
+      cy.go("back");
+      cy.location("pathname").should("eq", "/");
+      playingAgain(requested, bytes);
+    });
+  });
+
+  it("resize refreeze: Esc after the start still wins across the resize; a click doesn't override it", () => {
+    const requested = visitHome(null, { noTiming: true });
+    tapStart(requested).then(() => {
+      cy.get("body").type("{esc}");
+      cy.window().then((w) =>
+        expect(w.localStorage.getItem("hero:frozen")).to.eq("v2:keyboard"),
+      );
+      cy.viewport(1000, 900);
+      cy.get(".hero").should("not.exist");
+      cy.viewport(1440, 900);
+      cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+      cy.get(".scene_frame").click(300, 650, { force: true });
+      cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+      cy.wrap(requested).should("deep.equal", ["typing"]);
+    });
+  });
+
+  it("resize refreeze: a new visit (page load) gate-freezes again; the start is not persisted", () => {
+    const first = visitHome(null, { noTiming: true });
+    tapStart(first);
+    cy.window().then((w) => expect(w.sessionStorage.length).to.eq(0));
+    const requested = visitHome(null, { noTiming: true });
+    gate().should("eq", "frozen:inconclusive");
+    cy.get(".scene_pause").should("have.attr", "aria-pressed", "true");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- asserting that nothing is requested over a window
+    cy.wait(1500);
+    cy.get(".hero").should("not.exist");
+    cy.wrap(requested).should("have.length", 0);
+  });
+
   it("N2: a tap (touch pointer) on the gate-frozen scene starts it too", () => {
     const requested = visitHome(null, { noTiming: true });
     gate().should("eq", "frozen:inconclusive");
